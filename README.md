@@ -15,7 +15,7 @@ Abra `http://127.0.0.1:4321`. No PowerShell com scripts bloqueados, use `npm.cmd
 
 ```sh
 npm run check          # lint + build + auditoria HTML/SEO/links
-npm run test:unit      # validação e normalização dos contatos configuráveis
+npm run test:unit      # configuração, progresso, continuidade e qualidade adaptativa
 npx playwright install chromium
 npm test               # E2E, axe, responsividade, hidratação e fallbacks
 npm run preview        # revisar o build de produção
@@ -35,7 +35,11 @@ O desenvolvimento usa a porta 4321; preview de produção e testes usam 4323. Is
 - `src/data/routes.js`: rotas e metadados editoriais.
 - `src/lib/seo.js` e `discovery.js`: canonical, JSON-LD, sitemap, robots e llms.
 - `src/styles/`: tokens e composição responsiva.
-- `src/scripts/`: motion nativo e WebGL sob demanda.
+- `src/motion/model.js`: modelo puro e determinístico de cenas/qualidade.
+- `src/motion/controller.js`: medidas DOM, único RAF e carregamento progressivo.
+- `src/motion/sculpture.js` e `shaders.js`: geometria extrudada e superfícies GLSL.
+- `src/motion/vector-narrative.js`: quatro poses SVG, percurso medido, ramos e recomposição.
+- `src/motion/transitions.js`: menu coreografado e transições multipágina.
 - `src/entry-server.jsx`: ReactDOMServer gera o HTML completo; `entry-client.jsx` o hidrata.
 - `scripts/generate-pages.mjs`: usa o transformador SSR do Vite durante o build; escreve `.site/`.
 
@@ -67,7 +71,9 @@ Os originais `profile_foto.jpeg` e `icone.png` permanecem intactos. A foto não 
 
 `npm run assets` regenera os derivados usando Sharp. A máscara proveniente da edição está preservada em `src/assets/`. Método e prompt estão em [docs/assets.md](docs/assets.md).
 
-O WebGL usa os mesmos paths do SVG, carregamento dinâmico, DPR limitado, renderização sob demanda e descarte completo. Em celular, movimento reduzido, economia de dados, capacidade limitada ou falha de GPU, o SVG mantém a composição. Leia [docs/motion-bible.md](docs/motion-bible.md).
+O WebGL usa os quatro paths do SVG, extrusão chanfrada, câmera perspectiva e shader de revelação/varredura/Fresnel. Um único canvas atravessa a hero, quatro poses da abordagem, história, bifurcação e recomposição final. O pin é CSS sticky com scroll nativo. A foto usa uma máscara derivada da polpa da marca; nenhum shader altera a pessoa.
+
+Celulares capazes mantêm 3D com DPR até 1,25; desktop até 1,5. Economia de dados, capacidade limitada ou falha de GPU preservam a narrativa em SVG. Movimento reduzido tem composição estática, sem pin alongado. Renderização sob demanda: nenhum loop permanente. Em desenvolvimento, `?motionDebug=1` mostra cena, progresso, DPR, recursos e estado WebGL. Não existe painel no build de produção. Direção e contratos: [docs/motion-v2-bible.md](docs/motion-v2-bible.md).
 
 ## Publicação e pendências
 
@@ -77,4 +83,4 @@ Não há formulário cenográfico, coleta de dados de saúde, analytics, cookies
 
 ## Verificação
 
-A suíte verifica 320, 375, 390, 430, 768, 1024, 1440, 1920 e 2560 px, além de teclado, foco, zoom, ausência de JavaScript, movimento reduzido, economia de dados e WebGL indisponível. Os relatórios e screenshots gerados ficam em `tests/artifacts/` e não entram no Git. Resultados finais e limitações: [docs/verification.md](docs/verification.md).
+A suíte verifica 320, 375, 390, 430, 768, 1024, 1440, 1920 e 2560 px, além de teclado, foco, zoom, ausência de JavaScript, movimento reduzido, economia de dados e WebGL indisponível. Os novos testes comparam poses, pixels, scroll reverso, perda de contexto, imports pendentes e loading tardio. Os relatórios e screenshots ficam em `tests/artifacts/` e não entram no Git. Segunda rodada: [docs/motion-v2-verification.md](docs/motion-v2-verification.md). Registro da primeira: [docs/verification.md](docs/verification.md).

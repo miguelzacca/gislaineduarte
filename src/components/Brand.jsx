@@ -1,4 +1,9 @@
-import { BRAND_PARTS, BRAND_VIEWBOX } from '../lib/brand.js';
+import { BRAND_PARTS, BRAND_PATHS, BRAND_VIEWBOX } from '../lib/brand.js';
+import { WorldMark } from './MotionGraphics.jsx';
+
+export function PortraitReveal() {
+  return <svg className="portrait-mask-defs" width="1" height="1" aria-hidden="true" focusable="false"><defs><clipPath id="hero-photo-iris" clipPathUnits="objectBoundingBox"><ellipse cx=".66" cy=".25" rx=".29" ry=".28" /><path data-portrait-mask-shape="" d={`${BRAND_PATHS.pulp.split('Z')[0]}Z`} transform="translate(.62 .31) scale(.016) translate(-650 -700)" /></clipPath></defs></svg>;
+}
 
 export function BrandMark({ className = '', mono = false, outline = false } = {}) {
   const classes = [
@@ -58,8 +63,10 @@ export function BrandScene({ className = '' } = {}) {
       <div className="brand-scene__fallback" data-scene-fallback="">
         <BrandMark mono />
       </div>
-      <div className="brand-scene__canvas" data-scene-canvas="" />
+      <div className="motion-world" data-world="" aria-hidden="true">
+        <div className="motion-world__vector" data-world-vector=""><WorldMark /></div>
+        <div className="motion-world__canvas" data-scene-canvas="" />
+      </div>
     </div>
   );
 }
-

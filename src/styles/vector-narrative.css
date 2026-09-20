@@ -1,0 +1,151 @@
+.world-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  overflow: visible;
+  pointer-events: none;
+  contain: layout style;
+  isolation: isolate;
+}
+.world-mark__part { transform-origin: 0 0; }
+.world-mark__fill { transition: none; }
+.world-mark__part--shell .world-mark__fill,
+.world-mark__part--leaf .world-mark__fill { fill: var(--world-shell, #173f35); }
+.world-mark__part--pulp .world-mark__fill { fill: var(--world-pulp, #708d46); }
+.world-mark__part--seed .world-mark__fill { fill: var(--world-seed, #b69a58); }
+.world-mark__outline {
+  stroke: var(--world-outline, #b69a58);
+  stroke-width: 1.65px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.world-mark__depth { fill: var(--world-depth, #102d26); }
+
+.vector-journey {
+  position: fixed;
+  z-index: var(--journey-layer, 2);
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  visibility: hidden;
+  contain: layout paint style;
+}
+.vector-journey[data-measured="true"] { visibility: visible; }
+.vector-journey__guide,
+.vector-journey__ink,
+.vector-journey__branch-guide,
+.vector-journey__branch,
+.vector-journey__return {
+  fill: none;
+  stroke: var(--journey-ink, #b69a58);
+  stroke-width: 1.85px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.vector-journey__guide { opacity: .17; stroke-width: 1.5px; }
+.vector-journey__ink { opacity: .88; }
+.vector-journey__return { stroke-width: 1.65px; }
+.vector-journey__terminal { fill: var(--journey-ink, #b69a58); }
+.vector-journey__front-ring { fill: none; stroke: var(--journey-ink, #b69a58); stroke-width: 1; opacity: .5; }
+.vector-journey__front-core { fill: var(--journey-ink, #b69a58); }
+
+.birth-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.birth-mark__part,
+.birth-mark__mask {
+  --birth-phase: clamp(0, calc((var(--birth-progress, 1) - var(--part-index, 0) * .09) * 1.38), 1);
+}
+.birth-mark__part {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: translate(calc((1 - var(--birth-phase)) * var(--birth-x, 0px)), calc((1 - var(--birth-phase)) * var(--birth-y, 0px))) rotate(calc((1 - var(--birth-phase)) * var(--birth-angle, 0deg)));
+}
+.birth-mark__part--shell { --birth-x: -88px; --birth-y: 52px; --birth-angle: -12deg; }
+.birth-mark__part--leaf { --birth-x: 130px; --birth-y: -102px; --birth-angle: 20deg; }
+.birth-mark__part--pulp { --birth-x: 65px; --birth-y: 26px; --birth-angle: 9deg; }
+.birth-mark__part--seed { --birth-x: -92px; --birth-y: 86px; --birth-angle: -15deg; }
+.birth-mark__fill { opacity: var(--birth-fill, var(--birth-phase)); }
+.birth-mark__mask,
+.birth-mark__outline {
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--birth-draw, var(--birth-phase)));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.birth-mark__outline { stroke: var(--birth-ink, #b69a58); stroke-width: 1.7px; }
+
+.menu-weave {
+  position: absolute;
+  z-index: 0;
+  right: -12%;
+  bottom: -5%;
+  width: min(76vw, 560px);
+  height: auto;
+  max-height: 80%;
+  overflow: visible;
+  color: var(--menu-weave-ink, #b69a58);
+  opacity: .23;
+  pointer-events: none;
+}
+.menu-weave__thread,
+.menu-weave__part path,
+.menu-weave__echo {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--menu-progress, 1));
+}
+.menu-weave__part {
+  --menu-phase: clamp(0, calc((var(--menu-progress, 1) - var(--part-index, 0) * .055) * 1.2), 1);
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: translate(calc((1 - var(--menu-phase)) * var(--weave-x, 0px)), calc((1 - var(--menu-phase)) * var(--weave-y, 0px))) rotate(calc((1 - var(--menu-phase)) * var(--weave-angle, 0deg)));
+}
+.menu-weave__part--shell { --weave-x: -70px; --weave-y: 100px; --weave-angle: -14deg; }
+.menu-weave__part--leaf { --weave-x: 160px; --weave-y: -120px; --weave-angle: 27deg; }
+.menu-weave__part--pulp { --weave-x: 110px; --weave-y: 45px; --weave-angle: 11deg; }
+.menu-weave__part--seed { --weave-x: -125px; --weave-y: 75px; --weave-angle: -21deg; }
+.menu-weave__part path { stroke-dashoffset: calc(1 - var(--menu-phase)); }
+.menu-weave__echo { opacity: .45; }
+
+@media (max-width: 767px) {
+  .world-mark__outline { stroke-width: 1.5px; }
+  .vector-journey__ink,
+  .vector-journey__branch { stroke-width: 1.6px; }
+  .vector-journey__guide { opacity: .14; stroke-width: 1.5px; }
+  .menu-weave { right: -24%; bottom: -3%; opacity: .17; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .birth-mark { --birth-progress: 1 !important; }
+  .birth-mark__part,
+  .menu-weave__part { transform: none; }
+  .birth-mark__fill { opacity: 1; }
+  .birth-mark__mask,
+  .birth-mark__outline,
+  .menu-weave__thread,
+  .menu-weave__part path,
+  .menu-weave__echo { stroke-dashoffset: 0; }
+  .vector-journey__front { display: none; }
+}
+@media print {
+  .world-mark,
+  .vector-journey,
+  .birth-mark,
+  .menu-weave { display: none; }
+}

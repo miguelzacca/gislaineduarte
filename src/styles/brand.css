@@ -13,17 +13,14 @@
 
 .brand-scene {
   position: relative;
-  isolation: isolate;
   width: 100%;
   max-width: 640px;
   aspect-ratio: 1;
   margin-inline: auto;
   color: var(--gold, #b69a58);
-  contain: layout;
 }
 
-.brand-scene__orbits,
-.brand-scene__canvas {
+.brand-scene__orbits {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -56,28 +53,8 @@
   fill: #f5f1e8;
 }
 
-.brand-scene__canvas {
-  opacity: 0;
-  transition: opacity 420ms ease;
-}
-
-.brand-scene__canvas canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-[data-scene-ready='true'] .brand-scene__canvas {
-  opacity: 1;
-}
-
-[data-scene-ready='true'] .brand-scene__fallback {
-  opacity: 0;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .brand-scene__fallback,
-  .brand-scene__canvas {
+  .brand-scene__fallback {
     transition: none;
   }
 }

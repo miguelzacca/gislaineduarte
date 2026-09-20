@@ -9,15 +9,16 @@ import {
   contactLabel,
 } from '../data/site.js';
 import { Arrow, Portrait, Button, TextLink } from './UI.jsx';
-import { BrandMark, BrandScene } from './Brand.jsx';
+import { BrandMark, BrandScene, PortraitReveal } from './Brand.jsx';
 import { ContactBand } from './Layout.jsx';
+import { BirthMark } from './MotionGraphics.jsx';
 
 export function ServiceCards({ headingTag = 'h3' } = {}) {
   const Heading = headingTag;
   return (
     <div className="service-grid">
       {services.map((service, index) => (
-        <article className="service-card" data-reveal="" key={service.slug}>
+        <article className="service-card" data-reveal="" data-service-key={service.slug} key={service.slug}>
           <div className="service-card__top">
             <span className="service-card__number">0{index + 1} / {service.eyebrow}</span>
             <BrandMark className="service-card__symbol" outline />
@@ -73,9 +74,13 @@ export function HomePage() {
             </div>
           </div>
           <div className="hero-art">
+            <PortraitReveal />
             <div className="hero-arch"><BrandMark mono /></div>
+            <div className="portrait-plane portrait-plane--back" aria-hidden="true" />
+            <div className="portrait-plane portrait-plane--rim" aria-hidden="true" />
             <div className="hero-seal" aria-hidden="true"><BrandMark /></div>
             <Portrait priority />
+            <div className="hero-sculpture-anchor" data-motion-anchor="hero" aria-hidden="true"><BirthMark /></div>
             <div className="portrait-caption" aria-hidden="true">
               <strong>Gislaine Duarte</strong>
               <span>Ciência, escuta &amp; cuidado</span>
@@ -90,9 +95,6 @@ export function HomePage() {
       </section>
 
       <section id="abordagem" className="section approach" aria-labelledby="approach-title">
-        <svg className="journey-thread" viewBox="0 0 1440 1400" preserveAspectRatio="none" aria-hidden="true">
-          <path data-thread="" d="M1050 -30C1050 140 520 60 480 260S760 580 430 820 180 1110 510 1440" pathLength="1" />
-        </svg>
         <div className="shell">
           <div className="section-top">
             <p className="eyebrow">Minha abordagem</p>
@@ -113,7 +115,7 @@ export function HomePage() {
               <p data-reveal="">{approachIntroduction.paragraphs[0]}</p>
               <div className="pillars">
                 {approach.map((pillar, index) => (
-                  <article className="pillar" data-reveal="" key={pillar.title}>
+                  <article className="pillar" data-reveal="" data-pillar={index} key={pillar.title}>
                     <span className="pillar-number">0{index + 1}</span>
                     <div>
                       <h3>{pillar.title}</h3>
@@ -130,7 +132,7 @@ export function HomePage() {
       <section id="sobre" className="section">
         <div className="shell story-grid">
           <div data-reveal="">
-            <div className="story-art"><Portrait sizes="(min-width: 768px) 36vw, 90vw" /></div>
+            <div className="story-art"><div className="story-plane" aria-hidden="true" /><Portrait sizes="(min-width: 768px) 36vw, 90vw" /></div>
             <p className="story-caption">Uma história pessoal. Um propósito profissional.</p>
           </div>
           <div className="story-copy" data-reveal="">
@@ -152,6 +154,7 @@ export function HomePage() {
             </div>
             <p data-reveal="">Você pode começar com uma consulta individual ou conhecer os ciclos de acompanhamento. Vamos conhecer o seu momento?</p>
           </div>
+          <div className="service-junction" data-motion-anchor="services" aria-hidden="true"><span /><span /></div>
           <ServiceCards />
           <p className="care-note"><BrandMark />Cada história pede um olhar. Cada rotina, um caminho possível.</p>
         </div>
@@ -225,8 +228,8 @@ export function ServicePage({ service, index }) {
           <p className="page-hero__intro">{service.intro}</p>
           <div className="actions"><Button href={contactLink(service)} external>Solicitar orçamento</Button></div>
         </div>
-        <div className="service-hero-symbol" data-reveal="">
-          <BrandMark />
+        <div className="service-hero-symbol" data-service-key={service.slug} data-motion-anchor="detail">
+          <BrandScene />
           <span className="service-number" aria-hidden="true">0{index + 1}</span>
         </div>
       </section>

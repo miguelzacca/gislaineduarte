@@ -1,5 +1,7 @@
 # Movimento: cuidado de dentro para fora
 
+> Registro da v1. A direção e a implementação atuais estão em [motion-v2-bible.md](motion-v2-bible.md). Os módulos antigos citados abaixo foram substituídos por `src/motion/`.
+
 O abacate fornecido em `icone.png` é a origem geométrica da linguagem. A casca, a folha com seu vinco, a polpa e a semente mantêm as proporções do desenho original. Os vazados são transparência real, não preenchimentos brancos. A fotografia permanece intacta; nenhum deslocamento de vértices ou shader atua sobre o rosto.
 
 ## Ritmo

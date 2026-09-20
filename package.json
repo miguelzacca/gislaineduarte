@@ -11,7 +11,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "lint": "eslint .",
     "test": "playwright test",
-    "test:unit": "node --test tests/unit/site.test.js",
+    "test:unit": "node --test tests/unit/*.test.js",
     "audit": "node --env-file-if-exists=.env scripts/audit-site.mjs",
     "assets": "node scripts/prepare-assets.mjs",
     "check": "npm run lint && npm run build && npm run audit"

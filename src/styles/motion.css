@@ -1,0 +1,152 @@
+@import './vector-narrative.css';
+
+@property --menu-progress { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --portrait-birth { syntax: '<number>'; inherits: true; initial-value: 1; }
+
+main { position: relative; }
+.brand-scene { contain: none; isolation: auto; }
+.motion-world { display: none; position: fixed; left: 0; top: 0; z-index: 6; width: 720px; height: 720px; transform-origin: 50% 50%; pointer-events: none; }
+.motion-enabled .motion-world { display: block; }
+.motion-world__vector, .motion-world__canvas { position: absolute; inset: 0; pointer-events: none; }
+.motion-world__vector { padding: 15%; transition: opacity 140ms linear; }
+.motion-world__canvas { opacity: 0; transition: opacity 140ms linear; }
+.motion-world__canvas canvas { width: 100%; height: 100%; max-width: none; display: block; }
+.motion-world[data-webgl-ready] .motion-world__canvas { opacity: 1; }
+.motion-world[data-webgl-ready] .motion-world__vector { opacity: 0; }
+.motion-enabled .brand-scene__fallback { opacity: 0; }
+main[data-motion-scene="approach"] .motion-world,
+main[data-motion-scene="unfold"] .motion-world { --world-shell: #a6b49a; --world-pulp: #708d46; --world-depth: #071e18; }
+.brand-scene__orbits { opacity: .17; }
+
+.hero-art { perspective: 1100px; }
+.hero-sculpture-anchor { position: absolute; z-index: 5; width: clamp(220px, 23vw, 350px); aspect-ratio: 1; left: -14%; top: 48%; pointer-events: none; }
+.hero-sculpture-anchor .birth-mark { width: 70%; height: 70%; margin: 15%; }
+.hero-seal { display: none; }
+.portrait-plane { position: absolute; pointer-events: none; border-radius: 52% 48% 3% 3%; transform-origin: 60% 65%; }
+.portrait-plane--back { inset: 35px -8% 5% 3%; background: #d6dcce; transform: rotateY(calc(var(--hero-exit, 0) * -32deg)) rotateZ(calc(-6deg + var(--hero-exit, 0) * 14deg)); }
+.portrait-plane--rim { inset: 50px -4% 3% 0; border: 1px solid var(--gold); transform: rotateY(calc(var(--hero-exit, 0) * 28deg)) rotateZ(calc(5deg - var(--hero-exit, 0) * 14deg)) translateZ(28px); }
+.hero-art .portrait { z-index: 2; transform: translate3d(0, var(--portrait-depth, 0px), 24px); }
+.portrait-mask-defs { position: absolute; width: 1px; height: 1px; pointer-events: none; }
+.js .hero-art .portrait { clip-path: url(#hero-photo-iris); }
+.hero-art::after { z-index: 3; pointer-events: none; }
+.portrait-caption { z-index: 4; left: 33%; bottom: 9%; }
+.hero-arch { opacity: .6; }
+
+/* The pin is native: its duration is the actual reading column, never wheel interception. */
+.js .approach { overflow: clip visible; }
+.js .approach-art { z-index: 5; }
+.js .approach-art-inner { top: 106px; }
+.js .approach-art h2 { font-size: clamp(58px, 6vw, 90px); }
+.js .approach .brand-scene { height: clamp(240px, 45svh, 490px); margin-top: 12px; aspect-ratio: auto; }
+.js .approach-copy { padding-top: 40px; }
+.js .approach-copy > p { max-width: 390px; }
+.js .pillar { min-height: 46svh; align-content: center; position: relative; }
+.js .pillar::before { content: ''; position: absolute; left: 0; top: 0; width: 100%; height: 2px; background: var(--gold); transform-origin: left; transform: scaleX(0); transition: transform 280ms var(--ease-out); }
+.js .pillar[data-pillar-active="true"]::before { transform: scaleX(1); }
+.js .pillar h3 { font-size: clamp(33px, 3.3vw, 53px); }
+.js .pillar-number { display: inline-block; color: var(--gold-light); }
+.js .approach [data-reveal], .js #sobre [data-reveal], .js #atendimentos [data-reveal], .js .contact-band [data-reveal] { opacity: 1; transform: none; transition: none; }
+.story-art { perspective: 1000px; }
+.story-plane { position: absolute; inset: 8% -20% 5% 5%; border: 1px solid var(--gold-ink); border-radius: 48% 52% 4% 4%; transform: rotateY(calc(-28deg + var(--story-progress, .5) * 55deg)) rotateZ(calc(-13deg + var(--story-progress, .5) * 26deg)); }
+.story-art::before { content: ''; position: absolute; inset: 5% 10% -15% -25%; background: var(--sage); border-radius: 50%; transform: rotateY(calc(var(--story-progress, .5) * 35deg)) rotateZ(-18deg); }
+.story-art .portrait { position: relative; z-index: 1; transform: translate3d(calc((var(--story-progress, .5) - .5) * -18px), calc((var(--story-progress, .5) - .5) * 24px), 20px); }
+.story-copy { position: relative; z-index: 7; background: var(--ivory); }
+.services-section .section-heading { position: relative; z-index: 7; background: var(--paper); }
+.service-card h2, .service-card h3, .service-card > p, .service-card .text-link { position: relative; z-index: 7; background: inherit; }
+.service-junction { height: clamp(200px, 28vw, 370px); width: min(80%, 700px); margin: -30px auto 8px; position: relative; }
+.service-junction span { position: absolute; top: 10%; bottom: 0; width: 49%; border: 1px solid var(--color-line); border-radius: 60% 40% 0 0; transform: rotate(-16deg); }
+.service-junction span + span { right: 0; transform: rotate(16deg); }
+.service-card { perspective: 1000px; }
+.service-card__symbol { overflow: visible; }
+.js .service-card__symbol path { stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--service-formation, 1)); transform-box: fill-box; transform-origin: center; }
+.js .service-card__symbol .brand-mark__part--shell { transform: translateX(calc((1 - var(--service-formation, 1)) * -90px)) rotate(calc((1 - var(--service-formation, 1)) * -22deg)); }
+.js .service-card__symbol .brand-mark__part--leaf { transform: translate(calc((1 - var(--service-formation, 1)) * 100px), calc((1 - var(--service-formation, 1)) * -60px)); }
+.js .service-card__symbol .brand-mark__part--pulp { transform: translateX(calc((1 - var(--service-formation, 1)) * 70px)); }
+.js .service-card__symbol .brand-mark__part--seed { transform: translateY(calc((1 - var(--service-formation, 1)) * 90px)); }
+.service-card::before { content: ''; position: absolute; width: 220px; height: 320px; right: -90px; top: -90px; border: 1px solid var(--color-line); border-radius: 55% 45% 50% 50%; transform: rotateY(calc((1 - var(--service-formation, 1)) * 60deg)) rotateZ(35deg); pointer-events: none; }
+.contact-sculpture-anchor { display: none; }
+.home-page .contact-sculpture-anchor { display: block; width: min(72vw, 390px); aspect-ratio: 1; margin: -60px auto 20px; }
+.home-page .contact-band__symbol { display: none; }
+.service-hero-symbol .brand-scene { height: 370px; margin: 0; aspect-ratio: auto; min-width: 0; max-width: 100%; }
+.service-hero-symbol .brand-scene__orbits { opacity: .35; }
+.service-hero-symbol { z-index: 5; }
+.page-hero--split > * { min-width: 0; }
+.service-number { z-index: 1; }
+
+.navigation-dialog[open] { animation: none; }
+.navigation-dialog::backdrop { background: transparent; }
+.navigation-dialog { overflow-y: auto; overflow-x: clip; perspective: 1100px; }
+.menu-top, .menu-nav, .menu-foot { position: relative; z-index: 1; }
+.menu-nav a { transform-origin: left center; backface-visibility: hidden; }
+.menu-weave { opacity: .3; }
+.route-veil { position: fixed; z-index: 90; inset: 0; background: var(--forest); color: var(--gold); display: grid; place-items: center; pointer-events: none; clip-path: ellipse(0% 0% at 50% 65%); }
+.route-veil .brand-mark { width: 130px; height: 180px; }
+html::view-transition-old(root) { animation: 580ms var(--ease-out) both spatial-exit; mix-blend-mode: normal; }
+html::view-transition-new(root) { animation: 780ms var(--ease-out) both seed-reveal; mix-blend-mode: normal; }
+html::view-transition-group(root) { background: var(--forest); }
+[data-service-key="consulta-nutricional"] .service-card__symbol,
+[data-service-key="consulta-nutricional"].service-hero-symbol { view-transition-name: consultation-seed; }
+[data-service-key="ciclos-de-acompanhamento"] .service-card__symbol,
+[data-service-key="ciclos-de-acompanhamento"].service-hero-symbol { view-transition-name: cycles-seed; }
+html::view-transition-group(consultation-seed), html::view-transition-group(cycles-seed) { animation-duration: 780ms; animation-timing-function: var(--ease-out); }
+@keyframes spatial-exit { to { transform: perspective(1400px) translate3d(-3%, -1%, -160px) rotateY(7deg); clip-path: ellipse(85% 100% at 35% 50%); } }
+@keyframes seed-reveal { from { clip-path: ellipse(0% 0% at 72% 52%); transform: perspective(1400px) translate3d(3%, 0, 80px) rotateY(-5deg); } to { clip-path: ellipse(145% 135% at 72% 52%); transform: none; } }
+.motion-debug { position: fixed; z-index: 100; left: 12px; bottom: 12px; max-width: min(480px, 90vw); max-height: 25vh; overflow: hidden; padding: 12px; background: #102d26ed; color: #fff; font: 11px/1.7 monospace; white-space: pre-wrap; pointer-events: none; }
+
+@media (max-width: 1100px) and (min-width: 768px) {
+  .hero-sculpture-anchor { left: -18%; top: 53%; width: 260px; }
+  .js .approach-art h2 { font-size: 65px; }
+  .js .approach .brand-scene { height: min(41svh, 390px); }
+}
+@media (max-width: 767px) {
+  .home-page .story-copy { grid-row: auto; }
+  .hero-sculpture-anchor { width: 180px; top: 47%; left: -7%; }
+  .portrait-plane--back { inset: 15px 2% 5%; }
+  .portrait-plane--rim { inset: 28px 2% 3% 0; }
+  .portrait-caption { left: 37%; bottom: 12%; }
+  .portrait-caption strong { font-size: clamp(22px, 6vw, 30px); }
+  .hero-art .portrait { transform: translateY(calc(var(--hero-exit, 0) * 6px)); }
+  .js .approach-grid { display: block; }
+  .js .approach-art { position: sticky; top: 74px; margin-inline: calc(-1 * var(--gutter)); padding: 12px var(--gutter) 0; background: var(--forest); border-bottom: 1px solid var(--color-line-light); }
+  .js .approach-art-inner { display: grid; grid-template-columns: .85fr 1.15fr; align-items: center; position: static; gap: 0 6px; }
+  .js .approach-art h2 { font-size: clamp(34px, 8.5vw, 49px); line-height: .97; }
+  .js .approach .brand-scene { height: clamp(135px, 23svh, 220px); margin-top: 0; }
+  .js .approach-caption { grid-column: 1 / -1; padding-block: 9px; font-size: 7px; }
+  .js .approach-copy { padding-top: 30px; }
+  .js .approach-copy > p { margin-bottom: 24px; }
+  .js .pillar { min-height: 36svh; padding-block: 32px; }
+  .js .pillar h3 { font-size: clamp(32px, 8.7vw, 43px); }
+  .js .pillar p { font-size: 12px; }
+  .service-junction { width: 87%; height: 230px; margin-top: 0; }
+  .home-page .contact-sculpture-anchor { width: 260px; margin-top: -30px; margin-bottom: 25px; }
+  .service-hero-symbol .brand-scene { height: 290px; }
+  .menu-foot { gap: 13px; padding-bottom: 16px; }
+  .menu-nav { padding-block: 5vh; }
+}
+@media (max-height: 620px) and (max-width: 767px) {
+  .js .approach-art { padding-top: 0; }
+  .js .approach .brand-scene { height: 116px; }
+  .js .approach-art h2 { font-size: 33px; }
+  .js .approach-caption { padding-block: 6px; }
+  .menu-nav { padding-block: 20px; }
+  .menu-nav a { font-size: 32px; padding-block: 7px; }
+  .menu-foot { gap: 8px; font-size: 11px; }
+}
+@media (max-height: 520px) and (min-width: 768px) {
+  .js .approach-art-inner { position: static; }
+  .js .pillar { min-height: auto; padding-block: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-enabled .motion-world { display: none; }
+  .motion-enabled .brand-scene__fallback { opacity: 1; }
+  .js .approach-art, .js .approach-art-inner { position: relative; top: auto; }
+  .js .pillar { min-height: 0; padding-block: 30px; }
+  .js .hero-art .portrait { clip-path: none; transform: none; }
+  .hero-sculpture-anchor { display: none; }
+  .portrait-plane, .story-plane, .story-art .portrait, .story-art::before { transform: none; }
+  .js .service-card__symbol path { transform: none; stroke-dashoffset: 0; }
+  .home-page .contact-sculpture-anchor, .service-junction { display: none; }
+  .home-page .contact-band__symbol { display: block; }
+}
+.no-js .hero-sculpture-anchor, .no-js .service-junction, .no-js .contact-sculpture-anchor { display: none; }
+@media print { .motion-world, .portrait-plane, .story-plane, .service-junction, .contact-sculpture-anchor, .route-veil { display: none !important; } .js .approach-art, .js .approach-art-inner { position: static; } .js .pillar { min-height: 0; } }
