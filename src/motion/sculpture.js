@@ -1,8 +1,10 @@
-import { BRAND_COLORS, BRAND_PARTS, BRAND_VIEWBOX } from '../lib/brand.js';
+import { BRAND_COLORS, BRAND_PARTS } from '../lib/brand.js';
+import { parseBrandPaths } from './brand-shapes.js';
 import { attachNarrativeSurface, contourParticleFragment, contourParticleVertex } from './shaders.js';
 
 const TAU = Math.PI * 2;
 const SOURCE_SCALE = 0.006;
+const INITIALIZATION_BUDGET_MS = 5500;
 const clamp = (number, minimum, maximum) => Math.max(minimum, Math.min(maximum, number));
 const numberOr = (value, fallback) => Number.isFinite(value) ? value : fallback;
 const unit = (value, fallback = 0) => clamp(numberOr(value, fallback), 0, 1);
@@ -64,10 +66,13 @@ const APPROACH_POSES = [
  * opening=0 and branch=0 restore the exact original positions at every focus.
  * Recommended distances at 42deg FOV: assembled 9.5–11; open 14–17; branched 13–15.
  * Call resize(size, dpr), then render(frame). Keep this instance across sections.
+ * An optional signal cancels initialization, not the returned instance's lifetime.
  */
-export async function createSculpture({ canvas, quality = {}, onContextLost = () => {} } = {}) {
+export async function createSculpture({ canvas, quality = {}, onContextLost = () => {}, signal } = {}) {
   if (!canvas || typeof canvas.getContext !== 'function') throw new TypeError('A canvas is required for the brand sculpture.');
+  if (signal?.aborted) throw new DOMException('Sculpture initialization was cancelled.', 'AbortError');
 
+  const initializationStarted = performance.now();
   const mode = quality.mode === 'mobile' ? 'mobile' : 'full';
   const mobile = mode === 'mobile';
   const segments = Math.round(clamp(numberOr(quality.segments, mobile ? 9 : 20), 6, mobile ? 14 : 28));
@@ -86,24 +91,12 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
   }
 
   let THREE;
-  let SVGLoader;
   let RoomEnvironment;
-  try {
-    [THREE, { SVGLoader }, { RoomEnvironment }] = await Promise.all([
-      import('three'),
-      import('three/addons/loaders/SVGLoader.js'),
-      import('three/addons/environments/RoomEnvironment.js'),
-    ]);
-  } catch (error) {
-    context.getExtension('WEBGL_lose_context')?.loseContext();
-    onContextLost({ reason: 'import', error });
-    throw error;
-  }
-
   const geometries = new Set();
   const materials = new Set();
   const parts = [];
   const particles = [];
+  const pendingGpuWaits = new Set();
   const shaderDiagnostics = { compilations: 0, parts: new Set(), errors: [] };
   let renderer;
   let environmentTarget;
@@ -119,6 +112,7 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
   let frames = 0;
   let renderCalls = 0;
   let lastFrameCpuMs = 0;
+  let firstFrameCpuMs = 0;
   let lastDrawCalls = 0;
   let lastTriangles = 0;
   let lastPointCount = 0;
@@ -128,6 +122,33 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
   let pixelRatio = clamp(numberOr(quality.dpr, 1), 0.75, dprLimit);
   let keyLight;
   let rimLight;
+  let initializationDeadline;
+  let rejectInitialization;
+  let initializationError;
+  let initializing = true;
+  const initialization = {
+    contextMs: performance.now() - initializationStarted,
+    importsMs: 0,
+    rendererMs: 0,
+    environmentCompileMs: 0,
+    environmentMs: 0,
+    geometryMs: 0,
+    geometryPartsMs: [],
+    resizeMs: 0,
+    compileMs: 0,
+    compileSubmitMs: 0,
+    gpuReadyMs: 0,
+    warmupMs: 0,
+    warmupGpuMs: 0,
+    warmupDrawCalls: 0,
+    totalMs: 0,
+    yields: 0,
+    yieldMs: 0,
+    parallelCompile: Boolean(context.getExtension('KHR_parallel_shader_compile')),
+  };
+  const initializationCancelled = new Promise((_, reject) => { rejectInitialization = reject; });
+  // Abort can occur between two awaited stages; a rejection is still observed.
+  void initializationCancelled.catch(() => {});
 
   const uniforms = {
     uBrandAssembly: { value: 1 },
@@ -135,18 +156,22 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
     uBrandEnergy: { value: 0.2 },
     uBrandProgress: { value: 0 },
     uBrandFocus: { value: 2 },
-    uBrandGold: { value: new THREE.Color('#e3c27c') },
+    uBrandGold: { value: null },
   };
 
   const notifyFailure = (reason, error) => {
     if (notified) return;
     notified = true;
+    if (error && initializing) error.initialization = { ...initialization, totalMs: performance.now() - initializationStarted };
     onContextLost({ reason, error });
   };
 
   function disposeResources(loseContext) {
     if (disposed) return;
     disposed = true;
+    clearTimeout(initializationDeadline);
+    signal?.removeEventListener('abort', handleInitializationAbort);
+    for (const cancel of pendingGpuWaits) cancel();
     canvas.removeEventListener('webglcontextlost', handleContextLost);
     for (const geometry of geometries) geometry.dispose();
     for (const material of materials) material.dispose();
@@ -170,8 +195,69 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
   function handleContextLost(event) {
     event.preventDefault();
     contextLost = true;
+    if (initializing) {
+      initializationError = new Error('WebGL context was lost during initialization.');
+    }
     disposeResources(false);
+    if (initializing) rejectInitialization(initializationError);
     notifyFailure('context-lost');
+  }
+
+  function handleInitializationAbort() {
+    initializationError = new DOMException('Sculpture initialization was cancelled.', 'AbortError');
+    disposeResources(true);
+    rejectInitialization(initializationError);
+  }
+
+  function assertInitializing() {
+    if (performance.now() - initializationStarted >= INITIALIZATION_BUDGET_MS && !initializationError) {
+      initializationError = new Error('Sculpture initialization timed out; retain the SVG composition.');
+      initializationError.name = 'TimeoutError';
+    }
+    if (initializationError) throw initializationError;
+    if (disposed || contextLost || signal?.aborted) {
+      throw new DOMException('Sculpture initialization was cancelled.', 'AbortError');
+    }
+  }
+
+  async function awaitStage(promise) {
+    await Promise.race([promise, initializationCancelled]);
+    assertInitializing();
+  }
+
+  async function yieldInitialization() {
+    const started = performance.now();
+    initialization.yields += 1;
+    await awaitStage(globalThis.scheduler?.yield
+      ? globalThis.scheduler.yield()
+      : new Promise(resolve => setTimeout(resolve, 0)));
+    initialization.yieldMs += performance.now() - started;
+  }
+
+  async function waitForGpu() {
+    assertInitializing();
+    const fence = context.fenceSync(context.SYNC_GPU_COMMANDS_COMPLETE, 0);
+    if (!fence) throw new Error('The sculpture GPU queue could not be prepared.');
+    context.flush();
+    await awaitStage(new Promise((resolve, reject) => {
+      let timer;
+      const finish = error => {
+        clearTimeout(timer);
+        pendingGpuWaits.delete(cancel);
+        if (!contextLost) context.deleteSync(fence);
+        if (error) reject(error); else resolve();
+      };
+      const cancel = () => finish(initializationError ?? new DOMException('Sculpture initialization was cancelled.', 'AbortError'));
+      const check = () => {
+        if (disposed || contextLost) return cancel();
+        const state = context.clientWaitSync(fence, 0, 0);
+        if (state === context.ALREADY_SIGNALED || state === context.CONDITION_SATISFIED) return finish();
+        if (state === context.WAIT_FAILED) return finish(new Error('The sculpture GPU queue could not be completed.'));
+        timer = setTimeout(check, 8);
+      };
+      pendingGpuWaits.add(cancel);
+      timer = setTimeout(check, 0);
+    }));
   }
 
   function resize(size, dpr = pixelRatio) {
@@ -190,7 +276,27 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
     if (particleMaterial) particleMaterial.uniforms.uPixelRatio.value = pixelRatio;
   }
 
+  canvas.addEventListener('webglcontextlost', handleContextLost, false);
+  signal?.addEventListener('abort', handleInitializationAbort, { once: true });
+  initializationDeadline = setTimeout(() => {
+    initializationError = new Error('Sculpture initialization timed out; retain the SVG composition.');
+    initializationError.name = 'TimeoutError';
+    disposeResources(true);
+    rejectInitialization(initializationError);
+  }, INITIALIZATION_BUDGET_MS);
+
   try {
+    let stageStarted = performance.now();
+    const imports = Promise.all([
+      import('three'),
+      import('three/addons/environments/RoomEnvironment.js'),
+    ]);
+    await awaitStage(imports);
+    [THREE, { RoomEnvironment }] = await imports;
+    initialization.importsMs = performance.now() - stageStarted;
+    uniforms.uBrandGold.value = new THREE.Color('#e3c27c');
+    await yieldInitialization();
+    stageStarted = performance.now();
     renderer = new THREE.WebGLRenderer({ canvas, context, alpha: true, antialias: true });
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -203,7 +309,6 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
         fragment: gl.getShaderInfoLog(fragmentShader),
       });
     };
-    canvas.addEventListener('webglcontextlost', handleContextLost, false);
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(42, 1, 0.1, 80);
@@ -218,23 +323,45 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
     rimLight = new THREE.DirectionalLight('#fff5dc', 3.5);
     rimLight.position.set(5, 3, -2);
     scene.add(rimLight);
+    initialization.rendererMs = performance.now() - stageStarted;
+    stageStarted = performance.now();
+    resize(cssSize, pixelRatio);
+    initialization.resizeMs = performance.now() - stageStarted;
+    await yieldInitialization();
 
     const environment = new RoomEnvironment();
     const generator = new THREE.PMREMGenerator(renderer);
+    const environmentCompileTarget = new THREE.WebGLRenderTarget(16, 16, { type: THREE.HalfFloatType, colorSpace: THREE.LinearSRGBColorSpace });
+    const savedToneMapping = renderer.toneMapping;
     try {
+      // Match PMREM's linear, untonemapped capture before its synchronous draw.
+      stageStarted = performance.now();
+      renderer.toneMapping = THREE.NoToneMapping;
+      renderer.setRenderTarget(environmentCompileTarget);
+      await awaitStage(renderer.compileAsync(environment, camera));
+      initialization.environmentCompileMs = performance.now() - stageStarted;
+      renderer.setRenderTarget(null);
+      renderer.toneMapping = savedToneMapping;
+      await yieldInitialization();
+      stageStarted = performance.now();
       environmentTarget = generator.fromScene(environment, 0.04, 0.1, 100, { size: mobile ? 64 : 128 });
       scene.environment = environmentTarget.texture;
       scene.environmentIntensity = 1.12;
       scene.environmentRotation.set(0, 0.28, 0);
+      initialization.environmentMs = performance.now() - stageStarted;
     } finally {
+      if (!disposed) {
+        renderer.setRenderTarget(null);
+        renderer.toneMapping = savedToneMapping;
+      }
+      environmentCompileTarget.dispose();
       environment.dispose();
       generator.dispose();
     }
+    await yieldInitialization();
 
-    const source = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${BRAND_VIEWBOX}">${BRAND_PARTS.map(
-      ({ path, color }) => `<path fill="${color}" fill-rule="evenodd" d="${path}"/>`,
-    ).join('')}</svg>`;
-    const parsed = new SVGLoader().parse(source);
+    const geometryStarted = performance.now();
+    const paths = parseBrandPaths(THREE);
     const partColors = ['#b69a58', '#bfa66e', '#94aa89', '#c2a052'];
     contourMaterial = new THREE.LineBasicMaterial({
       color: '#d9bd81',
@@ -245,9 +372,10 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
     });
     materials.add(contourMaterial);
 
-    parsed.paths.forEach((path, index) => {
+    for (const [index, path] of paths.entries()) {
+      const partStarted = performance.now();
       const definition = BRAND_PARTS[index];
-      if (!definition) return;
+      if (!definition) continue;
       const depth = index === 3 ? 108 : index === 1 ? 60 : 78;
       const geometry = new THREE.ExtrudeGeometry(path.toShapes(), {
         depth,
@@ -306,7 +434,9 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
       group.add(contour);
       scene.add(group);
       parts.push({ name: definition.name, group, mesh, contour, pivot, geometry, material, samples, direction: PART_DIRECTION[index] });
-    });
+      initialization.geometryPartsMs.push(performance.now() - partStarted);
+      await yieldInitialization();
+    }
 
     if (particleCount > 0) {
       particlePositions = new Float32Array(particleCount * 3);
@@ -348,10 +478,43 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
       points.name = 'contour-constellation';
       scene.add(points);
     }
-    resize(cssSize, pixelRatio);
+    initialization.geometryMs = performance.now() - geometryStarted;
+    await yieldInitialization();
+    // All variants (including initially transparent contours/points) compile
+    // before the caller's first visible frame. No extra animation loop is used.
+    stageStarted = performance.now();
+    const compilation = renderer.compileAsync(scene, camera);
+    initialization.compileSubmitMs = performance.now() - stageStarted;
+    await awaitStage(compilation);
+    initialization.compileMs = performance.now() - stageStarted;
+    // PMREM's queued convolution must finish without a blocking gl.finish().
+    stageStarted = performance.now();
+    await waitForGpu();
+    initialization.gpuReadyMs = performance.now() - stageStarted;
+    stageStarted = performance.now();
+    renderer.setScissor(0, 0, 1, 1);
+    renderer.setScissorTest(true);
+    renderer.info.reset();
+    try {
+      renderer.render(scene, camera);
+      initialization.warmupDrawCalls = renderer.info.render.calls;
+      if (shaderDiagnostics.errors.length > 0) throw new Error('The narrative material could not be compiled.');
+    } finally {
+      renderer.setScissorTest(false);
+    }
+    renderer.clear();
+    initialization.warmupMs = performance.now() - stageStarted;
+    stageStarted = performance.now();
+    await waitForGpu();
+    initialization.warmupGpuMs = performance.now() - stageStarted;
+    initialization.totalMs = performance.now() - initializationStarted;
+    initializing = false;
+    clearTimeout(initializationDeadline);
+    signal?.removeEventListener('abort', handleInitializationAbort);
   } catch (error) {
     disposeResources(true);
-    notifyFailure('initialization', error);
+    if (error.name !== 'AbortError') notifyFailure(error.name === 'TimeoutError' ? 'initialization-timeout' : 'initialization', error);
+    initializing = false;
     throw error;
   }
 
@@ -452,6 +615,7 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
       lastTriangles = renderer.info.render.triangles;
       lastPointCount = renderer.info.render.points;
       lastFrameCpuMs = performance.now() - start;
+      if (frames === 1) firstFrameCpuMs = lastFrameCpuMs;
       return true;
     } catch (error) {
       disposeResources(true);
@@ -471,6 +635,8 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
       renderCalls,
       lastDrawCalls,
       lastFrameCpuMs: rounding(lastFrameCpuMs),
+      firstFrameCpuMs: rounding(firstFrameCpuMs),
+      initialization: Object.fromEntries(Object.entries(initialization).map(([key, value]) => [key, typeof value === 'number' ? rounding(value) : Array.isArray(value) ? value.map(rounding) : value])),
       frame: lastFrame,
       pose: lastPose,
       camera: {
@@ -499,6 +665,7 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
         gpuGeometries: disposed ? 0 : renderer.info.memory.geometries,
         gpuTextures: disposed ? 0 : renderer.info.memory.textures,
         programs: disposed ? 0 : renderer.info.programs.length,
+        pendingGpuWaits: pendingGpuWaits.size,
         triangles: disposed ? 0 : lastTriangles,
         points: disposed ? 0 : lastPointCount,
         particleCount: disposed ? 0 : particleCount,

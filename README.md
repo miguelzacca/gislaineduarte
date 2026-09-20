@@ -40,6 +40,7 @@ O desenvolvimento usa a porta 4321; preview de produção e testes usam 4323. Is
 - `src/motion/sculpture.js` e `shaders.js`: geometria extrudada e superfícies GLSL.
 - `src/motion/vector-narrative.js`: quatro poses SVG, percurso medido, ramos e recomposição.
 - `src/motion/transitions.js`: menu coreografado e transições multipágina.
+- `src/intro/`: introdução cinematográfica uma vez por sessão, integrada ao canvas da hero; [coreografia, sessão e revisão](docs/intro.md).
 - `src/entry-server.jsx`: ReactDOMServer gera o HTML completo; `entry-client.jsx` o hidrata.
 - `scripts/generate-pages.mjs`: usa o transformador SSR do Vite durante o build; escreve `.site/`.
 

@@ -73,6 +73,27 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     previous = target;
   }
   const timing = await page.evaluate(() => { window.motionLab.sampling = false; return window.motionLab; });
+  let uninterrupted = null;
+  if (!video) {
+    uninterrupted = await page.evaluate(() => new Promise(resolve => {
+      const durations = [];
+      const maximum = document.documentElement.scrollHeight - innerHeight;
+      let start, previous;
+      function drive(now) {
+        if (start === undefined) { start = now; previous = now; }
+        else durations.push(now - previous);
+        previous = now;
+        const progress = Math.min(1, (now - start) / 9000);
+        scrollTo({ top: maximum * progress, behavior: 'instant' });
+        if (progress < 1) requestAnimationFrame(drive);
+        else {
+          durations.sort((a, b) => a - b);
+          resolve({ samples: durations.length, medianMs: durations[Math.floor(durations.length * .5)], p95Ms: durations[Math.floor(durations.length * .95)], maximumMs: durations.at(-1), screenshotsDuringSample: 0 });
+        }
+      }
+      requestAnimationFrame(drive);
+    }));
+  }
   const beforeIdle = Number(await page.locator('[data-world]').getAttribute('data-render-count'));
   await page.waitForTimeout(1000);
   const idleFrames = Number(await page.locator('[data-world]').getAttribute('data-render-count')) - beforeIdle;
@@ -103,7 +124,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     heaps.push(await cdp.send('Runtime.getHeapUsage'));
   }
   const sorted = timing.cadence.filter(value => value > 0).sort((a, b) => a - b);
-  reports.push({ viewport, video, states, errors, idleFrames, longTasks: timing.tasks, cadence: { samples: sorted.length, medianMs: sorted[Math.floor(sorted.length * .5)], p95Ms: sorted[Math.floor(sorted.length * .95)] }, firstHeap, heaps, requests: [...new Set(requests)], note: 'Cadência RAF em Chromium/SwiftShader local, não FPS apresentado nem medição de aparelho físico. Gravação adiciona custo; rodar sem --video para medir.' });
+  reports.push({ viewport, video, states, errors, idleFrames, longTasks: timing.tasks, uninterrupted, cadence: { samples: sorted.length, medianMs: sorted[Math.floor(sorted.length * .5)], p95Ms: sorted[Math.floor(sorted.length * .95)] }, firstHeap, heaps, requests: [...new Set(requests)], note: 'Cadência RAF em Chromium/SwiftShader local, não FPS apresentado nem medição de aparelho físico. Gravação adiciona custo; rodar sem --video para medir.' });
   const movie = page.video();
   await context.close();
   if (movie) await rename(await movie.path(), path.join(output, `${viewport.width}-scroll.webm`));

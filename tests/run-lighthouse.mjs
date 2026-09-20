@@ -5,7 +5,8 @@ import lighthouse from 'lighthouse';
 import { chromium } from '@playwright/test';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4323';
-const output = path.resolve('tests/artifacts/lighthouse');
+const outputArgument = process.argv.find(argument => argument.startsWith('--output='));
+const output = path.resolve(outputArgument?.slice('--output='.length) || 'tests/artifacts/lighthouse');
 const mobileOnly = process.argv.includes('--mobile-only');
 const cases = [
   { name: 'home-mobile-1', route: '/', mobile: true },

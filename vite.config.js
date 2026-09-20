@@ -21,15 +21,16 @@ export default defineConfig({
   resolve: { alias: { '/src': resolve(root, 'src') } },
   server: { port: 4321, strictPort: true, fs: { allow: [root] } },
   preview: { port: 4323, strictPort: true },
+  worker: { format: 'es' },
   build: { outDir: resolve(root, 'dist'), emptyOutDir: true, assetsInlineLimit: 0, rolldownOptions: { input: existsSync(generated) ? await htmlEntries(generated) : [], output: { codeSplitting: { groups: [{ name: 'three-core', test: /three[\\/]build[\\/]three\.core\.js$/, priority: 20 }, { name: 'three-renderer', test: /three[\\/]build[\\/]three\.module\.js$/, priority: 10 }] } } } },
   plugins: [react(), {
     name: 'static-pages',
     configureServer(server) {
       if (server.config.server.middlewareMode) return;
       let regenerating = false;
-      server.watcher.add([resolve(root, 'src/views'), resolve(root, 'src/data'), resolve(root, 'src/components'), resolve(root, 'src/lib')]);
+      server.watcher.add(['src/views', 'src/data', 'src/components', 'src/lib', 'src/motion', 'src/intro', 'src/entry-server.jsx'].map(directory => resolve(root, directory)));
       server.watcher.on('change', file => {
-        if (!/[\\/]src[\\/](views|data|components|lib)[\\/]/.test(file) || regenerating) return;
+        if (!/[\\/]src[\\/](?:(views|data|components|lib|intro)[\\/]|entry-server\.jsx$)/.test(file) || regenerating) return;
         regenerating = true;
         execFile(process.execPath, ['--env-file-if-exists=.env', 'scripts/generate-pages.mjs'], { cwd: root }, error => { regenerating = false; if (error) console.error(error); else server.ws.send({ type: 'full-reload' }); });
       });

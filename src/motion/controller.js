@@ -1,6 +1,7 @@
 import { clamp, range, sampleMotion, selectQuality } from './model.js';
 import { createVectorNarrative } from './vector-narrative.js';
 import { initializeTransitions } from './transitions.js';
+import { acquireIntro } from '../intro/controller.js';
 
 export function initializeMotion() {
   const main = document.querySelector('main');
@@ -32,11 +33,12 @@ export function initializeMotion() {
   let dirty = true;
   let disposed = false;
   let runtime = null;
+  let creationAbort = null;
   let loading = false;
   let failed = false;
   let generation = 0;
   let assets = hero ? 0 : 1;
-  let intro = visited || reduced.matches || !hero ? 1 : 0;
+  let intro = 1;
   let renders = 0;
   let heavyFrames = 0;
   let base = 720;
@@ -44,6 +46,7 @@ export function initializeMotion() {
   let idleTask;
   let deadline;
   let debug;
+  const cinematic = hero ? acquireIntro(schedule) : null;
 
   const rect = element => {
     if (!element) return null;
@@ -56,6 +59,7 @@ export function initializeMotion() {
   }
   function destroySculpture() {
     generation++;
+    creationAbort?.abort(); creationAbort = null;
     runtime?.dispose(); runtime = null;
     world?.querySelector('[data-scene-canvas]')?.replaceChildren();
     if (sceneRoot) { delete sceneRoot.dataset.sceneReady; sceneRoot.dataset.sceneState = 'fallback'; }
@@ -83,6 +87,7 @@ export function initializeMotion() {
       pillars: pillars.map(rect), cards: cards.map(rect),
     };
     vectors?.measure();
+    cinematic?.run.measure();
     runtime?.resize(base, quality.dpr);
     if (!quality.webgl) destroySculpture();
   }
@@ -93,17 +98,20 @@ export function initializeMotion() {
     if (!canEnhance() || loading || runtime) return;
     loading = true;
     const version = generation;
+    const creation = new AbortController();
+    creationAbort = creation;
     sceneRoot.dataset.sceneState = 'loading';
     const canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true');
     try {
-      const { createSculpture } = await import('./sculpture.js');
+      // The transport keeps GPU preparation off this controller's only RAF.
+      const { createSculpture } = await import('./sculpture-client.js');
       if (version !== generation || !canEnhance()) return;
-      const created = await createSculpture({ canvas, quality, onContextLost: () => { if (disposed || version !== generation) return; failed = true; destroySculpture(); schedule(); } });
+      const created = await createSculpture({ canvas, quality, signal: creation.signal, onInvalidate: schedule, onContextLost: () => { if (disposed || version !== generation) return; failed = true; destroySculpture(); schedule(); } });
       if (version !== generation || !canEnhance()) { created?.dispose(); return; }
       if (!created) throw new Error('No WebGL context');
       runtime = created; world.querySelector('[data-scene-canvas]').replaceChildren(canvas); runtime.resize(base, quality.dpr); schedule();
     } catch { if (!disposed && version === generation) { failed = true; destroySculpture(); schedule(); } canvas.remove(); }
-    finally { loading = false; if (!runtime && canEnhance()) schedule(); }
+    finally { if (creationAbort === creation) creationAbort = null; loading = false; if (!runtime && canEnhance()) schedule(); }
   }
   function schedule() { if (!disposed && !frameId && !document.hidden) frameId = requestAnimationFrame(draw); }
   function invalidate() { dirty = true; schedule(); }
@@ -113,8 +121,9 @@ export function initializeMotion() {
     if (dirty) measure();
     header?.classList.toggle('is-scrolled', scrollY > 24);
     intro = reduced.matches || visited || scrollY > 50 ? 1 : Math.max(intro, Math.min(assets, range(birthTime, birthTime + 720, now)));
-    const frame = sampleMotion(layout, scrollY, { width: innerWidth, height: innerHeight }, reduced.matches);
+    let frame = sampleMotion(layout, scrollY, { width: innerWidth, height: innerHeight }, reduced.matches);
     frame.assembly = intro; frame.pointer = pointer;
+    if (cinematic?.run.active) frame = cinematic.run.tick(now, frame, { assetsReady: completed === jobs.length, webglReady: Boolean(runtime) && runtime.isReady?.() !== false, failed, quality });
     if (focusedService >= 0 && frame.scene === 'services') { frame.focus = focusedService ? 3 : 0; frame.energy = .8; }
     main.dataset.motionScene = frame.scene; main.dataset.motionProgress = frame.progress.toFixed(4); main.dataset.motionOpening = frame.opening.toFixed(4);
     if (birth) { birth.style.setProperty('--birth-progress', String(intro)); birth.style.opacity = intro >= 1 ? '0' : '1'; }
@@ -122,7 +131,8 @@ export function initializeMotion() {
     hero?.style.setProperty('--hero-exit', reduced.matches ? '0' : frame.heroExit.toFixed(4));
     hero?.style.setProperty('--portrait-birth', String(intro));
     if (portrait) portrait.style.setProperty('--portrait-depth', reduced.matches ? '0' : `${frame.heroExit * 36}px`);
-    portraitMask?.setAttribute('transform', `translate(.62 .31) scale(${(.0007 + intro * .0153).toFixed(5)}) translate(-650 -700)`);
+    const photoReveal = frame.intro ? frame.intro.handoff : intro;
+    portraitMask?.setAttribute('transform', `translate(.62 .31) scale(${(.0007 + photoReveal * .0153).toFixed(5)}) translate(-650 -700)`);
     if (storyPhoto) storyPhoto.style.setProperty('--story-progress', String(reduced.matches ? .5 : frame.storyProgress));
     cards.forEach((card, index) => { const box = layout.cards[index]; card.style.setProperty('--service-formation', String(reduced.matches ? 1 : range(box.top - innerHeight * .95, box.top - innerHeight * .32, scrollY))); });
     pillars.forEach((pillar, index) => { pillar.dataset.pillarActive = String(Math.round(frame.focus) === index && frame.scene === 'approach'); });
@@ -136,18 +146,21 @@ export function initializeMotion() {
       if (runtime && visible && !document.body.classList.contains('menu-open')) {
         const started = performance.now();
         try {
-          if (!runtime.render(frame)) { failed = true; destroySculpture(); return; }
+          if (!runtime.render(frame)) throw new Error('The scene is unavailable; continue with SVG.');
           renders++;
-          const cost = performance.now() - started;
+          const cost = Math.max(performance.now() - started, runtime.frameCost ?? 0);
           heavyFrames = cost > 28 ? heavyFrames + 1 : Math.max(0, heavyFrames - 1);
           if (heavyFrames > 12 && quality.dpr > .8) { quality.dpr = Math.max(.8, quality.dpr * .8); runtime.resize(base, quality.dpr); heavyFrames = 0; }
-          sceneRoot.dataset.sceneReady = 'true'; sceneRoot.dataset.sceneState = 'enhanced'; world.dataset.webglReady = 'true'; world.dataset.renderCount = String(renders); world.dataset.dpr = quality.dpr.toFixed(2);
+          if (runtime.isReady?.() !== false) {
+            sceneRoot.dataset.sceneReady = 'true'; sceneRoot.dataset.sceneState = 'enhanced'; world.dataset.webglReady = 'true'; world.dataset.renderCount = String(renders); world.dataset.dpr = quality.dpr.toFixed(2);
+          }
         } catch { failed = true; destroySculpture(); }
       }
       if (!runtime && assets >= 1 && visible) void enhance();
     }
     if (debug) debug.textContent = `${frame.scene} ${(frame.progress * 100).toFixed(0)}% · ${quality.mode} · DPR ${quality.dpr.toFixed(2)} · WebGL ${runtime ? 'ativo' : loading ? 'carregando' : 'SVG'}\n${JSON.stringify(runtime?.getStats() ?? {})}`;
     if (intro < assets && !reduced.matches && !visited) schedule();
+    if (cinematic?.run.active) schedule();
   }
   window.addEventListener('scroll', schedule, { passive: true, signal }); window.addEventListener('resize', invalidate, { passive: true, signal });
   reduced.addEventListener('change', invalidate, { signal }); reducedData.addEventListener('change', invalidate, { signal }); connection?.addEventListener?.('change', invalidate, { signal });
@@ -176,6 +189,7 @@ export function initializeMotion() {
   schedule();
   return () => {
     disposed = true; abort.abort(); clearTimeout(deadline);
+    cinematic?.release();
     if (idleTask && 'cancelIdleCallback' in window) cancelIdleCallback(idleTask);
     cancelAnimationFrame(frameId); destroySculpture(); resizeObserver.disconnect(); reveals.disconnect(); sectionObserver.disconnect(); vectors?.dispose(); cleanupTransitions(); debug?.remove();
     main.querySelectorAll('.will-reveal').forEach(element => element.classList.remove('will-reveal'));

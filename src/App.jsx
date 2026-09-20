@@ -5,6 +5,7 @@ import { resolveRoute } from './data/routes.js';
 import { initializeMotion } from './motion/controller.js';
 import { JourneySvg } from './components/MotionGraphics.jsx';
 import { BrandMark } from './components/Brand.jsx';
+import { IntroOverlay } from './components/IntroOverlay.jsx';
 
 const pages = { home: HomePage, about: AboutPage, services: ServicesPage, service: ServicePage, contact: ContactPage, privacy: PrivacyPage, 'not-found': NotFoundPage };
 
@@ -19,5 +20,5 @@ export default function App({ path }) {
     window.addEventListener('pageshow', show);
     return () => { hide(); window.removeEventListener('pagehide', hide); window.removeEventListener('pageshow', show); };
   }, [path]);
-  return <><a className="skip-link" href="#conteudo">Pular para o conteúdo</a><div className="route-veil" aria-hidden="true"><BrandMark mono /></div><Header path={route.path} /><main id="conteudo" tabIndex={-1}>{route.page === 'home' ? <JourneySvg /> : null}{route.crumbs ? <Breadcrumbs items={route.crumbs} /> : null}<Page service={route.service} index={route.index} /></main><Footer /></>;
+  return <>{route.page === 'home' ? <IntroOverlay /> : null}<a className="skip-link" href="#conteudo">Pular para o conteúdo</a><div className="route-veil" aria-hidden="true"><BrandMark mono /></div><Header path={route.path} /><main id="conteudo" tabIndex={-1}>{route.page === 'home' ? <JourneySvg /> : null}{route.crumbs ? <Breadcrumbs items={route.crumbs} /> : null}<Page service={route.service} index={route.index} /></main><Footer /></>;
 }

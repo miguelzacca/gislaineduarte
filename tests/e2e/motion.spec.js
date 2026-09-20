@@ -351,14 +351,26 @@ test('motion: perda real de contexto devolve SVG sem bloquear o contato', async 
   const failures = observeFailures(page);
   await openNarrative(page, { webgl: true });
   await approach(page, 0.4);
-  const lost = await page.locator('[data-world] canvas').evaluate(canvas => {
-    const extension = canvas.getContext('webgl2')?.getExtension('WEBGL_lose_context');
-    if (!extension) return false;
-    extension.loseContext();
-    return true;
-  });
-  expect(lost, 'Chromium de teste deve disponibilizar WEBGL_lose_context').toBe(true);
+  const canvas = page.locator('[data-world] canvas');
+  let rendererWorker;
+  if (await canvas.getAttribute('data-renderer-thread') === 'worker') {
+    rendererWorker = page.workers().find(worker => worker.url().includes('sculpture-worker'));
+    expect(rendererWorker, 'O canvas Offscreen deve pertencer ao worker real da escultura').toBeDefined();
+    await expect(canvas).toHaveAttribute('data-worker-ready', 'true');
+    await rendererWorker.evaluate(() => {
+      self.dispatchEvent(new MessageEvent('message', { data: { type: 'lose-context' } }));
+    });
+  } else {
+    const lost = await canvas.evaluate(element => {
+      const extension = element.getContext('webgl2')?.getExtension('WEBGL_lose_context');
+      if (!extension) return false;
+      extension.loseContext();
+      return true;
+    });
+    expect(lost, 'Chromium de teste deve disponibilizar WEBGL_lose_context').toBe(true);
+  }
   await vectorIsVisible(page);
+  if (rendererWorker) await expect.poll(() => page.workers().includes(rendererWorker)).toBe(false);
   const first = await snapshot(page);
   const next = await approach(page, 0.7);
   expect(changedParts(first, next)).toBeGreaterThanOrEqual(3);
