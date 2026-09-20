@@ -482,21 +482,157 @@ test('intro: fontes lentas e falhas de foto/3D respeitam deadline e não reabrem
   } finally { releaseFonts(); releaseImages(); }
 });
 
-test('intro: resize mantém um canvas e o fim limpa RAF, foco modal e bloqueio de scroll', async ({ page }) => {
+test('intro: ultrawide mantém a cobertura visual e devolve a seção seguinte ao terminar', async ({ page }) => {
+  await page.setViewportSize({ width: 2560, height: 1440 });
+  await startIntro(page, { saveData: true });
+  await waitProgress(page, 0.3);
+  const title = page.locator('#approach-title');
+  const bounds = await title.boundingBox();
+  expect(bounds.y).toBeLessThan(1440);
+  await expect(title).toHaveCSS('opacity', '0');
+  await expect(title).not.toHaveAttribute('aria-hidden');
+  await expect(page.locator('.intro-overlay__name')).toHaveCSS('opacity', '1');
+  await assertReleased(page);
+  await title.scrollIntoViewIfNeeded();
+  await expect(title).toHaveCSS('opacity', '1');
+  await assertNoHorizontalOverflow(page);
+});
+
+test('intro: resize mantém um canvas e o fim limpa RAF, foco modal e bloqueio de scroll', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   const failures = observeFailures(page);
-  await startIntro(page);
-  await waitProgress(page, 0.2);
-  await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.locator('[data-intro-overlay]')).toBeVisible();
-  await assertNoHorizontalOverflow(page);
-  await waitProgress(page, 0.45);
-  await page.setViewportSize({ width: 768, height: 500 });
-  await expect(page.locator('[data-intro-overlay]')).toBeVisible();
-  await assertNoHorizontalOverflow(page);
+  let completeResizes;
+  let rejectResizes;
+  const resizesComplete = new Promise((resolve, reject) => { completeResizes = resolve; rejectResizes = reject; });
+  await page.exposeFunction('__giResizeIntroViewport', async width => {
+    try {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 500 });
+      if (width === 768) completeResizes();
+    } catch (error) { rejectResizes(error); }
+  });
+  await page.addInitScript(() => {
+    const audit = { resizes: [], qualities: [], workers: [], canvases: [], factory: [] };
+    window.__giIntroResizeAudit = audit;
+    let workerSequence = 0;
+    let canvasSequence = 0;
+    const NativeWorker = window.Worker;
+    if (typeof NativeWorker === 'function') window.Worker = new Proxy(NativeWorker, {
+      construct(Target, args, newTarget) {
+        const worker = Reflect.construct(Target, args, newTarget);
+        if (!String(args[0]).includes('sculpture-worker')) return worker;
+        const id = ++workerSequence;
+        const record = (type, details = {}) => audit.workers.push({ at: performance.now(), id, type, ...details });
+        record('created', { url: String(args[0]) });
+        let acknowledged = false;
+        worker.addEventListener('message', event => {
+          const message = event.data;
+          if (!message) return;
+          if (['available', 'initialized', 'failure', 'disposed'].includes(message.type)) {
+            record(message.type, { supported: message.supported, reason: message.reason, error: message.error, initialization: message.stats?.initialization });
+          } else if (message.type === 'rendered' && !acknowledged) {
+            acknowledged = true;
+            record('first-ack', { metadata: message.metadata });
+          }
+        });
+        worker.addEventListener('error', event => record('error', { message: event.message }));
+        const postMessage = worker.postMessage;
+        worker.postMessage = function (message, ...options) {
+          if (['initialize', 'dispose'].includes(message?.type)) record(`send-${message.type}`, { quality: message.quality });
+          return Reflect.apply(postMessage, this, [message, ...options]);
+        };
+        const terminate = worker.terminate;
+        worker.terminate = function () { record('terminate'); return Reflect.apply(terminate, this, []); };
+        return worker;
+      },
+    });
+    const createElement = document.createElement;
+    document.createElement = function (name, ...options) {
+      const element = Reflect.apply(createElement, this, [name, ...options]);
+      if (String(name).toLowerCase() === 'canvas') {
+        const id = ++canvasSequence;
+        new MutationObserver(() => audit.canvases.push({
+          at: performance.now(), id, connected: element.isConnected,
+          state: element.dataset.rendererState, ready: element.dataset.workerReady,
+          width: element.width, height: element.height,
+        })).observe(element, { attributes: true, attributeFilter: ['data-renderer-state', 'data-worker-ready'] });
+      }
+      return element;
+    };
+    const read = () => {
+      const overlay = document.querySelector('[data-intro-overlay]');
+      if (!overlay) return null;
+      const bounds = overlay.getBoundingClientRect();
+      const style = getComputedStyle(overlay);
+      return {
+        at: performance.now(), width: innerWidth, height: innerHeight,
+        state: document.documentElement.dataset.introState,
+        scene: document.querySelector('main')?.dataset.motionScene,
+        progress: Number(overlay.dataset.progress || 0),
+        visible: bounds.width > 0 && bounds.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
+        quality: document.documentElement.dataset.motionQuality,
+        worldSize: Number.parseFloat(document.querySelector('[data-world]')?.style.width || '0'),
+        canvases: document.querySelectorAll('[data-world] canvas').length,
+        documentWidth: document.documentElement.scrollWidth, bodyWidth: document.body.scrollWidth,
+        clipped: [...document.querySelectorAll('main h1, main h2, main h3, main summary')].flatMap(element => {
+          const rect = element.getBoundingClientRect();
+          if (!rect.width || getComputedStyle(element).visibility === 'hidden') return [];
+          return rect.left < -1 || rect.right > document.documentElement.clientWidth + 1
+            ? [{ text: element.textContent?.trim().slice(0, 100), left: rect.left, right: rect.right }]
+            : [];
+        }),
+      };
+    };
+    addEventListener('resize', () => {
+      const entry = read();
+      if (entry) audit.resizes.push(entry);
+    }, { passive: true });
+    let requestedMobile = false;
+    let requestedTablet = false;
+    new MutationObserver(records => {
+      const entry = read();
+      if (!entry) return;
+      if (records.some(record => record.attributeName === 'data-motion-quality')) audit.qualities.push(entry);
+      if (records.some(record => record.attributeName === 'data-scene-state')) {
+        audit.factory.push({ at: performance.now(), state: document.querySelector('[data-brand-scene]')?.dataset.sceneState });
+      }
+      if (entry.state !== 'playing' || entry.scene !== 'intro') return;
+      if (!requestedMobile) {
+        requestedMobile = true;
+        void window.__giResizeIntroViewport(390);
+      } else if (entry.width === 390 && entry.quality === 'mobile' && !requestedTablet) {
+        requestedTablet = true;
+        void window.__giResizeIntroViewport(768);
+      }
+    }).observe(document, { subtree: true, attributes: true, attributeFilter: ['data-motion-quality', 'data-intro-state', 'data-scene-state'] });
+  });
+  await installProbe(page);
+  await Promise.all([page.goto('/', { waitUntil: 'domcontentloaded' }), resizesComplete]);
   await assertReleased(page);
+  const resizeAudit = await page.evaluate(() => window.__giIntroResizeAudit);
+  await testInfo.attach('intro-resizes-no-documento.json', { body: JSON.stringify(resizeAudit, null, 2), contentType: 'application/json' });
+  for (const [width, quality, worldSize] of [[390, 'mobile', 440], [768, 'full', 720]]) {
+    const event = resizeAudit.resizes.find(entry => entry.width === width);
+    expect(event, `Resize real em ${width}px precisa ocorrer durante a abertura`).toBeDefined();
+    expect(event.state).toBe('playing');
+    expect(event.scene).toBe('intro');
+    expect(event.progress).toBeLessThan(1);
+    expect(event.visible).toBe(true);
+    const measured = resizeAudit.qualities.find(entry => entry.width === width && entry.quality === quality);
+    expect(measured, `A qualidade deve ser recalculada para ${quality} em ${width}px`).toBeDefined();
+    expect(measured.state).toBe('playing');
+    expect(measured.worldSize).toBe(worldSize);
+    expect(measured.canvases).toBeLessThanOrEqual(1);
+    expect(measured.documentWidth).toBeLessThanOrEqual(width + 1);
+    expect(measured.bodyWidth).toBeLessThanOrEqual(width + 1);
+    expect(measured.clipped, `Texto e controles não podem ser cortados em ${width}px`).toEqual([]);
+  }
   await settleLayout(page);
-  await expect(page.locator('[data-world]')).toHaveAttribute('data-webgl-ready', 'true', { timeout: 10_000 });
+  try {
+    await expect(page.locator('[data-world]')).toHaveAttribute('data-webgl-ready', 'true', { timeout: 10_000 });
+  } finally {
+    const factoryAudit = await page.evaluate(() => window.__giIntroResizeAudit);
+    await testInfo.attach('intro-fabrica-gpu.json', { body: JSON.stringify(factoryAudit, null, 2), contentType: 'application/json' });
+  }
   await expect(page.locator('[data-world] canvas')).toHaveCount(1);
   await page.waitForTimeout(350);
   const before = await page.evaluate(() => ({ raf: window.__giIntroAudit.rafRequested, rendered: document.querySelector('[data-world]').dataset.renderCount }));

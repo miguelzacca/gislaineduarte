@@ -8,13 +8,18 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4323';
 const outputArgument = process.argv.find(argument => argument.startsWith('--output='));
 const output = path.resolve(outputArgument?.slice('--output='.length) || 'tests/artifacts/lighthouse');
 const mobileOnly = process.argv.includes('--mobile-only');
+const saveTrace = process.argv.includes('--trace');
+const completeIntro = process.argv.includes('--complete-intro');
+const sampleArgument = process.argv.find(argument => argument.startsWith('--samples='));
+const sampleCount = sampleArgument ? Number(sampleArgument.slice('--samples='.length)) : 3;
+if (!Number.isInteger(sampleCount) || sampleCount < 1 || sampleCount > 3) throw new Error('--samples aceita 1, 2 ou 3.');
 const cases = [
   { name: 'home-mobile-1', route: '/', mobile: true },
   { name: 'home-mobile-2', route: '/', mobile: true },
   { name: 'home-mobile-3', route: '/', mobile: true },
   { name: 'home-desktop', route: '/', mobile: false },
   { name: 'consulta-mobile', route: '/atendimentos/consulta-nutricional/', mobile: true },
-].filter((run) => !mobileOnly || run.name.startsWith('home-mobile'));
+].filter((run) => (!mobileOnly || run.name.startsWith('home-mobile')) && (!run.name.startsWith('home-mobile') || Number(run.name.at(-1)) <= sampleCount));
 
 async function freePort() {
   const server = createServer();
@@ -32,6 +37,7 @@ for (const run of cases) {
   try {
     console.log(`Lighthouse ${run.name}…`);
     const flags = { port, output: ['html', 'json'], logLevel: 'error', onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'] };
+    if (completeIntro) { flags.pauseAfterLoadMs = 7500; flags.pauseAfterFcpMs = 7500; }
     if (!run.mobile) {
       flags.formFactor = 'desktop';
       flags.screenEmulation = { mobile: false, width: 1440, height: 1000, deviceScaleFactor: 1, disabled: false };
@@ -41,6 +47,7 @@ for (const run of cases) {
     if (!result) throw new Error('Lighthouse não retornou resultado.');
     await writeFile(path.join(output, `${run.name}.html`), result.report[0]);
     await writeFile(path.join(output, `${run.name}.json`), result.report[1]);
+    if (saveTrace) await writeFile(path.join(output, `${run.name}.trace.json`), JSON.stringify(result.artifacts.Trace));
     const { lhr } = result;
     if (lhr.runtimeError) throw new Error(`${lhr.runtimeError.code}: ${lhr.runtimeError.message}`);
     measurements.push({
@@ -73,7 +80,7 @@ const medianHomeMobile = {
   scores: Object.fromEntries(Object.keys(homeMobile[0].scores).map((key) => [key, median(homeMobile.map((run) => run.scores[key]))])),
   ...Object.fromEntries(['lcpMs', 'fcpMs', 'cls', 'tbtMs', 'speedIndexMs', 'transferBytes'].map((key) => [key, median(homeMobile.map((run) => run[key]))])),
 };
-const report = { generatedAt: new Date().toISOString(), environment: 'Laboratório local; rede e CPU simuladas pelo Lighthouse mobile.', fieldINP: null, note: 'TBT não é INP. Medianas calculadas separadamente para cada métrica. Dados reais de Core Web Vitals só podem ser observados após lançamento e tráfego suficiente.', medianHomeMobile, measurements };
+const report = { generatedAt: new Date().toISOString(), environment: 'Laboratório local; rede e CPU simuladas pelo Lighthouse mobile.', captureMode: completeIntro ? 'complete-intro: 7500 ms após load/FCP para incluir o handoff, sem alterar a animação' : 'Lighthouse padrão', fieldINP: null, note: 'TBT não é INP. Medianas calculadas separadamente para cada métrica. Dados reais de Core Web Vitals só podem ser observados após lançamento e tráfego suficiente.', medianHomeMobile, measurements };
 await writeFile(path.join(output, mobileOnly ? 'summary-mobile.json' : 'summary.json'), `${JSON.stringify(report, null, 2)}\n`);
 console.log(`Mediana mobile: ${medianHomeMobile.scores.performance}/100; LCP ${(medianHomeMobile.lcpMs / 1000).toFixed(2)} s; CLS ${medianHomeMobile.cls.toFixed(3)}; TBT ${medianHomeMobile.tbtMs.toFixed(0)} ms.`);
 console.log(`Relatórios: ${output}`);

@@ -2,6 +2,7 @@ import { readdir, readFile, stat, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { load } from 'cheerio';
+import { site } from '../src/data/site.js';
 
 const root = path.resolve('dist');
 const origin = 'https://gislaineduarte.com.br';
@@ -84,7 +85,9 @@ function inspectSchema(value, page, trail = 'JSON-LD') {
     check(String(value['@id']).startsWith(origin), `${page.route}: ID de entidade fora do domínio confirmado em ${trail}`);
   }
   if (types.includes('Person')) {
-    check(value.name === 'Gislaine Duarte', `${page.route}: Person com nome divergente`);
+    check(value.name === site.fullName, `${page.route}: Person com nome completo divergente`);
+    check(value.identifier?.propertyID === site.registrationDetails.council && value.identifier?.value === site.registrationDetails.number, `${page.route}: registro profissional divergente no JSON-LD`);
+    check(value.hasCredential?.name === site.registration, `${page.route}: credencial profissional ausente ou divergente`);
     if (value.jobTitle) check(/nutricionista/i.test(value.jobTitle), `${page.route}: profissão divergente`);
   }
   if (types.includes('Service')) {
@@ -102,7 +105,7 @@ function inspectSchema(value, page, trail = 'JSON-LD') {
       check(plainAnswer.length > 15 && page.bodyText.includes(plainAnswer), `${page.route}: resposta JSON-LD ausente ou diferente do HTML`);
     }
   }
-  const unconfirmedKeys = new Set(['aggregateRating', 'review', 'price', 'priceRange', 'address', 'geo', 'openingHours', 'openingHoursSpecification']);
+  const unconfirmedKeys = new Set(['aggregateRating', 'review', 'price', 'priceRange', 'address', 'geo', 'openingHours', 'openingHoursSpecification', 'taxID', 'vatID', 'birthDate', 'cpf']);
   for (const [key, child] of Object.entries(value)) {
     check(!unconfirmedKeys.has(key), `${page.route}: dado não confirmado no schema: ${key}`);
     if (key === 'telephone') check(String(child).replace(/\D/g, '') === confirmedPhone, `${page.route}: telefone do schema divergente`);
@@ -201,7 +204,10 @@ async function main() {
     check(!/lorem ipsum|\bTODO\b|orientação interna|dado pendente|conteúdo em breve/i.test(page.bodyText), `${route}: placeholder ou instrução interna visível`);
     check(!/consultoria\s+(?:nutricional\s+)?sem\s+consulta/i.test(page.bodyText), `${route}: serviço proibido presente`);
     check(!/\b(?:3|5|6|três|cinco|seis)\s*(?:ou\s*(?:3|5|6|três|cinco|seis)\s*)?meses\b/i.test(page.bodyText), `${route}: duração de ciclo não confirmada`);
-    check(!/desparasita[çc][ãa]o|resultados? garantidos?|CRN\s*[-–]?\s*[1-9]\s*[-/]/i.test(page.bodyText), `${route}: alegação ou credencial não confirmada`);
+    check(!/desparasita[çc][ãa]o|resultados? garantidos?/i.test(page.bodyText), `${route}: alegação não confirmada`);
+    const footerIdentity = normalize($('.site-footer .professional-identity').text());
+    check(footerIdentity.includes(site.fullName) && footerIdentity.includes(site.registration) && footerIdentity.includes(site.profession), `${route}: identificação profissional incompleta no rodapé`);
+    check(!/\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/.test(page.html), `${route}: documento pessoal exposto no HTML`);
     check($('form').length === 0, `${route}: formulário não previsto na coleta real`);
 
     const schemaNodes = $('script[type="application/ld+json"]').toArray();

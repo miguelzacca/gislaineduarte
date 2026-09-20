@@ -110,7 +110,8 @@ test('registro e formação não adicionam credenciais nem duração presumida',
   const about = await page.locator('main').innerText();
   expect(about).toMatch(/bacharel em nutrição/i);
   expect(about).toMatch(/(?:cursando|curso|em andamento)[\s\S]{0,130}(?:pós.graduação|nutrição estética)|pós.graduação[\s\S]{0,130}em andamento/i);
-  expect(about).not.toMatch(/CRN\s*[-–]?\s*[1-9]\s*[-/]/i);
+  expect(about).toContain('Gislaine Muller Duarte');
+  expect(about).toContain('CRN-10 nº 22562');
   await page.goto('/atendimentos/ciclos-de-acompanhamento/');
   const cycles = await page.locator('main').innerText();
   expect(cycles).not.toMatch(/\b(?:3|5|6|três|cinco|seis)\s*(?:ou\s*(?:3|5|6|três|cinco|seis)\s*)?meses\b/i);

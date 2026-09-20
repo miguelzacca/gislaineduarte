@@ -175,6 +175,12 @@ p + p { margin-top: 1.15rem; }
 .footer-top { display: grid; grid-template-columns: 1.2fr .65fr 1fr; gap: 9%; padding-block: 65px 50px; }
 .footer-brand .wordmark__name { font-size: 33px; }
 .footer-brand > p { max-width: 250px; color: #bac7b5; font-size: 11px; margin-top: 23px; }
+.professional-identity { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--color-line); width: fit-content; max-width: 100%; color: var(--forest); font-size: 12px; line-height: 1.7; }
+.professional-identity p { margin: 0; }
+.professional-identity .professional-identity__name { font-weight: 600; }
+.professional-identity strong { font-weight: 600; white-space: nowrap; }
+.professional-identity a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 11px; text-decoration: underline; text-underline-offset: 4px; }
+.footer-brand .professional-identity { border-color: var(--color-line-light); color: var(--ivory); }
 .footer-label { color: var(--gold-light); font-size: 9px; text-transform: uppercase; letter-spacing: .15em; margin-bottom: 20px; }
 .footer-links { display: flex; flex-direction: column; gap: 6px; font-size: 11px; }
 .footer-links a { min-height: 30px; width: fit-content; }

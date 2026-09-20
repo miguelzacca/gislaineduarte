@@ -16,7 +16,7 @@ export function buildLlms() {
   return [
     `# ${site.name} — ${site.profession}`,
     '',
-    '> Site institucional de Gislaine Duarte, nutricionista. Cuidado individualizado para mulheres e famílias, com foco em qualidade de vida.',
+    `> Site institucional de ${site.fullName}, nutricionista (${site.registration}), conhecida como ${site.name} e ${site.familiarName}. Cuidado individualizado para mulheres e famílias, com foco em qualidade de vida.`,
     '',
     '## Informações institucionais',
     '',

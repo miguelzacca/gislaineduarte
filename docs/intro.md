@@ -1,6 +1,6 @@
 # Introdução — de dentro para fora
 
-Rodada exclusivamente de introdução sobre Vite + React/JSX. Os quatro paths, a fotografia, a composição final da hero e o renderer são os mesmos do site. Conteúdo, dados profissionais, contato, serviços, URLs e metadados não foram reescritos.
+Introdução sobre Vite + React/JSX. Os quatro paths, a fotografia, a composição final da hero e o renderer são os mesmos do site. A intro preserva conteúdo, contato, serviços, URLs e metadados. A atualização posterior do nome completo e CRN, solicitada separadamente pelo usuário, está documentada em [content-audit.md](content-audit.md).
 
 ## Coreografia
 
@@ -28,12 +28,13 @@ A montagem absorve até 1200 ms adicionais de espera por fotografia, fontes e GP
 - `src/motion/brand-shapes.js`: leitura dos paths sem DOM; buffers geométricos conferidos contra o SVGLoader em 48 testes.
 - `src/motion/sculpture.js`: geometria real, compilação progressiva, GPU warmup, AbortSignal e descarte.
 - `src/motion/shaders.js`: shader existente de revelação altura/noise, Fresnel e faixa luminosa. A foto nunca é distorcida por ele.
+- `src/motion/native-transitions.js`: observador das transições entre documentos, instalado no head antes da hidratação e mantido na restauração do histórico.
 
 O renderer usa `compileAsync` e fences assíncronos finitos. Em navegadores com OffscreenCanvas, preparação de iluminação, geometria e renderização ocorrem em um worker. O controlador principal envia no máximo um frame em voo e mantém apenas o último solicitado. Não há RAF no worker nem loop em repouso. O ACK só publica a cena após a GPU completar o frame; metadados distinguem o frame apresentado do progresso solicitado. Timeout, cancelamento e perda de contexto encerram o worker e mantêm o SVG.
 
 O canvas da intro **não é duplicado**: ele se torna o canvas da hero. Ao pular ou terminar, a timeline/controle modal são encerrados; o renderer existente volta a operar sob demanda. Em navegação/unmount, a criação pendente é abortada e os recursos GPU são descartados. Sem OffscreenCanvas/Worker, o mesmo motor pode operar na thread principal, com orçamento de inicialização e fallback SVG; o custo pode ser maior nesse caminho de compatibilidade.
 
-A regressão também cobre o cancelamento normal de transições nativas ao ocultar o documento de saída. A promise `ready` é tratada especificamente para cancelamento/timeout, sem esconder outros erros. Referência: [ciclo de vida MPA no Chrome](https://developer.chrome.com/docs/web-platform/view-transitions/cross-document#the_pageswap_and_pagereveal_events).
+A regressão também cobre o cancelamento normal de transições nativas ao ocultar o documento de saída. O observador idempotente é instalado por script clássico no head, porque `pagereveal` pode anteceder a hidratação. Seus dois listeners pertencem ao documento, não à cena, e continuam válidos após `pagehide`/BFCache; não acumulam em replay de efeitos. A promise `ready` é tratada especificamente para cancelamento/timeout e opt-in desativado. Outros erros são reportados, sem filtros globais de console ou rejeições. Referência: [ciclo de vida MPA no Chrome](https://developer.chrome.com/docs/web-platform/view-transitions/cross-document#the_pageswap_and_pagereveal_events).
 
 ## Sessão
 
@@ -72,7 +73,41 @@ npm test -- --workers=1
 node tests/inspect-intro.mjs
 node tests/inspect-intro.mjs --video
 node tests/inspect-intro.mjs --performance
+node tests/inspect-intro-dev.mjs
 node tests/run-lighthouse.mjs --output=tests/artifacts/lighthouse-intro-worker
+node tests/run-lighthouse.mjs --mobile-only --complete-intro --trace --output=tests/artifacts/lighthouse-complete-intro
 ```
 
 Executar inspeção/Lighthouse separadamente de outras suítes de navegador. Os artefatos ficam em `tests/artifacts/`. Scores de Lighthouse, cadência RAF e heap medidos em emulação não equivalem a INP, FPS apresentado nem memória física de uma GPU de celular. Validação em aparelhos reais continua recomendada antes da publicação.
+
+## Evidências de 20/09/2026
+
+- 207 testes unitários aprovados: geometria, progresso, sessão, cleanup, qualidade, transições nativas e dados públicos profissionais.
+- Suíte completa de navegador: **83/83 aprovados**, em 6,5 minutos. Relatório `tests/artifacts/playwright-report/index.html`. Após ajustar o nome acessível do link do CRN, os 24 testes de identidade e acessibilidade foram executados novamente e passaram; relatório separado `tests/artifacts/final-label-report/index.html`.
+- A jornada real de reload, voltar/avançar e navegação entre serviços passou em três repetições após antecipar o observador de transições para o head. Relatório `tests/artifacts/playwright-history-guard-report/index.html`.
+- Chrome instalado, Vite em desenvolvimento: duas montagens reais do efeito StrictMode, primeiro AbortSignal encerrado, uma única reserva `playing`, um canvas, conclusão `seen` e nenhum erro. Arquivo `tests/artifacts/intro/dev-strict-review.json`.
+- Screenshots e sequência conferidos em 320, 375, 390, 430, 768, 1024, 1440 e 2560 px; correção adicional da cobertura ultrawide e espaçamento do símbolo em landscape. Artefatos `tests/artifacts/intro/`.
+- Os testes E2E comparam PNGs reais da GPU nas poses desmontada/recomposta e a câmera confirmada por ACK, não apenas atributos solicitados pela timeline. Incluem skip durante inicialização, contexto perdido, storage bloqueado, nova aba com opener, assets lentos, resize, teclado e ausência de WebGL/Worker.
+- Repetições de navegação e inicialização verificam que canvas/workers não se acumulam; no repouso, contadores de RAF/render param. Isso não substitui uma análise de memória de GPU em dispositivo físico.
+
+### Performance medida
+
+Lighthouse 13.5.0, build final de produção, mobile simulado, GPU por software, três amostras **incluindo a intro inteira e o handoff**. O runner espera 7500 ms após load/FCP para não terminar a coleta no meio da abertura; isso não altera a duração da animação:
+
+| Métrica | Resultado |
+| --- | --- |
+| Performance | 89 / 86 / 81; mediana **86** |
+| Acessibilidade / boas práticas / SEO | **100 / 100 / 100** nas três amostras |
+| LCP | mediana **2,484 s**; faixa 2,416–2,498 s |
+| CLS | mediana **0**; máximo 0,0017 |
+| TBT | mediana **375 ms** |
+
+Relatório final e traces: `tests/artifacts/lighthouse-complete-intro/summary-mobile.json`. A meta ideal de 90+ não foi atingida nessa medição integral. Não se removeu a sequência para elevar a nota.
+
+As rodadas padrão anteriores estão preservadas: mediana 95 em `lighthouse-intro-final/summary-mobile.json`, 83 em `lighthouse-delivery/summary-mobile.json` e uma amostra 89 em `lighthouse-native-trace/summary-mobile.json`. A revisão dos filmstrips mostrou que algumas dessas coletas terminavam com a intro ainda aberta; elas não substituem o resultado integral acima. A rodada inicial na main thread tinha mediana 62, antes de transferir a preparação de iluminação para o worker. Desktop 96 e consulta mobile 99 são medições anteriores registradas em `lighthouse-intro-worker/summary.json`, não novas medições do build final.
+
+Na análise do trace final, uma task de 75,764 ms consumiu somente 4,366 ms de CPU da thread; o callback de animação ocupou menos de 1 ms e o maior intervalo ocorreu antes do layout. Isso indica espera/desagendamento, mas não permite atribuir a causa especificamente à GPU. Não há evidência de PMREM ou renderização WebGL síncrona na main thread no caminho com worker. Os resultados de laboratório não prometem INP de campo nem fluidez em todo dispositivo.
+
+No Chrome local sem encoder de vídeo, a última revisão do build final completou em **5,65 s no desktop e 4,79 s no mobile**, sem erros. A cadência mediana dos callbacks foi 16,7 ms, com p95 de 33,4 ms no desktop e 17 ms no mobile; o consumo observado da main thread durante a revisão foi de 1,17 s e 1,57 s, respectivamente. Os contadores de renderização pararam no repouso. Dados: `tests/artifacts/intro/performance-review.json`. Esses intervalos de callbacks não equivalem a FPS efetivamente apresentado pela GPU.
+
+Com gravação de tela e GPU por software, a compilação pode demorar mais: a abertura usa o orçamento máximo de 6 s e continua pelo SVG se necessário. O vídeo não foi usado como medição de performance. O LCP mede o conteúdo atrás da cobertura; o tempo para liberação visual da intro é registrado separadamente, sem tratar os dois como equivalentes.

@@ -10,8 +10,9 @@ import {
 } from '../data/site.js';
 import { Arrow, Portrait, Button, TextLink } from './UI.jsx';
 import { BrandMark, BrandScene, PortraitReveal } from './Brand.jsx';
-import { ContactBand } from './Layout.jsx';
+import { ContactBand, ProfessionalIdentity } from './Layout.jsx';
 import { BirthMark } from './MotionGraphics.jsx';
+import { INTRO_KEY, INTRO_TAB_KEY } from '../intro/session.js';
 
 export function ServiceCards({ headingTag = 'h3' } = {}) {
   const Heading = headingTag;
@@ -173,6 +174,7 @@ export function AboutPage() {
           <p className="eyebrow eyebrow--gold">Minha história</p>
           <h1>{biography.title}</h1>
           <p className="page-hero__intro">Sou Gislaine Duarte.<br />Você também pode me chamar de <em>Nutri Gi.</em></p>
+          <ProfessionalIdentity />
         </div>
         <div className="story-art"><Portrait priority /></div>
       </section>
@@ -284,6 +286,7 @@ export function ContactPage() {
         <p className="eyebrow eyebrow--gold">Vamos conversar</p>
         <h1>Seu próximo passo<br />pode começar com<br /><em>uma conversa.</em></h1>
         <p className="page-hero__intro">Quero conhecer o seu momento. Fale comigo para saber mais sobre os atendimentos e solicitar um orçamento.</p>
+        <ProfessionalIdentity />
       </section>
       <section className="shell contact-page-grid">
         <div className="contact-card">
@@ -325,9 +328,11 @@ export function PrivacyPage() {
       <section className="shell privacy-layout">
         <div className="prose">
           <p className="privacy-date">Atualizada em 20 de setembro de 2026.</p>
+          <h2>Identificação profissional</h2>
+          <p>Este é o site profissional de {site.fullName}, {site.profession.toLowerCase()}, {site.registration}. O contato para questões sobre privacidade é <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.</p>
           <h2>Durante a navegação</h2>
           <p>Este site apresenta informações sobre Gislaine Duarte e seus atendimentos. Não há cadastro, formulário de saúde, área de pacientes ou compra dentro do site. Não instalamos ferramentas de publicidade, pixels de rastreamento ou cookies de análise.</p>
-          <p>Para reduzir a animação de abertura em visitas repetidas na mesma sessão, o navegador pode guardar uma preferência temporária chamada <code>gi-visited</code>. Ela fica no seu navegador e não é enviada a Gislaine.</p>
+          <p>Para não repetir a introdução na mesma aba, o navegador guarda temporariamente o estado da abertura em <code>{INTRO_KEY}</code> e um identificador aleatório da aba em <code>{INTRO_TAB_KEY}</code>. A preferência <code>gi-visited</code> também ajusta a apresentação em visitas repetidas. Esses registros ficam no armazenamento da sessão do navegador, não são enviados a Gislaine e não são usados para rastreamento.</p>
           <h2>Ao entrar em contato</h2>
           <p>Os botões de WhatsApp abrem um serviço externo, com uma mensagem que você pode revisar antes de enviar. Os links de e-mail abrem o aplicativo configurado no seu dispositivo. A abertura do link, por si só, não envia uma mensagem ou confirma um atendimento.</p>
           <p>Se você enviar uma mensagem, o canal escolhido receberá os dados que você decidir compartilhar. O funcionamento e o tratamento de dados nessas plataformas seguem também suas próprias políticas. Para o primeiro contato, prefira informações sobre o atendimento desejado; não é necessário enviar exames ou histórico de saúde.</p>

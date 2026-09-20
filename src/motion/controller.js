@@ -119,9 +119,12 @@ export function initializeMotion() {
     frameId = 0;
     if (disposed || document.hidden) return;
     if (dirty) measure();
-    header?.classList.toggle('is-scrolled', scrollY > 24);
-    intro = reduced.matches || visited || scrollY > 50 ? 1 : Math.max(intro, Math.min(assets, range(birthTime, birthTime + 720, now)));
-    let frame = sampleMotion(layout, scrollY, { width: innerWidth, height: innerHeight }, reduced.matches);
+    // Read the viewport once, before SVG/style writes invalidate layout.
+    const viewport = { width: innerWidth, height: innerHeight };
+    const position = scrollY;
+    header?.classList.toggle('is-scrolled', position > 24);
+    intro = reduced.matches || visited || position > 50 ? 1 : Math.max(intro, Math.min(assets, range(birthTime, birthTime + 720, now)));
+    let frame = sampleMotion(layout, position, viewport, reduced.matches);
     frame.assembly = intro; frame.pointer = pointer;
     if (cinematic?.run.active) frame = cinematic.run.tick(now, frame, { assetsReady: completed === jobs.length, webglReady: Boolean(runtime) && runtime.isReady?.() !== false, failed, quality });
     if (focusedService >= 0 && frame.scene === 'services') { frame.focus = focusedService ? 3 : 0; frame.energy = .8; }
@@ -134,11 +137,11 @@ export function initializeMotion() {
     const photoReveal = frame.intro ? frame.intro.handoff : intro;
     portraitMask?.setAttribute('transform', `translate(.62 .31) scale(${(.0007 + photoReveal * .0153).toFixed(5)}) translate(-650 -700)`);
     if (storyPhoto) storyPhoto.style.setProperty('--story-progress', String(reduced.matches ? .5 : frame.storyProgress));
-    cards.forEach((card, index) => { const box = layout.cards[index]; card.style.setProperty('--service-formation', String(reduced.matches ? 1 : range(box.top - innerHeight * .95, box.top - innerHeight * .32, scrollY))); });
+    cards.forEach((card, index) => { const box = layout.cards[index]; card.style.setProperty('--service-formation', String(reduced.matches ? 1 : range(box.top - viewport.height * .95, box.top - viewport.height * .32, position))); });
     pillars.forEach((pillar, index) => { pillar.dataset.pillarActive = String(Math.round(frame.focus) === index && frame.scene === 'approach'); });
     if (world) {
       const { x, y, size, opacity } = frame.world;
-      const visible = !reduced.matches && y + size / 2 > 0 && y - size / 2 < innerHeight;
+      const visible = !reduced.matches && y + size / 2 > 0 && y - size / 2 < viewport.height;
       world.style.transform = `translate3d(${(x - base / 2).toFixed(2)}px,${(y - base / 2).toFixed(2)}px,0) scale(${(size / base).toFixed(5)})`;
       world.style.opacity = visible ? String(opacity) : '0'; world.dataset.worldVisible = String(visible);
       world.dataset.cameraAzimuth = frame.camera.azimuth.toFixed(4); world.dataset.cameraDistance = frame.camera.distance.toFixed(4);

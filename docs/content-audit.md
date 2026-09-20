@@ -4,7 +4,9 @@ Fontes lidas integralmente: `briefing-site-gislaine-duarte (3).md` e `gislaine-d
 
 ## Fatos e dados configurados
 
-- Nome: Gislaine Duarte; profissão: nutricionista; forma próxima: Nutri Gi.
+- Nome profissional completo confirmado pelo usuário: Gislaine Muller Duarte. Marca: Gislaine Duarte; profissão: nutricionista; forma próxima: Nutri Gi.
+- Registro confirmado na conversa: CRN-10 nº 22562. O número e a região não foram inferidos a partir de telefone ou biografia.
+- CPF e data de nascimento não foram copiados para o repositório, frontend, metadados ou JSON-LD. Não são necessários à identificação profissional pública implementada.
 - Domínio informado diretamente pelo usuário: `https://gislaineduarte.com.br`.
 - WhatsApp final confirmado pelo usuário na conversa, substituindo o contato anterior: `47991913588`, normalizado como número brasileiro de 11 dígitos com DDD 47. Link internacional: `https://wa.me/5547991913588`. A normalização foi comunicada ao usuário.
 - E-mail confirmado pelo usuário: `duartegisarte@gmail.com`.
@@ -17,7 +19,7 @@ Os dados estão em `src/data/site.js`, módulo ESM usado pelo gerador de HTML. `
 ## Pendências da cliente
 
 1. Aprovação editorial final da biografia, abordagem e textos de serviço; o próprio briefing os qualifica como propostas.
-2. Região e identificação completa do CRN. O número recebido é 22562; `site.registration` continua `null` até confirmação. Não deduzir região pela origem gaúcha.
+2. Conferência final dos dados pela profissional antes de publicar. Nome completo e CRN-10 nº 22562 já foram confirmados pelo usuário; a situação cadastral não foi certificada pelo site.
 3. Denominação definitiva das duas formações em andamento.
 4. Duração dos ciclos: mensagem escrita informa 3 ou 5 meses; referência em vídeo menciona 3 ou 6 meses. Nenhuma duração aparece como oferta.
 5. Inclusões, frequência, quantidade de encontros, suporte, preços, pagamento e modalidades. Nenhum plano alimentar, exame ou avaliação instrumental foi presumido.
@@ -41,7 +43,7 @@ O FAQ usa as mesmas respostas exibidas na interface. Sua marcação melhora a es
 
 Referências técnicas consultadas: [Person](https://schema.org/Person), [Service](https://schema.org/Service) e [documentação de robots do Google](https://developers.google.com/search/docs/crawling-indexing/robots/intro).
 
-### Verificação realizada em 20 de setembro de 2026
+### Verificação inicial em 20 de setembro de 2026, anterior à confirmação do CRN
 
 - `node --check` passou nos três módulos JavaScript.
 - Asserções Node passaram para sete rotas únicas, contatos reais, mensagens contextuais por serviço, canonical sem parâmetros/fragmentos, omissão de CRN incompleto, arrays de entregas vazios, FAQ, sitemap, preview `noindex` e escaping de JSON-LD.
@@ -49,6 +51,16 @@ Referências técnicas consultadas: [Person](https://schema.org/Person), [Servic
 - [Google Rich Results Test](https://search.google.com/test/rich-results/result?id=yQPfzVEWxgRkVVNcuiz6OQ): o mesmo código retornou **1 item válido**, relativo a BreadcrumbList.
 
 Os testes externos acima validam o código gerado, não uma página já publicada nem a elegibilidade editorial para aparição na busca. Após integração, a auditoria local do build final confirmou que o grafo foi inserido corretamente e que perguntas, breadcrumbs e informações correspondentes permanecem visíveis no HTML. O telefone atualizado e o perfil social configurado também foram conferidos pelo audit.
+
+### Complemento de identificação profissional
+
+Após concluir a implementação da intro, o usuário autorizou atualizar os dados profissionais. O nome completo, profissão e `CRN-10 nº 22562` aparecem no rodapé de todas as páginas, em Sobre e em Contato. O rodapé contém um link para a consulta oficial de inscritos, não um selo de verificação ou uma afirmação de situação cadastral ativa.
+
+`Person.name` passa a usar o nome completo; `alternateName` preserva os nomes da marca. `identifier` é um `PropertyValue` restrito a conselho e número profissional. `hasCredential` descreve `EducationalOccupationalCredential` de categoria registro profissional, associada ao conselho real, sem alegar especialização, validade, data de emissão, titulação concluída ou vínculo com uma clínica. As URLs e os IDs existentes são preservados.
+
+Fontes oficiais consultadas: [Guia de comunicação do CRN-10, identificação profissional, pp. 13–15](https://crn10.org.br/wp-content/uploads/2026/08/As-midias-sociais-aliadas-dao-nutricionista.pdf), [consulta indicada pelo próprio conselho](https://crn10.org.br/busca-nutri/), [hasCredential](https://schema.org/hasCredential) e [EducationalOccupationalCredential](https://schema.org/EducationalOccupationalCredential). O nome, o número e a região são informações fornecidas pelo usuário, não dados certificados por esta auditoria. O guia foi usado para orientar a apresentação, não para declarar conformidade jurídica integral.
+
+O JSON-LD do build atualizado foi validado novamente em 20/09/2026 às 18:53 UTC pelo [Schema.org Validator](https://validator.schema.org/). Home e consulta nutricional retornaram **0 erros e 0 avisos**, incluindo os novos `PropertyValue` e `EducationalOccupationalCredential`. O resumo em `tests/artifacts/schema-professional-final.json` registra endpoint, hashes SHA256 dos blocos enviados e tipos reconhecidos. A validação usa o código do build local, não uma página publicada, e não verifica a situação cadastral da profissional.
 
 ## AEO e GEO
 
@@ -58,4 +70,4 @@ Perguntas naturais e respostas diretas usam HTML visível. Definições dos serv
 
 ## Limites de lançamento
 
-Os canais de contato estão confirmados e permitem pedidos contextuais de orçamento. O registro completo e a aprovação editorial permanecem pendentes; construir e testar o site não equivale a aprovação profissional ou autorização para deploy. Não publicar credenciais incompletas para preencher essa ausência.
+Os canais de contato e a identificação profissional estão confirmados pelo usuário. A aprovação editorial final permanece pendente; construir e testar o site não equivale a aprovação profissional ou autorização para deploy. Não acrescentar selos, endereços, especialidades ou outras credenciais não confirmadas.

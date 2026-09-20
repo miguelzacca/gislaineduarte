@@ -78,7 +78,9 @@ Celulares capazes mantêm 3D com DPR até 1,25; desktop até 1,5. Economia de da
 
 ## Publicação e pendências
 
-Antes do lançamento, a cliente precisa confirmar a identificação completa do CRN e aprovar os textos finais. Duração dos ciclos (divergência 3/5 versus 3/6 meses), encontros, inclusões, suporte, modalidades, preços e localização continuam omitidos. Materiais e artigos permanecem fora da interface até haver arquivos, destinos e revisão profissional aprovados. Detalhes em [docs/content-audit.md](docs/content-audit.md).
+A identificação profissional confirmada é **Gislaine Muller Duarte · Nutricionista · CRN-10 nº 22562**, centralizada em `src/data/site.js` e usada no rodapé, Sobre, Contato, privacidade e JSON-LD. “Gislaine Duarte” continua como marca. CPF e data de nascimento não integram o projeto público. O link do CRN leva à consulta oficial, sem alegar certificação ou situação cadastral verificada pelo site.
+
+Antes do lançamento, a cliente precisa aprovar os textos finais. Duração dos ciclos (divergência 3/5 versus 3/6 meses), encontros, inclusões, suporte, modalidades, preços e localização continuam omitidos. Materiais e artigos permanecem fora da interface até haver arquivos, destinos e revisão profissional aprovados. Detalhes em [docs/content-audit.md](docs/content-audit.md).
 
 Não há formulário cenográfico, coleta de dados de saúde, analytics, cookies de publicidade, compra ou downloads simulados. A política de privacidade descreve os links externos e a preferência temporária de abertura guardada na sessão.
 

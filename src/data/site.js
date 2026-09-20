@@ -17,8 +17,19 @@ if (instagram) {
   }
 }
 
+const professionalRegistration = Object.freeze({
+  council: 'CRN-10',
+  number: '22562',
+  councilName: 'Conselho Regional de Nutrição da Décima Região',
+  councilUrl: 'https://crn10.org.br/',
+  directoryUrl: 'https://crn-sc.implanta.net.br/servicosOnline/Publico/ConsultaInscritos/',
+});
+const professionalName = 'Gislaine Muller Duarte';
+const registrationLabel = `${professionalRegistration.council} nº ${professionalRegistration.number}`;
+
 export const site = {
   name: 'Gislaine Duarte',
+  fullName: professionalName,
   familiarName: 'Nutri Gi',
   profession: 'Nutricionista',
   url: 'https://gislaineduarte.com.br',
@@ -26,11 +37,12 @@ export const site = {
   locale: 'pt_BR',
   title: 'Gislaine Duarte | Nutricionista para mulheres e famílias',
   description:
-    'Conheça Gislaine Duarte, nutricionista com foco em qualidade de vida, saúde intestinal e hábitos saudáveis. Saiba mais sobre consultas e acompanhamentos.',
+    `${professionalName}, nutricionista ${registrationLabel}. Ciência, escuta e cuidado individualizado para mulheres e famílias. Conheça os atendimentos.`,
   tagline: 'Meu foco é ajudar você a viver com qualidade de vida.',
   heroDescription:
     'Nutrição com ciência, escuta e cuidado individualizado para mulheres e famílias. Um olhar para a sua alimentação, sua rotina e o que qualidade de vida significa para você.',
-  registration: null,
+  registration: registrationLabel,
+  registrationDetails: professionalRegistration,
   portrait: '/images/gislaine-duarte-960.webp',
   socialImage: {
     src: '/images/og-gislaine-duarte.jpg',

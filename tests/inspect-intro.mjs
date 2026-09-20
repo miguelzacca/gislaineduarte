@@ -6,7 +6,8 @@ const origin = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4323';
 const output = path.resolve('tests/artifacts/intro');
 const recording = process.argv.includes('--video');
 const performanceOnly = process.argv.includes('--performance');
-const sizes = performanceOnly || recording ? [[1440, 1000], [390, 844]] : [[320, 568], [375, 812], [390, 844], [430, 932], [768, 1024], [1024, 768], [1440, 1000], [2560, 1440]];
+const selectedWidths = process.argv.find(argument => argument.startsWith('--widths='))?.slice('--widths='.length).split(',').map(Number);
+const sizes = (performanceOnly || recording ? [[1440, 1000], [390, 844]] : [[320, 568], [375, 812], [390, 844], [430, 932], [768, 1024], [1024, 768], [1440, 1000], [2560, 1440]]).filter(([width]) => !selectedWidths || selectedWidths.includes(width));
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--enable-unsafe-swiftshader'] });
 const reviews = [];
@@ -85,4 +86,4 @@ try {
     console.log(JSON.stringify({ width, height, duration: stats.stages.at(-1)?.at - stats.stages[0]?.at, cadence: stats.cadence, cpu: stats.mainThreadSeconds, idle: stats.idle, errors }));
   }
 } finally { await browser.close(); }
-await writeFile(path.join(output, recording ? 'video-review.json' : performanceOnly ? 'performance-review.json' : 'responsive-review.json'), JSON.stringify({ browser: 'Installed Google Chrome, local Windows, software GPU', generatedAt: new Date().toISOString(), reviews }, null, 2));
+await writeFile(path.join(output, recording ? 'video-review.json' : performanceOnly ? 'performance-review.json' : selectedWidths ? 'responsive-selected-review.json' : 'responsive-review.json'), JSON.stringify({ browser: 'Installed Google Chrome, local Windows, software GPU', generatedAt: new Date().toISOString(), reviews }, null, 2));

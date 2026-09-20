@@ -20,6 +20,8 @@ html[data-intro-state="pending"] .intro-overlay,
 html[data-intro-state="playing"] .intro-overlay,
 html[data-intro-state="leaving"] .intro-overlay { display: block; }
 .intro-playing .approach-art { z-index: 91; }
+.intro-playing .approach-art-inner > :not(.brand-scene),
+.intro-playing .brand-scene > :not(.motion-world) { opacity: 0 !important; pointer-events: none; }
 .intro-playing .motion-world__canvas,
 .intro-playing .motion-world__vector { transition: none; }
 .intro-playing .hero-sculpture-anchor .birth-mark { opacity: 0 !important; }
@@ -81,7 +83,7 @@ html[data-intro-state="leaving"] .intro-overlay { display: block; }
   bottom: max(16dvh, 94px);
   width: min(90%, 620px);
   text-align: center;
-  opacity: clamp(0, calc(1 - var(--intro-leaving) * 2), 1);
+  opacity: clamp(0, calc(1 - var(--intro-leaving) * 4), 1);
   transform: translate3d(-50%, calc((1 - var(--intro-built)) * 14px - var(--intro-leaving) * 20px), 0);
 }
 .intro-overlay__name { margin: 0; font-family: var(--serif, Georgia, serif); font-size: clamp(36px, 4.5vw, 64px); font-weight: 400; line-height: 1.08; letter-spacing: -.035em; }
@@ -129,6 +131,9 @@ html[data-intro-state="leaving"] .intro-overlay { display: block; }
   .intro-overlay__profession { margin-top: 10px; font-size: 9px; }
   .intro-overlay__signature { left: 20px; bottom: max(88px, env(safe-area-inset-bottom)); font-size: 17px; }
   .intro-overlay__skip { right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); }
+}
+@media (min-width: 768px) and (min-height: 541px) and (max-height: 850px) {
+  .intro-overlay__stage { top: 41%; width: min(52vw, 30dvh, 340px); }
 }
 @media (max-height: 540px) {
   .intro-overlay { --intro-distance: .5; }

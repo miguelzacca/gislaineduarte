@@ -45,8 +45,8 @@ export function buildJsonLd(
   const person = {
     '@type': 'Person',
     '@id': personId,
-    name: site.name,
-    alternateName: site.familiarName,
+    name: site.fullName,
+    alternateName: [site.name, site.familiarName],
     jobTitle: site.profession,
     url: `${site.url}/sobre/`,
     image: new URL(site.portrait, site.url).href,
@@ -54,7 +54,25 @@ export function buildJsonLd(
   if (site.contact.email) person.email = site.contact.email;
   if (site.contact.whatsapp) person.telephone = `+${site.contact.whatsapp}`;
   if (site.contact.instagram) person.sameAs = [site.contact.instagram];
-  if (site.registration) person.identifier = site.registration;
+  if (site.registration) {
+    person.identifier = {
+      '@type': 'PropertyValue',
+      propertyID: site.registrationDetails.council,
+      value: site.registrationDetails.number,
+      name: 'Registro profissional de nutricionista',
+    };
+    person.hasCredential = {
+      '@type': 'EducationalOccupationalCredential',
+      name: site.registration,
+      credentialCategory: 'Registro profissional',
+      identifier: person.identifier,
+      recognizedBy: {
+        '@type': 'Organization',
+        name: site.registrationDetails.councilName,
+        url: site.registrationDetails.councilUrl,
+      },
+    };
+  }
 
   const page = {
     '@type': visibleFaqs ? ['WebPage', 'FAQPage'] : 'WebPage',

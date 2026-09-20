@@ -1,4 +1,5 @@
 import { BRAND_PATHS } from '../lib/brand.js';
+import { installNativeTransitions } from './native-transitions.js';
 
 const revealed = 'ellipse(145% 125% at 62% 32%)';
 const curve = 'cubic-bezier(.22,.8,.2,1)';
@@ -41,20 +42,12 @@ export function playMenu(dialog, opening) {
 }
 
 export function initializeTransitions() {
+  installNativeTransitions(window);
   const abort = new AbortController();
   const { signal } = abort;
   const veil = document.querySelector('.route-veil');
   let departure = null;
   let departing = false;
-  const observeNativeTransition = event => {
-    // The outgoing ready promise rejects when its document is hidden (MPA API).
-    void event.viewTransition?.ready.catch(error => {
-      if (error.name === 'AbortError' || error.name === 'TimeoutError' || /ViewTransition opt-in disabled/.test(error.message)) return;
-      throw error;
-    });
-  };
-  window.addEventListener('pageswap', observeNativeTransition, { signal });
-  window.addEventListener('pagereveal', observeNativeTransition, { signal });
   function navigate(event) {
     const link = event.target.closest?.('a[href]');
     if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return;
