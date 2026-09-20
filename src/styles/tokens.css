@@ -1,0 +1,30 @@
+:root {
+  --forest: #173f35;
+  --leaf: #496b56;
+  --gold: #b69a58;
+  --gold-light: #d9bf85;
+  --gold-ink: #806624;
+  --sage: #a6b49a;
+  --ivory: #f5f1e8;
+  --ink: #102d26;
+  --paper: #edece2;
+  --white: #fffdf7;
+  --color-background: var(--ivory);
+  --color-text: var(--ink);
+  --color-muted: var(--leaf);
+  --color-accent: var(--gold-ink);
+  --color-line: rgb(23 63 53 / 19%);
+  --color-line-light: rgb(245 241 232 / 25%);
+  --serif: 'Cormorant Garamond Variable', 'Palatino Linotype', Georgia, serif;
+  --sans: 'Manrope Variable', system-ui, sans-serif;
+  --gutter: clamp(1.25rem, 5vw, 7rem);
+  --section-space: clamp(5rem, 9vw, 9rem);
+  --content-max: 1480px;
+  --ease-out: cubic-bezier(.2, .7, .2, 1);
+  --ease-inout: cubic-bezier(.65, 0, .35, 1);
+  --duration-fast: 180ms;
+  --duration-base: 420ms;
+  --duration-reveal: 850ms;
+  --button-bg: var(--forest);
+  --button-text: var(--ivory);
+}

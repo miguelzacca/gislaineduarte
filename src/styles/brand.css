@@ -1,0 +1,83 @@
+.brand-mark {
+  display: block;
+  flex: none;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.brand-mark--outline path {
+  stroke-width: var(--brand-stroke-width, 1.25px);
+}
+
+.brand-scene {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 1;
+  margin-inline: auto;
+  color: var(--gold, #b69a58);
+  contain: layout;
+}
+
+.brand-scene__orbits,
+.brand-scene__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.brand-scene__orbits {
+  stroke: currentColor;
+  stroke-width: 0.7;
+  opacity: 0.34;
+}
+
+.brand-scene__fallback {
+  position: absolute;
+  top: 16%;
+  left: 27%;
+  width: 46%;
+  height: 68%;
+  transform: rotate(-4deg);
+  transition: opacity 420ms ease;
+  pointer-events: none;
+}
+
+.brand-scene__fallback .brand-mark__part--pulp {
+  fill: #a6b49a;
+}
+
+.brand-scene__fallback .brand-mark__part--seed {
+  fill: #f5f1e8;
+}
+
+.brand-scene__canvas {
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+.brand-scene__canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+[data-scene-ready='true'] .brand-scene__canvas {
+  opacity: 1;
+}
+
+[data-scene-ready='true'] .brand-scene__fallback {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-scene__fallback,
+  .brand-scene__canvas {
+    transition: none;
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.site/
+.env
+.env.*
+!.env.example
+test-results/
+playwright-report/
+artifacts/
+tests/artifacts/
+.vercel/
+*.log
