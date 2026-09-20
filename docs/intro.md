@@ -32,9 +32,9 @@ A montagem absorve até 1200 ms adicionais de espera por fotografia, fontes e GP
 
 O renderer usa `compileAsync` e fences assíncronos finitos. Em navegadores com OffscreenCanvas, preparação de iluminação, geometria e renderização ocorrem em um worker. O controlador principal envia no máximo um frame em voo e mantém apenas o último solicitado. Não há RAF no worker nem loop em repouso. O ACK só publica a cena após a GPU completar o frame; metadados distinguem o frame apresentado do progresso solicitado. Timeout, cancelamento e perda de contexto encerram o worker e mantêm o SVG.
 
-O canvas da intro **não é duplicado**: ele se torna o canvas da hero. Ao pular ou terminar, a timeline/controle modal são encerrados; o renderer existente volta a operar sob demanda. Em navegação/unmount, a criação pendente é abortada e os recursos GPU são descartados. Sem OffscreenCanvas/Worker, o mesmo motor pode operar na thread principal, com orçamento de inicialização e fallback SVG; o custo pode ser maior nesse caminho de compatibilidade.
+O canvas da intro **não é duplicado**: ele se torna o canvas da hero. Ao pular ou terminar, a timeline/controle modal são encerrados; o renderer existente volta a operar sob demanda. Em navegação/unmount, a criação pendente é abortada e os recursos GPU são descartados. Sem OffscreenCanvas/Worker, o mobile usa diretamente a composição SVG; o fallback de renderer na thread principal fica restrito ao desktop.
 
-A regressão também cobre o cancelamento normal de transições nativas ao ocultar o documento de saída. O observador idempotente é instalado por script clássico no head, porque `pagereveal` pode anteceder a hidratação. Seus dois listeners pertencem ao documento, não à cena, e continuam válidos após `pagehide`/BFCache; não acumulam em replay de efeitos. A promise `ready` é tratada especificamente para cancelamento/timeout e opt-in desativado. Outros erros são reportados, sem filtros globais de console ou rejeições. Referência: [ciclo de vida MPA no Chrome](https://developer.chrome.com/docs/web-platform/view-transitions/cross-document#the_pageswap_and_pagereveal_events).
+A regressão também cobre o cancelamento normal de transições nativas ao ocultar o documento de saída. O observador idempotente é instalado por script clássico no head, porque `pagereveal` pode anteceder a hidratação. Seus dois listeners pertencem ao documento, não à cena, e continuam válidos após `pagehide`/BFCache; não acumulam em replay de efeitos. As promises `ready`, `updateCallbackDone` e `finished` são observadas para cancelamento/timeout e opt-in desativado. Outros erros são reportados, sem filtros globais de console ou rejeições. Referência: [ciclo de vida MPA no Chrome](https://developer.chrome.com/docs/web-platform/view-transitions/cross-document#the_pageswap_and_pagereveal_events).
 
 ## Sessão
 
@@ -59,7 +59,7 @@ location.assign('/');
 - O skip link original continua sendo o primeiro destino do teclado e permite ir diretamente ao conteúdo. Tab também alcança o botão da intro; elementos decorativos nunca recebem foco.
 - Overlay intercepta ponteiro e scroll simples, preservando pinch zoom. Compensa scrollbar e restaura estilos, posição original e foco. O conteúdo não recebe `aria-hidden` nem `inert`.
 - **High**: extrusão completa, câmera ampla, DPR até 1,5.
-- **Medium/mobile**: menos segmentos e pontos, DPR até 1,25, arco de câmera mais estável, dimensões/orientação medidas novamente.
+- **Medium/mobile**: menos segmentos e pontos, DPR até 1,25 nos aparelhos capazes. Capacidade desconhecida ou intermediária limita o DPR a 1, usa 24 pontos, geometria mais simples e iluminação mais leve. Frames lentos confirmados pela GPU reduzem o DPR progressivamente.
 - **Lite / sem WebGL**: paths, máscaras, planos e o mesmo handoff; sem importar Three em economia de dados, nem os chunks Three quando o contexto é indisponível.
 - **Reduced motion**: entrada direta na hero, símbolo completo, sessão marcada vista, sem espera por assets ou GPU.
 
@@ -111,3 +111,10 @@ Na análise do trace final, uma task de 75,764 ms consumiu somente 4,366 ms de C
 No Chrome local sem encoder de vídeo, a última revisão do build final completou em **5,65 s no desktop e 4,79 s no mobile**, sem erros. A cadência mediana dos callbacks foi 16,7 ms, com p95 de 33,4 ms no desktop e 17 ms no mobile; o consumo observado da main thread durante a revisão foi de 1,17 s e 1,57 s, respectivamente. Os contadores de renderização pararam no repouso. Dados: `tests/artifacts/intro/performance-review.json`. Esses intervalos de callbacks não equivalem a FPS efetivamente apresentado pela GPU.
 
 Com gravação de tela e GPU por software, a compilação pode demorar mais: a abertura usa o orçamento máximo de 6 s e continua pelo SVG se necessário. O vídeo não foi usado como medição de performance. O LCP mede o conteúdo atrás da cobertura; o tempo para liberação visual da intro é registrado separadamente, sem tratar os dois como equivalentes.
+
+### Ajuste pontual de fluidez
+
+- O mobile sem Worker/OffscreenCanvas preserva o desenho e o handoff SVG, sem compilar Three na thread principal. Inicialização e frame do worker têm deadlines menores no mobile; GPU lenta confirmada por ACK reduz o DPR. Apenas no mobile, um watchdog de frames libera a hero se a intro deixar de avançar por 1,1 s, além do deadline geral; o desktop conserva a sequência completa.
+- O percurso SVG mobile agora segue a margem de leitura, com curvas locais; guias ainda não desenhadas ficam ocultas. A recomposição de 36 curvas só é gerada quando começa a aparecer. Resize que muda apenas a altura visual do navegador não recompõe toda a geometria.
+- No desktop, a transição mantém o portal entre páginas sem redimensionar dois snapshots do símbolo, que causavam imagem borrada. A versão mobile da transição foi preservada.
+- Lighthouse 13.5.0, build de produção, três amostras mobile com intro completa: Performance **85 / 89 / 86** (mediana **86**), LCP mediano **2,528 s**, CLS mediano **0**, TBT mediano **359 ms**; Acessibilidade, Boas práticas e SEO **100** nas três. Artefatos em `tests/artifacts/lighthouse-motion-efficiency/summary-mobile.json`. Medição simulada, não substitui teste em aparelho físico fraco.

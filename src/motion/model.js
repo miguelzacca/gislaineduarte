@@ -3,11 +3,24 @@ export const mix = (start, end, progress) => start + (end - start) * clamp(progr
 export const range = (start, end, value) => clamp((value - start) / Math.max(.000001, end - start));
 export const ease = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
 
-export function selectQuality({ width = 1440, dpr = 1, reducedMotion = false, saveData = false, effectiveType = '4g', memory = 8, cores = 8 } = {}) {
+export function selectQuality({ width = 1440, dpr = 1, reducedMotion = false, saveData = false, effectiveType = '4g', memory, cores } = {}) {
   if (reducedMotion) return { mode: 'reduced', webgl: false, dpr: 1, segments: 0, particles: 0 };
   if (saveData || ['2g', 'slow-2g'].includes(effectiveType) || memory < 4 || cores < 4) return { mode: 'lite', webgl: false, dpr: 1, segments: 0, particles: 0 };
   const mobile = width < 768;
-  return { mode: mobile ? 'mobile' : 'full', webgl: true, dpr: Math.min(dpr, mobile ? 1.25 : 1.5), segments: mobile ? 8 : 16, particles: mobile ? 48 : 120 };
+  const cautiousMobile = mobile && (!Number.isFinite(memory) || !Number.isFinite(cores) || memory <= 4 || cores <= 4);
+  return { mode: mobile ? 'mobile' : 'full', webgl: true, dpr: Math.min(dpr, mobile ? cautiousMobile ? 1 : 1.25 : 1.5), segments: mobile ? cautiousMobile ? 6 : 8 : 16, particles: mobile ? cautiousMobile ? 24 : 48 : 120 };
+}
+
+export function sampleRenderBudget(previous, { sample, mainMs = 0, cpuMs = 0, gpuMs = 0 }) {
+  if (sample <= previous.lastSample) return previous;
+  const cost = Math.max(mainMs, cpuMs, gpuMs);
+  const heavyFrames = cost > 28 ? previous.heavyFrames + 1 : Math.max(0, previous.heavyFrames - 1);
+  const reduce = heavyFrames >= 4 && previous.dpr > .8;
+  return {
+    dpr: reduce ? Math.max(.8, previous.dpr * .8) : previous.dpr,
+    heavyFrames: reduce ? 0 : heavyFrames,
+    lastSample: sample,
+  };
 }
 
 function point(rect, x = .5, y = .5, size = 1) {

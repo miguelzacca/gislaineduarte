@@ -110,6 +110,27 @@ test('cancelamentos esperados de ready são tratados nos dois eventos', async t 
   assert.deepEqual(host.timers, []);
 });
 
+test('cancelamento completo do Chrome durante histórico não vira erro de página', async t => {
+  const host = browser();
+  const runtime = installNativeTransitions(host);
+  t.after(() => runtime.dispose());
+  rejectTransition(host, 'pagereveal', new Error('Transition was aborted because of invalid state. ViewTransition opt-in disabled'));
+  await nextTurn();
+  assert.deepEqual(host.reports, []);
+});
+
+test('cancelamento de finished também é observado quando a navegação é interrompida', async t => {
+  const host = browser();
+  const runtime = installNativeTransitions(host);
+  t.after(() => runtime.dispose());
+  host.emit('pagereveal', { viewTransition: {
+    ready: Promise.resolve(),
+    finished: Promise.reject(new DOMException('Transition was aborted because of invalid state. ViewTransition opt-in disabled', 'InvalidStateError')),
+  } });
+  await nextTurn();
+  assert.deepEqual(host.reports, []);
+});
+
 test('não oculta InvalidStateError distinto nem erro genérico com texto de cancelamento', async t => {
   const host = browser();
   const runtime = installNativeTransitions(host);

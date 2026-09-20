@@ -331,6 +331,13 @@ export function createVectorNarrative({ main, world, journey }) {
           ? point(clamp(contactSymbol.x + contactSymbol.width * 0.5, gutter + 48, width - gutter - 48), contactSymbol.y + contactSymbol.height * 0.55)
           : point(mobile ? rightRail - 48 : width * 0.86, contact.y + contact.height * 0.55);
     }
+    if (mobile) {
+      // The mobile thread stays in the outer gutter instead of sweeping across
+      // each full-width reading column. Its final bend still meets the mark.
+      for (const [name, inset] of [['approach', 17], ['story', 34], ['services', 20], ['serviceExit', 30]]) {
+        if (anchors[name]) anchors[name].x = safeX(width - inset);
+      }
+    }
     const ports = [anchors.hero, anchors.approach, anchors.story, anchors.services, anchors.serviceExit, anchors.contact].filter(Boolean);
     const curves = [];
     for (let index = 0; index < ports.length - 1; index += 1) {
@@ -339,7 +346,10 @@ export function createVectorNarrative({ main, world, journey }) {
       const span = Math.max(80, to.y - from.y);
       let controlA;
       let controlB;
-      if (to === anchors.approach) {
+      if (mobile) {
+        controlA = point(safeX(from.x + (to.x - from.x) * 0.35), from.y + span * 0.32);
+        controlB = point(safeX(to.x + (from.x - to.x) * 0.2), to.y - span * 0.28);
+      } else if (to === anchors.approach) {
         controlA = point(safeX(from.x + (mobile ? 74 : 210)), from.y + span * 0.4);
         controlB = point(mobile ? rightRail : safeX(to.x - 190), to.y - span * 0.32);
       } else if (to === anchors.story) {
@@ -370,13 +380,13 @@ export function createVectorNarrative({ main, world, journey }) {
         finalPort.y + (value.y - finalPort.y) * 0.2 - Math.sin(phase * Math.PI) * contourHeight * 0.5,
       );
     });
-    const branchGeometry = cards.map(({ box: card, symbol }, index) => {
+    const branchGeometry = cards.map(({ box: card, symbol }) => {
       const destination = symbol
         ? point(symbol.x + symbol.width * 0.5, symbol.y + symbol.height * 0.53)
         : point(card.right - Math.min(70, card.width * 0.2), card.y + Math.min(75, card.height * 0.17));
       const origin = anchors.services;
       const span = destination.y - origin.y;
-      const rail = mobile ? (index === 0 ? leftRail : rightRail) : destination.x;
+      const rail = mobile ? rightRail - 15 : destination.x;
       return {
         destination,
         d: curvePath([[origin, point(rail, origin.y + Math.max(28, span * 0.25)), point(rail, destination.y - Math.max(20, span * 0.22)), destination]]),
@@ -483,13 +493,15 @@ export function createVectorNarrative({ main, world, journey }) {
       const tail = reduced ? 1 : Number.isFinite(frame.recompose) ? recomposition : clamp((journeyProgress - 0.8) / 0.2);
       const front = alongPath(geometry.samples, geometry.length, journeyProgress);
       const morph = ease(tail);
-      const returnPoints = geometry.contour.map((value, index) => point(mix(geometry.unfolded[index].x, value.x, morph), mix(geometry.unfolded[index].y, value.y, morph)));
       attr(journeySvg, 'data-vector-reduced', String(reduced));
       attr(nodes.drawMask, 'stroke-dasharray', '1');
       attr(nodes.drawMask, 'stroke-dashoffset', (1 - journeyProgress).toFixed(5));
       attr(nodes.front, 'transform', `translate(${round(front.x)} ${round(front.y)})`);
       attr(nodes.front, 'opacity', reduced || journeyProgress < 0.006 || journeyProgress > 0.997 ? '0' : '1');
-      attr(nodes.return, 'd', smoothClosedPath(returnPoints));
+      if (tail > 0.001) {
+        const returnPoints = geometry.contour.map((value, index) => point(mix(geometry.unfolded[index].x, value.x, morph), mix(geometry.unfolded[index].y, value.y, morph)));
+        attr(nodes.return, 'd', smoothClosedPath(returnPoints));
+      }
       attr(nodes.return, 'stroke-dasharray', '1');
       attr(nodes.return, 'stroke-dashoffset', (1 - tail).toFixed(5));
       attr(nodes.return, 'opacity', (tail * 0.8).toFixed(3));

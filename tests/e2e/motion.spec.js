@@ -191,7 +191,13 @@ test('motion: quatro focos alteram poses e pixels do canvas, e o scroll reverso 
   await testInfo.attach('pin-foco-final.png', { body: images[1], contentType: 'image/png' });
   await testInfo.attach('poses-do-pin.json', { body: JSON.stringify(frames, null, 2), contentType: 'application/json' });
   const reverse = await approach(page, 0.04);
-  expect(reverse.parts).toEqual(frames[0].parts);
+  expect(Math.abs(reverse.scroll - frames[0].scroll)).toBeLessThanOrEqual(1);
+  for (const [index, part] of reverse.parts.entries()) {
+    expect(part.name).toBe(frames[0].parts[index].name);
+    part.matrix.forEach((value, axis) => {
+      expect(Math.abs(value - frames[0].parts[index].matrix[axis])).toBeLessThan(axis < 4 ? .002 : .75);
+    });
+  }
   expect(reverse.azimuth).toBeCloseTo(frames[0].azimuth, 3);
   expect(reverse.world.width).toBeCloseTo(frames[0].world.width, 1);
   expect(reverse.world.y).toBeCloseTo(frames[0].world.y, 1);

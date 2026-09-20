@@ -1,4 +1,4 @@
-import { clamp, range, sampleMotion, selectQuality } from './model.js';
+import { clamp, range, sampleMotion, sampleRenderBudget, selectQuality } from './model.js';
 import { createVectorNarrative } from './vector-narrative.js';
 import { initializeTransitions } from './transitions.js';
 import { acquireIntro } from '../intro/controller.js';
@@ -40,8 +40,10 @@ export function initializeMotion() {
   let assets = hero ? 0 : 1;
   let intro = 1;
   let renders = 0;
-  let heavyFrames = 0;
+  let renderBudget = { dpr: 1, heavyFrames: 0, lastSample: 0 };
   let base = 720;
+  let measuredWidth = 0;
+  let measuredMainHeight = 0;
   let focusedService = -1;
   let idleTask;
   let deadline;
@@ -55,10 +57,11 @@ export function initializeMotion() {
   };
   const queryRect = selector => rect(main.querySelector(selector));
   function readQuality() {
-    return selectQuality({ width: innerWidth, dpr: devicePixelRatio, reducedMotion: reduced.matches, saveData: reducedData.matches || connection?.saveData, effectiveType: connection?.effectiveType, memory: navigator.deviceMemory ?? 8, cores: navigator.hardwareConcurrency ?? 8 });
+    return selectQuality({ width: innerWidth, dpr: devicePixelRatio, reducedMotion: reduced.matches, saveData: reducedData.matches || connection?.saveData, effectiveType: connection?.effectiveType, memory: navigator.deviceMemory, cores: navigator.hardwareConcurrency });
   }
   function destroySculpture() {
     generation++;
+    renderBudget = { dpr: quality?.dpr ?? 1, heavyFrames: 0, lastSample: 0 };
     creationAbort?.abort(); creationAbort = null;
     runtime?.dispose(); runtime = null;
     world?.querySelector('[data-scene-canvas]')?.replaceChildren();
@@ -67,9 +70,13 @@ export function initializeMotion() {
   }
   function measure() {
     dirty = false;
+    measuredWidth = innerWidth;
+    measuredMainHeight = main.getBoundingClientRect().height;
     const next = readQuality();
     if (quality && next.mode !== quality.mode) destroySculpture();
+    if (runtime) next.dpr = Math.min(next.dpr, renderBudget.dpr);
     quality = next;
+    renderBudget.dpr = quality.dpr;
     document.documentElement.dataset.motionQuality = quality.mode;
     document.documentElement.classList.add('motion-enabled');
     base = innerWidth < 768 ? 440 : 720;
@@ -115,6 +122,10 @@ export function initializeMotion() {
   }
   function schedule() { if (!disposed && !frameId && !document.hidden) frameId = requestAnimationFrame(draw); }
   function invalidate() { dirty = true; schedule(); }
+  function resize() {
+    if (cinematic?.run.active || innerWidth !== measuredWidth || Math.abs(main.getBoundingClientRect().height - measuredMainHeight) > 1) invalidate();
+    else schedule();
+  }
   function draw(now) {
     frameId = 0;
     if (disposed || document.hidden) return;
@@ -151,9 +162,10 @@ export function initializeMotion() {
         try {
           if (!runtime.render(frame)) throw new Error('The scene is unavailable; continue with SVG.');
           renders++;
-          const cost = Math.max(performance.now() - started, runtime.frameCost ?? 0);
-          heavyFrames = cost > 28 ? heavyFrames + 1 : Math.max(0, heavyFrames - 1);
-          if (heavyFrames > 12 && quality.dpr > .8) { quality.dpr = Math.max(.8, quality.dpr * .8); runtime.resize(base, quality.dpr); heavyFrames = 0; }
+          const stats = runtime.getStats?.();
+          const sample = stats?.transport?.acknowledgments ?? stats?.frames ?? renders;
+          renderBudget = sampleRenderBudget(renderBudget, { sample, mainMs: performance.now() - started, cpuMs: stats?.lastFrameCpuMs, gpuMs: stats?.workerFrameGpuMs });
+          if (renderBudget.dpr !== quality.dpr) { quality.dpr = renderBudget.dpr; runtime.resize(base, quality.dpr); }
           if (runtime.isReady?.() !== false) {
             sceneRoot.dataset.sceneReady = 'true'; sceneRoot.dataset.sceneState = 'enhanced'; world.dataset.webglReady = 'true'; world.dataset.renderCount = String(renders); world.dataset.dpr = quality.dpr.toFixed(2);
           }
@@ -165,7 +177,7 @@ export function initializeMotion() {
     if (intro < assets && !reduced.matches && !visited) schedule();
     if (cinematic?.run.active) schedule();
   }
-  window.addEventListener('scroll', schedule, { passive: true, signal }); window.addEventListener('resize', invalidate, { passive: true, signal });
+  window.addEventListener('scroll', schedule, { passive: true, signal }); window.addEventListener('resize', resize, { passive: true, signal });
   reduced.addEventListener('change', invalidate, { signal }); reducedData.addEventListener('change', invalidate, { signal }); connection?.addEventListener?.('change', invalidate, { signal });
   document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelAnimationFrame(frameId); frameId = 0; } else invalidate(); }, { signal });
   document.addEventListener('pointermove', event => { if (event.pointerType === 'touch' || reduced.matches || !event.target.closest?.('.hero, .approach, .service-card')) return; pointer.x = clamp(event.clientX / innerWidth); pointer.y = clamp(event.clientY / innerHeight); schedule(); }, { passive: true, signal });

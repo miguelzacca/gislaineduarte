@@ -77,10 +77,11 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
   const mobile = mode === 'mobile';
   const segments = Math.round(clamp(numberOr(quality.segments, mobile ? 9 : 20), 6, mobile ? 14 : 28));
   const particleCount = Math.round(clamp(numberOr(quality.particles, mobile ? 56 : 192), 0, mobile ? 96 : 384));
+  const economical = mobile && segments <= 6;
   const dprLimit = mobile ? 1.25 : 1.5;
   const context = canvas.getContext('webgl2', {
     alpha: true,
-    antialias: true,
+    antialias: !economical,
     powerPreference: mobile ? 'low-power' : 'high-performance',
     failIfMajorPerformanceCaveat: false,
     preserveDrawingBuffer: false,
@@ -297,7 +298,7 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
     uniforms.uBrandGold.value = new THREE.Color('#e3c27c');
     await yieldInitialization();
     stageStarted = performance.now();
-    renderer = new THREE.WebGLRenderer({ canvas, context, alpha: true, antialias: true });
+    renderer = new THREE.WebGLRenderer({ canvas, context, alpha: true, antialias: !economical });
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -344,7 +345,7 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
       renderer.toneMapping = savedToneMapping;
       await yieldInitialization();
       stageStarted = performance.now();
-      environmentTarget = generator.fromScene(environment, 0.04, 0.1, 100, { size: mobile ? 64 : 128 });
+      environmentTarget = generator.fromScene(environment, 0.04, 0.1, 100, { size: economical ? 32 : mobile ? 64 : 128 });
       scene.environment = environmentTarget.texture;
       scene.environmentIntensity = 1.12;
       scene.environmentRotation.set(0, 0.28, 0);
@@ -661,7 +662,7 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
         geometries: geometries.size,
         materials: materials.size,
         environmentTargets: environmentTarget ? 1 : 0,
-        environmentResolution: mobile ? 64 : 128,
+        environmentResolution: economical ? 32 : mobile ? 64 : 128,
         gpuGeometries: disposed ? 0 : renderer.info.memory.geometries,
         gpuTextures: disposed ? 0 : renderer.info.memory.textures,
         programs: disposed ? 0 : renderer.info.programs.length,

@@ -5,13 +5,16 @@ export function installNativeTransitions(host) {
 
   function report(error) {
     if (error?.name === 'AbortError' || error?.name === 'TimeoutError' ||
-        (error?.name === 'InvalidStateError' && /ViewTransition opt-in disabled/.test(error.message))) return;
+        (error?.name === 'InvalidStateError' && /ViewTransition opt-in disabled/.test(error.message)) ||
+        error?.message === 'Transition was aborted because of invalid state. ViewTransition opt-in disabled') return;
     if (typeof host.reportError === 'function') host.reportError(error);
     else host.setTimeout(() => { throw error; }, 0);
   }
 
   function observe(event) {
-    void event.viewTransition?.ready.catch(report);
+    for (const phase of ['ready', 'updateCallbackDone', 'finished']) {
+      void event.viewTransition?.[phase]?.catch(report);
+    }
   }
 
   const runtime = {

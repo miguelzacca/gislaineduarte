@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { clamp, ease, mix, range, sampleMotion, selectQuality } from '../../src/motion/model.js';
+import { clamp, ease, mix, range, sampleMotion, sampleRenderBudget, selectQuality } from '../../src/motion/model.js';
 
 const viewport = Object.freeze({ width: 1440, height: 1000 });
 
@@ -137,7 +137,33 @@ describe('qualidade por capacidade e preferência', () => {
   test('APIs opcionais ausentes preservam uma decisão finita e utilizável', () => {
     const quality = selectQuality({ width: 390, memory: undefined, cores: undefined, effectiveType: undefined });
     assert.equal(quality.webgl, true);
+    assert.equal(quality.dpr, 1);
+    assert.equal(quality.particles, 24);
     assertFinite(quality, 'quality');
+  });
+
+  test('mobile intermediario conserva WebGL com custo menor', () => {
+    const quality = selectQuality({ width: 390, dpr: 3, memory: 4, cores: 4 });
+    assert.equal(quality.mode, 'mobile');
+    assert.equal(quality.webgl, true);
+    assert.equal(quality.dpr, 1);
+    assert.equal(quality.segments, 6);
+    assert.equal(quality.particles, 24);
+  });
+
+  test('DPR reage a quatro ACKs GPU lentos, nao a repeticao de um unico frame', () => {
+    let budget = { dpr: 1.25, heavyFrames: 0, lastSample: 0 };
+    for (let sample = 1; sample <= 3; sample += 1) {
+      budget = sampleRenderBudget(budget, { sample, mainMs: 2, cpuMs: 5, gpuMs: 39 });
+      assert.equal(budget.dpr, 1.25);
+    }
+    assert.equal(sampleRenderBudget(budget, { sample: 3, gpuMs: 999 }), budget);
+    budget = sampleRenderBudget(budget, { sample: 4, mainMs: 2, cpuMs: 5, gpuMs: 39 });
+    assert.equal(budget.dpr, 1);
+    assert.equal(budget.heavyFrames, 0);
+    for (let sample = 5; sample <= 9; sample += 1) budget = sampleRenderBudget(budget, { sample, gpuMs: 10 });
+    assert.equal(budget.dpr, 1);
+    assert.equal(budget.heavyFrames, 0);
   });
 });
 

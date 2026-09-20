@@ -31,6 +31,7 @@ function createRun(lease) {
   let skipVisible = false;
   let releaseGeneration = 0;
   let guard;
+  let frameGuard;
   let owners = 0;
   const callbacks = new Set();
 
@@ -62,10 +63,16 @@ function createRun(lease) {
     lease.complete();
     abort.abort();
     clearTimeout(guard);
+    clearTimeout(frameGuard);
     root.dataset.introState = 'seen';
     overlay.dataset.result = reason;
     overlay.dataset.phase = 'complete';
     overlay.style.setProperty('--intro-handoff', '1');
+    if (reason === 'stalled') {
+      document.querySelector('[data-portrait-mask-shape]')?.setAttribute?.('transform', 'translate(.62 .31) scale(.016) translate(-650 -700)');
+      const world = document.querySelector('[data-world]');
+      if (world) world.style.opacity = '0';
+    }
     document.body.classList.remove('intro-playing');
     root.style.overflow = originalStyle.rootOverflow;
     document.body.style.overflow = originalStyle.bodyOverflow;
@@ -93,6 +100,8 @@ function createRun(lease) {
   function tick(now, hero, { assetsReady, webglReady, failed, quality }) {
     if (done) return hero;
     if (reduced.matches) { finish('reduced-motion'); return hero; }
+    clearTimeout(frameGuard);
+    if (innerWidth < 768) frameGuard = setTimeout(() => finish('stalled'), 1100);
     const elapsed = now - start - hiddenTime;
     assetsReleased ||= assetsReady && (webglReady || failed || !quality.webgl);
     const clock = introClock(elapsed, assetsReleased, hold);
@@ -128,10 +137,11 @@ function createRun(lease) {
   overlay.addEventListener('touchmove', event => { if (event.touches.length === 1) event.preventDefault(); }, { passive: false, signal });
   reduced.addEventListener('change', () => { if (reduced.matches) finish('reduced-motion'); }, { signal });
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { hiddenAt = performance.now(); clearTimeout(guard); }
+    if (document.hidden) { hiddenAt = performance.now(); clearTimeout(guard); clearTimeout(frameGuard); }
     else {
       if (hiddenAt !== null) hiddenTime += performance.now() - hiddenAt;
       hiddenAt = null;
+      if (lastFrame && innerWidth < 768) { clearTimeout(frameGuard); frameGuard = setTimeout(() => finish('stalled'), 1100); }
       armGuard(); invalidate();
     }
   }, { signal });

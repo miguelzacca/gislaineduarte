@@ -382,7 +382,7 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
       const after = h.tick(handle, 22050);
       assert.deepEqual(after, before);
       assert.equal(h.timers.size, 1);
-      assert.equal([...h.timers.values()][0].at, 26600);
+      assert.ok([...h.timers.values()].some(timer => timer.at === 26600));
       assertHeroEndpoint(h.tick(handle, 24800));
       assert.equal(handle.run.active, false);
     });
@@ -514,6 +514,21 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
       assert.equal(h.overlay.dataset.result, 'complete');
       assert.equal(h.listenerCount(), 0);
       assert.equal(h.timers.size, 0);
+    });
+  });
+
+  test('interrupcao de frames apos o inicio libera a hero sem esperar o deadline geral', async () => {
+    await withController({ width: 390 }, async h => {
+      const handle = h.acquire();
+      h.tick(handle, 100);
+      h.advance(1199);
+      assert.equal(handle.run.active, true);
+      h.advance(1200);
+      assert.equal(handle.run.active, false);
+      assert.equal(h.overlay.dataset.result, 'stalled');
+      assert.equal(h.root.style.overflow, '');
+      assert.equal(h.timers.size, 0);
+      assert.equal(h.storageValues.get(INTRO_KEY), 'seen');
     });
   });
 

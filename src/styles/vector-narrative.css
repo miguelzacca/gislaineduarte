@@ -128,7 +128,9 @@
   .world-mark__outline { stroke-width: 1.5px; }
   .vector-journey__ink,
   .vector-journey__branch { stroke-width: 1.6px; }
-  .vector-journey__guide { opacity: .14; stroke-width: 1.5px; }
+  .vector-journey__guide,
+  .vector-journey__branch-guide { display: none; }
+  .vector-journey__ink { opacity: .7; }
   .menu-weave { right: -24%; bottom: -3%; opacity: .17; }
 }
 @media (prefers-reduced-motion: reduce) {

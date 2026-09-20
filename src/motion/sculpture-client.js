@@ -52,7 +52,7 @@ export async function createSculpture({ canvas, quality = {}, signal, onContextL
   if (signal?.aborted) throw abortError();
   const options = { canvas, quality, signal, onContextLost, onInvalidate };
   if (typeof Worker !== 'function' || typeof OffscreenCanvas !== 'function' || typeof canvas.transferControlToOffscreen !== 'function') {
-    return createMainThread(options);
+    return quality.mode === 'mobile' ? null : createMainThread(options);
   }
 
   const started = performance.now();
@@ -62,7 +62,7 @@ export async function createSculpture({ canvas, quality = {}, signal, onContextL
   try {
     worker = new Worker(new URL('./sculpture-worker.js', import.meta.url), { type: 'module', name: 'gislaine-brand-sculpture' });
   } catch {
-    return createMainThread(options);
+    return quality.mode === 'mobile' ? null : createMainThread(options);
   }
 
   let disposed = false;
@@ -147,7 +147,7 @@ export async function createSculpture({ canvas, quality = {}, signal, onContextL
         size: inFlight.size, dpr: inFlight.dpr,
       });
       posted += 1;
-      frameDeadline = setTimeout(() => fail('worker-frame-timeout', new Error('The sculpture worker did not acknowledge its frame.')), 3000);
+      frameDeadline = setTimeout(() => fail('worker-frame-timeout', new Error('The sculpture worker did not acknowledge its frame.')), mobile ? 1200 : 3000);
     } catch (error) { fail('worker-message', error); }
   }
 
@@ -184,7 +184,7 @@ export async function createSculpture({ canvas, quality = {}, signal, onContextL
   }
 
   let initializationMs = 0;
-  const api = { render, resize, getStats, isReady: () => ready && !disposed, dispose, get frameCost() { return stats?.lastFrameCpuMs ?? 0; } };
+  const api = { render, resize, getStats, isReady: () => ready && !disposed, dispose };
 
   function receive(event) {
     const message = event.data;
@@ -199,7 +199,7 @@ export async function createSculpture({ canvas, quality = {}, signal, onContextL
         terminate();
         disposed = true;
         settled = true;
-        createMainThread(options).then(resolveCreation, rejectCreation);
+        (mobile ? Promise.resolve(null) : createMainThread(options)).then(resolveCreation, rejectCreation);
         return;
       }
       try {
@@ -267,7 +267,7 @@ export async function createSculpture({ canvas, quality = {}, signal, onContextL
       const error = new Error('Sculpture initialization timed out; retain the SVG composition.');
       error.name = 'TimeoutError';
       fail('initialization-timeout', error);
-    }, Math.max(0, INITIALIZATION_TIMEOUT - (performance.now() - started)));
+    }, Math.max(0, (mobile ? 2600 : INITIALIZATION_TIMEOUT) - (performance.now() - started)));
     if (signal?.aborted) cancelCreation();
   });
 }

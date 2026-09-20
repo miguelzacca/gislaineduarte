@@ -91,6 +91,18 @@ html::view-transition-group(root) { background: var(--forest); }
 html::view-transition-group(consultation-seed), html::view-transition-group(cycles-seed) { animation-duration: 780ms; animation-timing-function: var(--ease-out); }
 @keyframes spatial-exit { to { transform: perspective(1400px) translate3d(-3%, -1%, -160px) rotateY(7deg); clip-path: ellipse(85% 100% at 35% 50%); } }
 @keyframes seed-reveal { from { clip-path: ellipse(0% 0% at 72% 52%); transform: perspective(1400px) translate3d(3%, 0, 80px) rotateY(-5deg); } to { clip-path: ellipse(145% 135% at 72% 52%); transform: none; } }
+@media (min-width: 768px) {
+  /* A large desktop snapshot must not be rescaled in 3D: that rasterizes the
+     shared mark twice and produces a blurred/ghosted handoff. */
+  html::view-transition-old(root) { animation: 500ms var(--ease-out) both desktop-depart; }
+  html::view-transition-new(root) { animation: 620ms var(--ease-out) both desktop-reveal; }
+  [data-service-key="consulta-nutricional"] .service-card__symbol,
+  [data-service-key="consulta-nutricional"].service-hero-symbol,
+  [data-service-key="ciclos-de-acompanhamento"] .service-card__symbol,
+  [data-service-key="ciclos-de-acompanhamento"].service-hero-symbol { view-transition-name: none; }
+}
+@keyframes desktop-depart { to { transform: translate3d(-12px, 0, 0) scale(.99); } }
+@keyframes desktop-reveal { from { clip-path: ellipse(0% 0% at 73% 46%); transform: translate3d(12px, 0, 0); } to { clip-path: ellipse(150% 140% at 73% 46%); transform: none; } }
 .motion-debug { position: fixed; z-index: 100; left: 12px; bottom: 12px; max-width: min(480px, 90vw); max-height: 25vh; overflow: hidden; padding: 12px; background: #102d26ed; color: #fff; font: 11px/1.7 monospace; white-space: pre-wrap; pointer-events: none; }
 
 @media (max-width: 1100px) and (min-width: 768px) {
