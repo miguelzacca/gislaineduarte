@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-const origin = process.env.RECIPES_PRODUCT_TEST_ORIGIN || 'http://127.0.0.1:4325';
+const origin = process.env.RECIPES_PRODUCT_TEST_ORIGIN || 'http://127.0.0.1:4321';
 const path = '/7-receitas-para-ajudar-voce-a-desinflamar/';
 
 async function request(relative, options = {}) {

@@ -1,10 +1,7 @@
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
-import { Readable } from 'node:stream';
-import { handleCheckoutRequest } from '../api/recipes/checkout.js';
-import { handleContentRequest } from '../api/recipes/content.js';
-import { handleDownloadRequest } from '../api/recipes/download.js';
+import { handleProductApiRequest } from '../server/recipes/node-adapter.js';
 
 const root = resolve('dist');
 const port = Number(process.env.RECIPES_PRODUCT_DEV_PORT || '4325');
@@ -24,26 +21,10 @@ const types = {
   '.json': 'application/json; charset=utf-8',
 };
 
-async function sendWebResponse(webResponse, response) {
-  response.writeHead(webResponse.status, Object.fromEntries(webResponse.headers));
-  if (!webResponse.body) return response.end();
-  for await (const chunk of Readable.fromWeb(webResponse.body)) response.write(chunk);
-  response.end();
-}
-
 const server = createServer(async (request, response) => {
   try {
+    if (await handleProductApiRequest(request, response)) return;
     const url = new URL(request.url, `http://127.0.0.1:${port}`);
-    const headers = new Headers();
-    for (const [key, value] of Object.entries(request.headers)) if (value) headers.set(key, Array.isArray(value) ? value.join(', ') : value);
-    const webRequest = new Request(url, { method: request.method, headers });
-    if (url.pathname === '/api/recipes/checkout') {
-      if (request.method !== 'POST') return sendWebResponse(new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } }), response);
-      return sendWebResponse(await handleCheckoutRequest(webRequest), response);
-    }
-    if (url.pathname === '/api/recipes/content') return sendWebResponse(await handleContentRequest(webRequest), response);
-    if (url.pathname === '/api/recipes/download') return sendWebResponse(await handleDownloadRequest(webRequest), response);
-
     const relative = decodeURIComponent(url.pathname).replace(/^\/+/, '');
     const target = resolve(root, relative);
     if (target !== root && !target.startsWith(`${root}${sep}`)) {
@@ -67,4 +48,3 @@ const server = createServer(async (request, response) => {
 server.listen(port, '127.0.0.1', () => {
   console.log(`Produto local: http://127.0.0.1:${port} (build de dist/)`);
 });
-

@@ -1,9 +1,10 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
 import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { execFile } from 'node:child_process';
+import { handleProductApiRequest } from './server/recipes/node-adapter.js';
 
 const root = process.cwd();
 const generated = resolve(root, '.site');
@@ -27,6 +28,12 @@ export default defineConfig({
     name: 'static-pages',
     configureServer(server) {
       if (server.config.server.middlewareMode) return;
+      const productEnv = { ...process.env, ...loadEnv(server.config.mode, root, 'RECIPES_PRODUCT_') };
+      server.middlewares.use((request, response, next) => {
+        handleProductApiRequest(request, response, { env: productEnv })
+          .then(handled => { if (!handled) next(); })
+          .catch(next);
+      });
       let regenerating = false;
       server.watcher.add(['src/views', 'src/data', 'src/components', 'src/lib', 'src/motion', 'src/intro', 'src/entry-server.jsx'].map(directory => resolve(root, directory)));
       server.watcher.on('change', file => {

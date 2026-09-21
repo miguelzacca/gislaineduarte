@@ -11,7 +11,7 @@
     "product:build": "node scripts/build-recipes-product.mjs",
     "dev:product": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/serve-recipes-product.mjs",
     "generate": "node --env-file-if-exists=.env scripts/generate-pages.mjs",
-    "dev": "npm run generate && vite --host 127.0.0.1",
+    "dev": "npm run generate && node --env-file-if-exists=.env --env-file-if-exists=.env.local ./node_modules/vite/bin/vite.js --host 127.0.0.1",
     "build": "npm run product:build && npm run generate && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "lint": "eslint .",
