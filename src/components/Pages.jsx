@@ -327,12 +327,15 @@ export function PrivacyPage() {
       </section>
       <section className="shell privacy-layout">
         <div className="prose">
-          <p className="privacy-date">Atualizada em 20 de setembro de 2026.</p>
+          <p className="privacy-date">Atualizada em 21 de setembro de 2026.</p>
           <h2>Identificação profissional</h2>
           <p>Este é o site profissional de {site.fullName}, {site.profession.toLowerCase()}, {site.registration}. O contato para questões sobre privacidade é <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.</p>
           <h2>Durante a navegação</h2>
-          <p>Este site apresenta informações sobre Gislaine Duarte e seus atendimentos. Não há cadastro, formulário de saúde, área de pacientes ou compra dentro do site. Não instalamos ferramentas de publicidade, pixels de rastreamento ou cookies de análise.</p>
+          <p>Este site apresenta informações sobre Gislaine Duarte, seus atendimentos e a coleção digital “7 receitas para ajudar você a desinflamar!”. Não há formulário de saúde ou área de prontuário. Não instalamos ferramentas de publicidade, pixels de rastreamento ou cookies de análise.</p>
           <p>Para não repetir a introdução na mesma aba, o navegador guarda temporariamente o estado da abertura em <code>{INTRO_KEY}</code> e um identificador aleatório da aba em <code>{INTRO_TAB_KEY}</code>. A preferência <code>gi-visited</code> também ajusta a apresentação em visitas repetidas. Esses registros ficam no armazenamento da sessão do navegador, não são enviados a Gislaine e não são usados para rastreamento.</p>
+          <h2>Na coleção digital</h2>
+          <p>Enquanto o checkout temporário estiver habilitado, a confirmação de demonstração cria uma sessão assinada em cookie <code>httpOnly</code>, com prazo configurável e uso restrito à validação de acesso. O valor não fica disponível ao JavaScript da página. Quando o modo está bloqueado ou a configuração segura está ausente, o acesso não é liberado.</p>
+          <p>Favoritos, receitas preparadas, checklists, multiplicadores e a lista de compras são preferências não sensíveis guardadas somente no armazenamento local do seu navegador. Elas não são enviadas a Gislaine. Você pode removê-las limpando os dados deste site no navegador. A experiência continua em memória quando esse armazenamento está indisponível.</p>
           <h2>Ao entrar em contato</h2>
           <p>Os botões de WhatsApp abrem um serviço externo, com uma mensagem que você pode revisar antes de enviar. Os links de e-mail abrem o aplicativo configurado no seu dispositivo. A abertura do link, por si só, não envia uma mensagem ou confirma um atendimento.</p>
           <p>Se você enviar uma mensagem, o canal escolhido receberá os dados que você decidir compartilhar. O funcionamento e o tratamento de dados nessas plataformas seguem também suas próprias políticas. Para o primeiro contato, prefira informações sobre o atendimento desejado; não é necessário enviar exames ou histórico de saúde.</p>

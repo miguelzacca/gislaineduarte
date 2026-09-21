@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /api/recipes/
 
 Sitemap: https://gislaineduarte.com.br/sitemap.xml

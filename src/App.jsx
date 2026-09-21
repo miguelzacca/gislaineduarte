@@ -6,8 +6,9 @@ import { initializeMotion } from './motion/controller.js';
 import { JourneySvg } from './components/MotionGraphics.jsx';
 import { BrandMark } from './components/Brand.jsx';
 import { IntroOverlay } from './components/IntroOverlay.jsx';
+import { RecipeExperiencePage, RecipeProductLandingPage } from './components/RecipesProduct.jsx';
 
-const pages = { home: HomePage, about: AboutPage, services: ServicesPage, service: ServicePage, contact: ContactPage, privacy: PrivacyPage, 'not-found': NotFoundPage };
+const pages = { home: HomePage, about: AboutPage, services: ServicesPage, service: ServicePage, contact: ContactPage, privacy: PrivacyPage, 'recipe-product': RecipeProductLandingPage, 'recipe-experience': RecipeExperiencePage, 'not-found': NotFoundPage };
 
 export default function App({ path }) {
   const route = resolveRoute(path);

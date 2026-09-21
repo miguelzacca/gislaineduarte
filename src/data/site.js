@@ -198,6 +198,7 @@ export const navigation = [
   { label: 'Abordagem', href: '/#abordagem' },
   { label: 'Sobre a Gi', href: '/sobre/' },
   { label: 'Atendimentos', href: '/atendimentos/' },
+  { label: '7 receitas', href: '/7-receitas-para-ajudar-voce-a-desinflamar/' },
   { label: 'Contato', href: '/contato/' },
 ];
 
@@ -207,6 +208,7 @@ export const publicRoutes = [
   '/atendimentos/',
   ...services.map((service) => service.href),
   '/contato/',
+  '/7-receitas-para-ajudar-voce-a-desinflamar/',
   '/privacidade/',
 ];
 

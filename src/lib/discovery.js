@@ -2,7 +2,7 @@ import { biography, publicRoutes, services, site } from '../data/site.js';
 import { canonicalUrl, siteNoindex } from './seo.js';
 
 export function buildRobots() {
-  const lines = ['User-agent: *', 'Allow: /'];
+  const lines = ['User-agent: *', 'Allow: /', 'Disallow: /api/recipes/'];
   if (!siteNoindex) lines.push('', `Sitemap: ${site.url}/sitemap.xml`);
   return `${lines.join('\n')}\n`;
 }

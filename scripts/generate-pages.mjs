@@ -2,8 +2,10 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { createServer } from 'vite';
 import { buildRobots, buildSitemap, buildLlms } from '../src/lib/discovery.js';
+import { generateRecipesPreview } from './generate-recipes-preview.mjs';
 
 process.env.NODE_ENV ||= 'production';
+await generateRecipesPreview();
 const renderer = await createServer({ mode: 'production', logLevel: 'error', server: { middlewareMode: true, watch: null }, appType: 'custom', optimizeDeps: { noDiscovery: true } });
 try {
 const { renderPages } = await renderer.ssrLoadModule('/src/entry-server.jsx');
@@ -19,4 +21,4 @@ await Promise.all([
   writeFile('public/sitemap.xml', buildSitemap()),
   writeFile('public/llms.txt', buildLlms()),
 ]);
-console.log('8 páginas React/JSX pré-renderizadas e arquivos de descoberta gerados.');
+console.log('Páginas React/JSX pré-renderizadas e arquivos de descoberta gerados.');

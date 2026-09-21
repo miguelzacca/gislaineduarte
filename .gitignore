@@ -3,10 +3,13 @@ dist/
 .site/
 .env
 .env.*
+.img_tmp_refs/
 !.env.example
 test-results/
 playwright-report/
 artifacts/
+tmp/
+.product-tools/
 tests/artifacts/
 .vercel/
 *.log

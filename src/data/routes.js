@@ -1,4 +1,5 @@
 import { site, services, faqs } from './site.js';
+import { recipesProductPreview } from '../generated/recipes-product-preview.js';
 
 const initial = { name: 'Início', href: '/' };
 const attendance = { name: 'Atendimentos', href: '/atendimentos/' };
@@ -8,6 +9,31 @@ export const routes = [
   { path: '/atendimentos/', page: 'services', title: 'Consulta e acompanhamento nutricional | Gislaine Duarte', description: 'Conheça os atendimentos de Gislaine Duarte: consulta nutricional individual e ciclos de acompanhamento para mulheres e famílias. Entenda cada proposta.', faqs, crumbs: [initial, attendance] },
   ...services.map((service, index) => ({ path: service.href, page: 'service', title: service.seoTitle, description: service.seoDescription, service, index, crumbs: [initial, attendance, { name: service.shortTitle, href: service.href }] })),
   { path: '/contato/', page: 'contact', title: 'Contato e orçamento | Gislaine Duarte, nutricionista', description: 'Fale com Gislaine Duarte pelo WhatsApp ou e-mail para conhecer a consulta nutricional individual, os ciclos de acompanhamento e solicitar orçamento.', crumbs: [initial, { name: 'Contato', href: '/contato/' }] },
+  {
+    path: recipesProductPreview.publicPath,
+    page: 'recipe-product',
+    className: 'recipe-product-page',
+    title: recipesProductPreview.title,
+    description: recipesProductPreview.subtitle,
+    product: recipesProductPreview,
+    faqs: recipesProductPreview.faqs,
+    socialImage: {
+      src: recipesProductPreview.hero.socialImage,
+      width: 1200,
+      height: 630,
+      alt: 'Coleção digital 7 receitas para ajudar você a desinflamar, por Gislaine Duarte.',
+    },
+    crumbs: [initial, { name: '7 receitas', href: recipesProductPreview.publicPath }],
+  },
+  {
+    path: recipesProductPreview.experiencePath,
+    page: 'recipe-experience',
+    className: 'recipe-experience-page',
+    title: 'Sua jornada de 7 receitas',
+    description: 'Área reservada da coleção digital de receitas de Gislaine Duarte.',
+    noindex: true,
+    crumbs: [initial, { name: '7 receitas', href: recipesProductPreview.publicPath }, { name: 'Sua coleção', href: recipesProductPreview.experiencePath }],
+  },
   { path: '/privacidade/', page: 'privacy', title: 'Política de privacidade | Gislaine Duarte', description: 'Entenda a navegação, os links de contato, o uso de armazenamento temporário e o tratamento de informações no site de Gislaine Duarte.', crumbs: [initial, { name: 'Privacidade', href: '/privacidade/' }] },
   { path: '/404.html', page: 'not-found', title: 'Página não encontrada | Gislaine Duarte', description: 'A página não foi encontrada. Volte ao início e conheça Gislaine Duarte, sua abordagem e seus atendimentos nutricionais.', noindex: true },
 ];

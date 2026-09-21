@@ -14,7 +14,7 @@ export function canonicalUrl(path) {
   return `${site.url}${normalized}`;
 }
 
-export function buildMetadata(path, title, description, noindex = false) {
+export function buildMetadata(path, title, description, noindex = false, socialImage = site.socialImage) {
   const preventIndexing = noindex || siteNoindex;
   return {
     title: title.includes(site.name) ? title : `${title} | ${site.name}`,
@@ -22,10 +22,10 @@ export function buildMetadata(path, title, description, noindex = false) {
     canonical: canonicalUrl(path),
     robots: preventIndexing ? 'noindex, nofollow' : 'index, follow, max-image-preview:large',
     noindex: preventIndexing,
-    ogImage: new URL(site.socialImage.src, site.url).href,
-    ogImageAlt: site.socialImage.alt,
-    ogImageWidth: site.socialImage.width,
-    ogImageHeight: site.socialImage.height,
+    ogImage: new URL(socialImage.src, site.url).href,
+    ogImageAlt: socialImage.alt,
+    ogImageWidth: socialImage.width,
+    ogImageHeight: socialImage.height,
     locale: site.locale,
   };
 }
@@ -41,6 +41,7 @@ export function buildJsonLd(
   const websiteId = `${site.url}/#website`;
   const pageId = `${url}#webpage`;
   const serviceId = options.service ? `${canonicalUrl(options.service.href)}#service` : null;
+  const productId = options.product ? `${canonicalUrl(options.product.publicPath)}#product` : null;
   const visibleFaqs = options.faqs?.length ? options.faqs : null;
   const person = {
     '@type': 'Person',
@@ -82,7 +83,7 @@ export function buildJsonLd(
     description,
     inLanguage: site.language,
     isPartOf: { '@id': websiteId },
-    about: { '@id': serviceId || personId },
+    about: { '@id': serviceId || productId || personId },
   };
   if (visibleFaqs) {
     page.mainEntity = visibleFaqs.map((faq) => ({
@@ -121,6 +122,21 @@ export function buildJsonLd(
       description: options.service.summary,
       url: canonicalUrl(options.service.href),
       provider: { '@id': personId },
+      mainEntityOfPage: { '@id': pageId },
+    });
+  }
+
+  if (options.product && productId) {
+    if (!visibleFaqs) page.mainEntity = { '@id': productId };
+    graph.push({
+      '@type': 'Product',
+      '@id': productId,
+      name: options.product.title,
+      description: options.product.description,
+      url: canonicalUrl(options.product.publicPath),
+      image: new URL(options.product.hero.socialImage, site.url).href,
+      category: options.product.positioning,
+      brand: { '@id': personId },
       mainEntityOfPage: { '@id': pageId },
     });
   }

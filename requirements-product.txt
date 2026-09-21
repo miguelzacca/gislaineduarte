@@ -1,0 +1,5 @@
+reportlab
+fonttools[woff]
+pypdf
+pdfplumber
+
