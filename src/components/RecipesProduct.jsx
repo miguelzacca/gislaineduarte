@@ -568,6 +568,7 @@ function ProductAccessGate() {
   const [waiting, setWaiting] = useState(true);
   const [status, setStatus] = useState('checking');
   const [checkoutUrl, setCheckoutUrl] = useState('');
+  const [canCorrectEmail, setCanCorrectEmail] = useState(false);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -584,6 +585,7 @@ function ProductAccessGate() {
         if (data.state === 'ready') { window.location.reload(); return; }
         if (!['login', 'payment', 'email'].includes(data.state)) throw new Error('Estado de acesso indisponível.');
         setStatus(data.state === 'login' && emailRequested.current ? 'email' : data.state);
+        setCanCorrectEmail(data.state === 'login' && emailRequested.current);
         setCheckoutUrl(data.checkoutUrl || '');
         if (data.state === 'login') setWaiting(false);
         else timer = window.setTimeout(check, 3000);
@@ -607,24 +609,20 @@ function ProductAccessGate() {
       if (!response.ok) throw new Error(result.error || 'Não foi possível enviar o link.');
       if (result.ready) { window.location.reload(); return; }
       emailRequested.current = true;
+      setCanCorrectEmail(false);
       setMessage(result.message); setStatus('email'); setWaiting(true);
     } catch (error) { setMessage(error.message); }
     finally { setBusy(false); }
   };
-  const changeEmail = async () => {
-    setBusy(true); setWaiting(false); setMessage('');
-    try {
-      const response = await fetch('/api/recipes/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10_000) });
-      if (!response.ok) throw new Error('Não foi possível trocar o e-mail agora.');
-      emailRequested.current = false;
-      setEmail(''); setCheckoutUrl(''); setStatus('login');
-    } catch (error) { setMessage(error.message); setStatus('error'); }
-    finally { setBusy(false); }
+  const correctEmail = () => {
+    if (!canCorrectEmail || busy) return;
+    emailRequested.current = false;
+    setEmail(''); setMessage(''); setCanCorrectEmail(false); setStatus('login');
   };
   const copy = {
     checking: ['Verificando seu acesso.', 'Estamos conferindo sua sessão e o andamento da compra.'],
     payment: ['Aguardando a confirmação do pagamento.', 'Assim que o pagamento for confirmado, enviaremos um link de acesso ao e-mail informado. Esta página acompanha a confirmação automaticamente.'],
-    email: ['Confira seu e-mail.', 'Abra o link enviado por e-mail no computador ou no celular. Quando você confirmar, esta página entrará automaticamente.'],
+    email: ['Confira seu e-mail.', 'Abra o link enviado ao e-mail da compra no computador ou no celular. Quando você confirmar, esta página entrará automaticamente. O reenvio usa esse mesmo endereço.'],
     login: ['Entre na sua coleção.', 'Se você já comprou, informe o mesmo e-mail usado no pagamento. O link entra na sua conta existente, com suas compras preservadas.'],
     error: ['Não foi possível verificar seu acesso.', 'Tente novamente em instantes. Sua compra e sua conta continuam salvas.'],
   }[status];
@@ -635,12 +633,14 @@ function ProductAccessGate() {
       <h1>{copy[0]}</h1>
       <p aria-live="polite">{copy[1]}</p>
       {status === 'login' ? <form className="recipe-access-gate__form" onSubmit={login}><label>Seu e-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="voce@exemplo.com" required /></label><button className="button" type="submit" disabled={busy}><span>{busy ? 'Enviando…' : 'Receber link de acesso'}</span><span className="button__icon"><Arrow /></span></button></form> : null}
-      {status === 'payment' && checkoutUrl ? <a className="button" href={checkoutUrl} target="_blank" rel="noopener noreferrer"><span>Continuar pagamento</span><span className="button__icon"><Arrow /></span></a> : null}
-      {status === 'email' ? <button className="button" type="button" onClick={login} disabled={busy}><span>{busy ? 'Enviando…' : 'Reenviar link de acesso'}</span><span className="button__icon"><Arrow /></span></button> : null}
-      {['payment', 'email'].includes(status) ? <button className="text-link recipe-access-gate__change" type="button" disabled={busy} onClick={changeEmail}>Usar outro e-mail</button> : null}
-      {status === 'error' ? <button className="button" type="button" disabled={busy} onClick={() => { setStatus('checking'); setWaiting(true); }}><span>Verificar novamente</span><span className="button__icon"><Arrow /></span></button> : null}
+      <div className="recipe-access-gate__actions">
+        {status === 'payment' && checkoutUrl ? <a className="button" href={checkoutUrl} target="_blank" rel="noopener noreferrer"><span>Continuar pagamento</span><span className="button__icon"><Arrow /></span></a> : null}
+        {status === 'email' ? <button className="button" type="button" onClick={login} disabled={busy}><span>{busy ? 'Enviando…' : 'Reenviar link de acesso'}</span><span className="button__icon"><Arrow /></span></button> : null}
+        {status === 'email' && canCorrectEmail ? <button className="button button--secondary" type="button" disabled={busy} onClick={correctEmail}><span>Corrigir e-mail</span><span className="button__icon"><Arrow /></span></button> : null}
+        {status === 'error' ? <button className="button" type="button" disabled={busy} onClick={() => { setStatus('checking'); setWaiting(true); }}><span>Verificar novamente</span><span className="button__icon"><Arrow /></span></button> : null}
+        <a className="button button--secondary" href={product.publicPath}><span>Voltar à coleção</span><span className="button__icon"><Arrow /></span></a>
+      </div>
       {message ? <p role="status">{message}</p> : null}
-      <a className="button" href={product.publicPath}><span>Voltar à coleção</span><span className="button__icon"><Arrow /></span></a>
     </section>
   );
 }

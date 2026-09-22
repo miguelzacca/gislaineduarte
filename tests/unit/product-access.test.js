@@ -9,6 +9,7 @@ import { handleStatusRequest } from '../../api/recipes/status.js';
 import { handleContentRequest } from '../../api/recipes/content.js';
 import { handleDownloadRequest } from '../../api/recipes/download.js';
 import { handleLogoutRequest } from '../../api/recipes/logout.js';
+import { GET as getVerifyPage, handleVerifyRequest } from '../../api/recipes/verify.js';
 import { adminCookie, readAdminSession, verifyAdminCredentials } from '../../server/recipes/admin.js';
 import { RECIPES_PRODUCT_ID } from '../../src/data/recipes-product.js';
 
@@ -119,6 +120,108 @@ test('reenvio sem e-mail rejeita acompanhamento forjado e respeita limite de env
   const options = { env: secureEnv, store, mailer: () => { throw new Error('Não deve enviar e-mail'); } };
   assert.equal((await requestLogin('', request('/api/recipes/login', `${CLAIM_COOKIE}=${challenge.id}.${'x'.repeat(43)}`), options)).status, 400);
   assert.equal((await requestLogin('', request('/api/recipes/login', `${CLAIM_COOKIE}=${challenge.id}.${secret}`), options)).sent, true);
+});
+
+test('pedido vinculado mantém o e-mail original no login, reenvio e checkout', async () => {
+  const secret = 'r'.repeat(43);
+  const challenge = { id: 'paid-order-challenge', order_id: 'paid-order', secret_hash: tokenHash(secret), email: 'buyer@example.com', confirmed_at: null, redeemed_at: null };
+  const sent = [], writes = [];
+  const store = { query: async (sql, params) => {
+    if (sql.includes('FROM recipe_login_challenges')) return result([challenge]);
+    if (sql.includes('FROM recipe_entitlements')) return result([{ ok: 1 }]);
+    if (sql.includes('count(*)')) return result([{ count: 0 }]);
+    writes.push({ sql, params }); return result();
+  } };
+  const options = { env: secureEnv, store, mailer: async (mail) => sent.push(mail), fetcher: () => { throw new Error('Não deve criar outro checkout'); } };
+  const post = (path, email) => new Request(`${base}${path}`, { method: 'POST', headers: { cookie: `${CLAIM_COOKIE}=${challenge.id}.${secret}`, origin: base, accept: 'application/json' }, body: new URLSearchParams({ email }) });
+  assert.equal((await handleLoginRequest(post('/api/recipes/login', 'outro@example.com'), options)).status, 409);
+  assert.equal((await handleCheckoutRequest(post('/api/recipes/checkout', 'outro@example.com'), options)).status, 409);
+  assert.equal(writes.length, 0);
+  assert.equal(sent.length, 0);
+  const resume = await handleCheckoutRequest(post('/api/recipes/checkout', challenge.email), options);
+  assert.deepEqual(await resume.json(), { accessUrl: '/minhas-receitas' });
+  assert.equal(resume.headers.has('set-cookie'), false);
+  assert.equal((await handleLoginRequest(post('/api/recipes/login', ''), options)).status, 200);
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].email, challenge.email);
+  assert.equal(writes.length, 1);
+  assert.ok(writes[0].sql.includes('INSERT INTO recipe_magic_links'));
+  assert.equal(writes[0].params[1], challenge.email);
+  assert.equal(writes[0].params[2], challenge.id);
+});
+
+test('confirmação HTML preserva Origin no formulário nativo sem divulgar o token no Referer', async () => {
+  const token = 't'.repeat(43);
+  const response = getVerifyPage(request(`/api/recipes/verify?token=${token}`));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('referrer-policy'), 'strict-origin');
+  assert.match(response.headers.get('content-security-policy'), /form-action 'self'/);
+  assert.match(response.headers.get('cache-control'), /no-store/);
+  const html = await response.text();
+  assert.match(html, /<form action="\/api\/recipes\/verify" method="post">/);
+  assert.ok(html.includes(`name="token" value="${token}"`));
+  assert.equal(html.includes('name="email"'), false);
+  const invalid = getVerifyPage(request('/api/recipes/verify?token=%22%3E%3Cscript%3E'));
+  assert.equal(invalid.status, 400);
+  assert.equal((await invalid.text()).includes('<form'), false);
+});
+
+test('confirmar acesso aceita o POST da própria página, mantém a titularidade e consome o link uma vez', async () => {
+  const token = 't'.repeat(43);
+  let used = false;
+  const sessions = [];
+  const store = { connect: async () => ({
+    query: async (sql, params) => {
+      if (sql.includes('FROM recipe_magic_links')) {
+        assert.equal(params[0], tokenHash(token));
+        return used ? result() : result([{ token_hash: tokenHash(token), email: 'buyer@example.com', challenge_id: 'paid-order-challenge' }]);
+      }
+      if (sql.includes('FROM recipe_entitlements')) { assert.equal(params[0], 'buyer@example.com'); return result([{ ok: 1 }]); }
+      if (sql.includes('UPDATE recipe_magic_links')) used = true;
+      if (sql.includes('INSERT INTO recipe_sessions')) sessions.push(params);
+      return result();
+    }, release() {},
+  }) };
+  const post = () => new Request(`${base}/api/recipes/verify`, {
+    method: 'POST', headers: { origin: base, 'sec-fetch-site': 'same-origin', 'sec-fetch-mode': 'navigate', referer: `${base}/` },
+    body: new URLSearchParams({ token, email: 'outro@example.com' }),
+  });
+  const response = await handleVerifyRequest(post(), { env: secureEnv, store });
+  assert.equal(response.status, 303);
+  assert.equal(response.headers.get('location'), `${base}/minhas-receitas`);
+  const cookie = response.headers.get('set-cookie');
+  assert.ok(cookie.startsWith(`${SESSION_COOKIE}=`));
+  assert.match(cookie, /HttpOnly/);
+  assert.match(cookie, /Secure/);
+  assert.match(cookie, /Max-Age=2592000/);
+  assert.equal(sessions.length, 1);
+  assert.equal(sessions[0][1], 'buyer@example.com');
+  assert.equal(sessions[0][0], tokenHash(cookie.split(';')[0].split('=')[1]));
+  const reused = await handleVerifyRequest(post(), { env: secureEnv, store });
+  assert.equal(reused.status, 400);
+  assert.equal(reused.headers.has('set-cookie'), false);
+  assert.match(await reused.text(), /<main>/);
+  assert.equal(sessions.length, 1);
+});
+
+test('confirmação continua negando origens externas ou null com uma página de erro formatada', async () => {
+  const store = { connect: () => { throw new Error('Origem inválida não pode consultar nem consumir o token'); } };
+  for (const headers of [
+    { origin: 'null', 'sec-fetch-site': 'same-origin' },
+    { origin: 'https://externo.example', 'sec-fetch-site': 'same-site' },
+    { origin: base, 'sec-fetch-site': 'cross-site' },
+  ]) {
+    const req = new Request(`${base}/api/recipes/verify`, { method: 'POST', headers, body: new URLSearchParams({ token: 't'.repeat(43) }) });
+    const response = await handleVerifyRequest(req, { env: secureEnv, store });
+    assert.equal(response.status, 403);
+    assert.equal(response.headers.has('set-cookie'), false);
+    assert.equal(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    const html = await response.text();
+    assert.match(html, /<main>/);
+    assert.match(html, /<style>/);
+    assert.ok(html.includes('Abra novamente seu link de acesso.'));
+    assert.equal(html.includes('<form'), false);
+  }
 });
 
 test('sessão expirada pede novo link para a conta existente, preservando compras', async () => {

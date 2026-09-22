@@ -27,6 +27,11 @@ export async function startCheckout(email, request, { env = process.env, fetcher
   const config = requireCommerceConfig(env);
   const normalized = normalizeEmail(email);
   if (!normalized) return { error: 'Informe um e-mail válido.', status: 400 };
+  const previousClaim = await getClaim(request, { env, store });
+  if (previousClaim?.order_id) {
+    if (normalized !== previousClaim.email) return { error: 'O e-mail deste pedido não pode ser alterado. Use o endereço informado na compra.', status: 409 };
+    return { accessUrl: recipesProduct.experiencePath };
+  }
   const db = store || await getStore(env);
   const owned = await db.query('SELECT 1 FROM recipe_entitlements WHERE email = $1 AND product_id = $2', [normalized, RECIPES_PRODUCT_ID]);
   if (owned.rowCount) {
@@ -111,6 +116,7 @@ export async function requestLogin(email, request, { env = process.env, store, m
   const previousClaim = await getClaim(request, { env, store });
   const normalized = normalizeEmail(String(email || '').trim() || previousClaim?.email);
   if (!normalized) return { error: 'Informe um e-mail válido.', status: 400 };
+  if (previousClaim?.order_id && normalized !== previousClaim.email) return { error: 'O e-mail deste pedido não pode ser alterado. Reenvie o link para o endereço informado na compra.', status: 409 };
   const config = requireAccessConfig(env);
   const db = store || await getStore(env);
   const entitled = await db.query('SELECT 1 FROM recipe_entitlements WHERE email = $1 AND product_id = $2', [normalized, RECIPES_PRODUCT_ID]);
