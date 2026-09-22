@@ -35,6 +35,7 @@ export const routes = [
     crumbs: [initial, { name: '7 receitas', href: recipesProductPreview.publicPath }, { name: 'Sua coleção', href: recipesProductPreview.experiencePath }],
   },
   { path: '/privacidade/', page: 'privacy', title: 'Política de privacidade | Gislaine Duarte', description: 'Entenda a navegação, os links de contato, o uso de armazenamento temporário e o tratamento de informações no site de Gislaine Duarte.', crumbs: [initial, { name: 'Privacidade', href: '/privacidade/' }] },
+  { path: '/painel/', page: 'admin', className: 'admin-page', title: 'Painel de gestão | Gislaine Duarte', description: 'Acesso reservado ao painel de gestão.', noindex: true },
   { path: '/404.html', page: 'not-found', title: 'Página não encontrada | Gislaine Duarte', description: 'A página não foi encontrada. Volte ao início e conheça Gislaine Duarte, sua abordagem e seus atendimentos nutricionais.', noindex: true },
 ];
 

@@ -7,8 +7,9 @@ import { JourneySvg } from './components/MotionGraphics.jsx';
 import { BrandMark } from './components/Brand.jsx';
 import { IntroOverlay } from './components/IntroOverlay.jsx';
 import { RecipeExperiencePage, RecipeProductLandingPage } from './components/RecipesProduct.jsx';
+import { AdminPage } from './components/AdminPage.jsx';
 
-const pages = { home: HomePage, about: AboutPage, services: ServicesPage, service: ServicePage, contact: ContactPage, privacy: PrivacyPage, 'recipe-product': RecipeProductLandingPage, 'recipe-experience': RecipeExperiencePage, 'not-found': NotFoundPage };
+const pages = { home: HomePage, about: AboutPage, services: ServicesPage, service: ServicePage, contact: ContactPage, privacy: PrivacyPage, admin: AdminPage, 'recipe-product': RecipeProductLandingPage, 'recipe-experience': RecipeExperiencePage, 'not-found': NotFoundPage };
 
 export default function App({ path }) {
   const route = resolveRoute(path);
@@ -21,5 +22,6 @@ export default function App({ path }) {
     window.addEventListener('pageshow', show);
     return () => { hide(); window.removeEventListener('pagehide', hide); window.removeEventListener('pageshow', show); };
   }, [path]);
+  if (route.page === 'admin') return <AdminPage />;
   return <>{route.page === 'home' ? <IntroOverlay /> : null}<a className="skip-link" href="#conteudo">Pular para o conteúdo</a><div className="route-veil" aria-hidden="true"><BrandMark mono /></div><Header path={route.path} /><main id="conteudo" tabIndex={-1}>{route.page === 'home' ? <JourneySvg /> : null}{route.crumbs ? <Breadcrumbs items={route.crumbs} /> : null}<Page service={route.service} index={route.index} /></main><Footer /></>;
 }

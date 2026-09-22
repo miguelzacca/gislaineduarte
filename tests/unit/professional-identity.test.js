@@ -8,8 +8,8 @@ test('identidade separa nome profissional completo dos nomes da marca', () => {
   assert.equal(site.fullName, 'Gislaine Muller Duarte');
   assert.equal(site.name, 'Gislaine Duarte');
   assert.equal(site.familiarName, 'Nutri Gi');
-  assert.equal(site.registration, 'CRN-10 nº 22562');
-  assert.equal(site.registrationDetails.council, 'CRN-10');
+  assert.equal(site.registration, 'CRN-2 nº 22562');
+  assert.equal(site.registrationDetails.council, 'CRN-2');
   assert.equal(site.registrationDetails.number, '22562');
 });
 
@@ -21,7 +21,7 @@ test('todas as rotas conectam a mesma pessoa ao registro profissional confirmado
     assert.equal(person.name, site.fullName);
     assert.deepEqual(person.alternateName, [site.name, site.familiarName]);
     assert.deepEqual(person.identifier, {
-      '@type': 'PropertyValue', propertyID: 'CRN-10', value: '22562', name: 'Registro profissional de nutricionista',
+      '@type': 'PropertyValue', propertyID: 'CRN-2', value: '22562', name: 'Registro profissional de nutricionista',
     });
     assert.equal(graph.find(entity => entity['@type'] === 'WebSite').publisher['@id'], person['@id']);
   }
@@ -33,7 +33,7 @@ test('credencial é um registro profissional, sem títulos ou situação cadastr
   assert.equal(credential['@type'], 'EducationalOccupationalCredential');
   assert.equal(credential.credentialCategory, 'Registro profissional');
   assert.equal(credential.name, site.registration);
-  assert.equal(credential.recognizedBy.url, 'https://crn10.org.br/');
+  assert.equal(credential.recognizedBy.url, 'https://crn2.org.br/');
   assert.deepEqual(credential.identifier, person.identifier);
   assert.equal(credential.validFrom, undefined);
   assert.equal(credential.expires, undefined);
@@ -70,6 +70,6 @@ test('busca e descoberta textual usam os dados públicos consistentes', () => {
   assert.ok(text.includes(site.fullName));
   assert.ok(text.includes(site.registration));
   assert.ok(text.includes('em andamento'));
-  assert.equal(new URL(site.registrationDetails.directoryUrl).hostname, 'crn-sc.implanta.net.br');
+  assert.equal(new URL(site.registrationDetails.directoryUrl).hostname, 'crn2.implanta.net.br');
   assert.equal(new URL(site.registrationDetails.directoryUrl).search, '');
 });

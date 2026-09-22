@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "product:preview": "node scripts/generate-recipes-preview.mjs",
     "product:deps": "python -m pip install --disable-pip-version-check --upgrade --target tmp/product-python -r requirements-product.txt",
@@ -25,22 +27,24 @@
     "check": "npm run lint && npm run build && npm run audit"
   },
   "dependencies": {
+    "@fontsource-variable/cormorant-garamond": "5.3.0",
+    "@fontsource-variable/manrope": "5.3.0",
+    "nodemailer": "^10.0.10",
+    "pg": "^8.23.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "three": "0.186.0",
-    "@fontsource-variable/cormorant-garamond": "5.3.0",
-    "@fontsource-variable/manrope": "5.3.0"
+    "three": "0.186.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "6.1.1",
-    "vite": "8.3.0",
-    "eslint": "10.11.0",
-    "@eslint/js": "10.0.1",
-    "globals": "17.12.0",
-    "@playwright/test": "^1.58.2",
     "@axe-core/playwright": "^4.11.1",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "^1.58.2",
+    "@vitejs/plugin-react": "6.1.1",
+    "cheerio": "^1.2.0",
+    "eslint": "10.11.0",
+    "globals": "17.12.0",
     "lighthouse": "^13.0.3",
     "sharp": "0.35.4",
-    "cheerio": "^1.2.0"
+    "vite": "8.3.0"
   }
 }

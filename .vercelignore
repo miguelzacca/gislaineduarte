@@ -1,0 +1,15 @@
+.git/
+.vercel/
+.env
+.env.*
+node_modules/
+dist/
+.site/
+artifacts/
+tmp/
+.product-tools/
+.img_tmp_refs/
+test-results/
+playwright-report/
+tests/artifacts/
+*.log

@@ -13,7 +13,7 @@ export const recipesProductPreview = Object.freeze({
     "currency": "BRL",
     "priceCents": null,
     "showPrice": false,
-    "note": "Preço ainda não definido. Configurar somente após aprovação comercial da cliente."
+    "note": "Preço e disponibilidade são definidos no painel de gestão e consultados no momento da compra."
   },
   "hero": {
     "image": {

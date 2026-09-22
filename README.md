@@ -44,13 +44,13 @@ O desenvolvimento usa a porta 4321; preview de produção e testes usam 4323. Is
 - `src/entry-server.jsx`: ReactDOMServer gera o HTML completo; `entry-client.jsx` o hidrata.
 - `scripts/generate-pages.mjs`: usa o transformador SSR do Vite durante o build; escreve `.site/`.
 
-O Vite compila as entradas HTML de `.site/` para `dist/`. Os visitantes recebem o conteúdo antes do JavaScript. Não é necessário servidor Node em produção. Navegação multipágina usa links reais, com histórico nativo e transições de documento nos navegadores compatíveis. O build não publica nada.
+O Vite compila as entradas HTML de `.site/` para `dist/`. Os visitantes recebem o conteúdo público antes do JavaScript. A venda digital usa Vercel Functions Node.js para checkout, confirmação do pagamento, autenticação e entrega protegida. Navegação multipágina usa links reais, com histórico nativo e transições de documento nos navegadores compatíveis. O build não publica nada.
 
 ## Páginas
 
 Início; sobre; atendimentos; consulta individual; ciclos de acompanhamento; contato; privacidade; 404 com status correto no preview e em hospedagem estática compatível.
 
-O domínio canônico é `https://gislaineduarte.com.br`. O arquivo `vercel.json` descreve apenas o build estático e cache dos assets; nenhuma associação de domínio ou implantação foi feita. Outros hosts devem servir os `index.html` das pastas e `404.html` com status 404, sem rewrite universal para a home.
+O domínio canônico é `https://gislaineduarte.com.br`. O arquivo `vercel.json` configura o build estático, os assets e a inclusão privada dos artefatos nas Functions. Para configurar checkout InfinitePay, Postgres, e-mail e painel de gestão, consulte [docs/recipes-product.md](docs/recipes-product.md). Outros hosts devem servir os `index.html` das pastas e `404.html` com status 404, além de implementar as rotas de API.
 
 ## Conteúdo e contato
 
@@ -78,11 +78,11 @@ Celulares capazes mantêm 3D com DPR até 1,25; desktop até 1,5. Economia de da
 
 ## Publicação e pendências
 
-A identificação profissional confirmada é **Gislaine Muller Duarte · Nutricionista · CRN-10 nº 22562**, centralizada em `src/data/site.js` e usada no rodapé, Sobre, Contato, privacidade e JSON-LD. “Gislaine Duarte” continua como marca. CPF e data de nascimento não integram o projeto público. O link do CRN leva à consulta oficial, sem alegar certificação ou situação cadastral verificada pelo site.
+A identificação profissional confirmada é **Gislaine Muller Duarte · Nutricionista · CRN-2 nº 22562**, centralizada em `src/data/site.js` e usada no rodapé, Sobre, Contato, privacidade e JSON-LD. “Gislaine Duarte” continua como marca. CPF e data de nascimento não integram o projeto público. O link do CRN leva à consulta oficial, sem alegar certificação ou situação cadastral verificada pelo site.
 
 Antes do lançamento, a cliente precisa aprovar os textos finais. Duração dos ciclos (divergência 3/5 versus 3/6 meses), encontros, inclusões, suporte, modalidades, preços e localização continuam omitidos. Materiais e artigos permanecem fora da interface até haver arquivos, destinos e revisão profissional aprovados. Detalhes em [docs/content-audit.md](docs/content-audit.md).
 
-Não há formulário cenográfico, coleta de dados de saúde, analytics, cookies de publicidade, compra ou downloads simulados. A política de privacidade descreve os links externos e a preferência temporária de abertura guardada na sessão.
+Não há formulário cenográfico, coleta de dados de saúde, analytics ou cookies de publicidade. A compra das receitas usa a InfinitePay, com confirmação no servidor; o conteúdo e os downloads são protegidos por sessão ligada a um pagamento confirmado. A política de privacidade descreve o tratamento do e-mail, pedidos, sessões e links externos.
 
 ## Verificação
 

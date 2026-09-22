@@ -175,7 +175,7 @@ def cover(doc: PremiumPDF, root: Path) -> None:
     c.setFont('Editorial', 19)
     c.drawString(M, 56, 'Gislaine Duarte')
     c.setFont('Body', 6.5)
-    c.drawString(M, 42, 'NUTRICIONISTA  ·  CRN-10 Nº 22562')
+    c.drawString(M, 42, 'NUTRICIONISTA  ·  CRN-2 Nº 22562')
 
 
 def introduction(doc: PremiumPDF, root: Path) -> None:
@@ -383,7 +383,7 @@ def about_page(doc: PremiumPDF, root: Path) -> None:
     c.setFillColor(INK)
     c.setFont('Body', 8.3)
     c.drawString(x, y - 20, 'Gislaine Muller Duarte')
-    c.drawString(x, y - 36, 'Nutricionista · CRN-10 nº 22562')
+    c.drawString(x, y - 36, 'Nutricionista · CRN-2 nº 22562')
     y -= 74
     draw_label(c, 'Quando a receita é só o começo', x, y, FOREST)
     y = draw_lines(c, 'A coleção ajuda a organizar possibilidades. O acompanhamento individualizado considera sua história, rotina, necessidades e objetivos.', x, y - 20, W - M - x, size=8.2, leading=12.5, color=FOREST)
@@ -418,7 +418,7 @@ def closing_page(doc: PremiumPDF) -> None:
     c.linkURL(doc.data['siteUrl'], (W / 2 - 90, 82, W / 2 + 90, 108), relative=0)
     c.setFillColor(Color(.80, .85, .78, alpha=1))
     c.setFont('Body', 6.3)
-    c.drawCentredString(W / 2, 65, 'Gislaine Muller Duarte · Nutricionista · CRN-10 nº 22562')
+    c.drawCentredString(W / 2, 65, 'Gislaine Muller Duarte · Nutricionista · CRN-2 nº 22562')
 
 
 def main() -> None:

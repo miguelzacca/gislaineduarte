@@ -36,24 +36,53 @@ function Icon({ name }) {
 
 function CheckoutButton({ children = 'Quero acessar as 7 receitas', onActivate, className = '' }) {
   return (
-    <button className={`button product-checkout-button ${className}`} type="submit" onClick={(event) => { event.preventDefault(); onActivate(); }}>
+    <button className={`button product-checkout-button ${className}`} type="button" onClick={onActivate}>
       <span>{children}</span><span className="button__icon"><Arrow /></span>
     </button>
   );
 }
 
-function ProductCheckoutDialog({ dialogRef }) {
+function ProductCheckoutDialog({ dialogRef, priceCents, available }) {
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const submit = async (event) => {
+    event.preventDefault(); setBusy(true); setError('');
+    const keepWaitingHere = window.matchMedia('(min-width: 800px) and (pointer: fine)').matches;
+    const checkoutTab = keepWaitingHere ? window.open('about:blank', '_blank') : null;
+    if (checkoutTab) {
+      checkoutTab.opener = null;
+      checkoutTab.document.title = 'Preparando pagamento';
+      checkoutTab.document.body.textContent = 'Preparando o pagamento seguro…';
+    }
+    try {
+      const response = await fetch('/api/recipes/checkout', {
+        method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ email }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Não foi possível abrir o pagamento.');
+      if (checkoutTab) {
+        checkoutTab.location.href = data.checkoutUrl;
+        window.location.assign(`${product.experiencePath}?payment=pending`);
+      } else window.location.assign(data.checkoutUrl);
+    } catch (failure) { checkoutTab?.close(); setError(failure.message); setBusy(false); }
+  };
   return (
     <dialog className="product-checkout-dialog" ref={dialogRef} aria-labelledby="checkout-title">
       <form method="dialog" className="product-checkout-dialog__close"><button aria-label="Fechar janela">×</button></form>
       <div className="product-checkout-dialog__mark" aria-hidden="true"><BrandMark /></div>
-      <p className="eyebrow eyebrow--gold">Acesso de demonstração</p>
-      <h2 id="checkout-title">Sua jornada está pronta.</h2>
-      <p>Nesta fase, a confirmação abaixo simula a liberação do produto. Nenhum pagamento ou dado financeiro será solicitado.</p>
-      <form action="/api/recipes/checkout" method="post">
-        <button className="button" type="submit"><span>Confirmar e acessar</span><span className="button__icon"><Arrow /></span></button>
+      <p className="eyebrow eyebrow--gold">Coleção digital</p>
+      <h2 id="checkout-title">Seu próximo passo começa aqui.</h2>
+      <p>Informe seu e-mail para receber o acesso após a confirmação do pagamento. Sua conta será criada somente quando a compra for aprovada.</p>
+      {available && priceCents ? <p className="product-checkout-dialog__price">Valor da coleção: <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(priceCents / 100)}</strong></p> : <p className="product-checkout-dialog__price">Compra temporariamente indisponível.</p>}
+      <form onSubmit={submit}>
+        <label className="product-checkout-dialog__email">Seu e-mail<input type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="voce@exemplo.com" required /></label>
+        <button className="button" type="submit" disabled={busy || !available}><span>{busy ? 'Preparando checkout…' : 'Ir para o pagamento seguro'}</span><span className="button__icon"><Arrow /></span></button>
       </form>
-      <p className="product-checkout-dialog__fineprint">A liberação temporária usa uma sessão segura no navegador. O modo pode ser desativado pela configuração do site.</p>
+      {error ? <p className="product-checkout-dialog__error" role="alert">{error}</p> : null}
+      <p className="product-checkout-dialog__fineprint">O pagamento é feito na InfinitePay. Após a aprovação, enviaremos um link de confirmação para seu e-mail. <a href={product.experiencePath}>Já comprou? Entre aqui.</a></p>
     </dialog>
   );
 }
@@ -100,8 +129,13 @@ function ProductFaq() {
 export function RecipeProductLandingPage() {
   const dialogRef = useRef(null);
   const [accessLocked, setAccessLocked] = useState(false);
+  const [catalog, setCatalog] = useState({ available: false, priceCents: null });
   useEffect(() => setAccessLocked(new URLSearchParams(window.location.search).get('access') === 'locked'), []);
-  const openCheckout = () => dialogRef.current?.showModal();
+  useEffect(() => { fetch('/api/recipes/catalog', { cache: 'no-store' }).then((response) => response.json()).then(setCatalog).catch(() => {}); }, []);
+  const openCheckout = () => {
+    dialogRef.current?.showModal();
+    fetch('/api/recipes/catalog', { cache: 'no-store' }).then((response) => response.json()).then(setCatalog).catch(() => {});
+  };
 
   return (
     <>
@@ -111,10 +145,11 @@ export function RecipeProductLandingPage() {
             <p className="eyebrow eyebrow--gold">{product.positioning} · por Gislaine Duarte</p>
             <h1 id="product-title">7 receitas para ajudar você a <em>desinflamar!</em></h1>
             <p className="product-hero__subtitle">{product.subtitle}</p>
-            <form action="/api/recipes/checkout" method="post" className="product-hero__actions">
+            <div className="product-hero__actions">
               <CheckoutButton onActivate={openCheckout} />
               <a className="text-link" href="#colecao">Conhecer a coleção <Arrow /></a>
-            </form>
+            </div>
+            {catalog.available && catalog.priceCents ? <p className="product-live-price">Acesso completo por {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(catalog.priceCents / 100)}</p> : null}
             <p className="product-hero__trust"><span>7 receitas</span><span>3 formatos</span><span>acesso organizado</span></p>
           </div>
           <RecipeCardsScene fallbackImage={product.hero.image} />
@@ -123,7 +158,7 @@ export function RecipeProductLandingPage() {
 
       {accessLocked ? (
         <div className="shell product-access-message" id="acesso" role="status">
-          <BrandMark /><p><strong>O acesso está temporariamente fechado.</strong> A coleção continua disponível para apresentação, mas a liberação só acontece quando o modo de demonstração está ativo.</p>
+          <BrandMark /><p><strong>A compra ainda não está disponível.</strong> Volte em breve ou entre em contato para saber mais.</p>
         </div>
       ) : null}
 
@@ -238,11 +273,11 @@ export function RecipeProductLandingPage() {
           <p className="eyebrow">Sua coleção, sempre à mão</p>
           <h2 id="final-cta-title">Sete receitas.<br />Um jeito mais leve de <em>começar.</em></h2>
           <p>{product.subtitle}</p>
-          <form action="/api/recipes/checkout" method="post"><CheckoutButton onActivate={openCheckout} /></form>
+          <div><CheckoutButton onActivate={openCheckout} /></div>
           <small>{product.educationalNotice}</small>
         </div>
       </section>
-      <ProductCheckoutDialog dialogRef={dialogRef} />
+      <ProductCheckoutDialog dialogRef={dialogRef} priceCents={catalog.priceCents} available={catalog.available} />
     </>
   );
 }
@@ -404,6 +439,7 @@ function ShoppingList({ recipes, selectedIds, multipliers, checked, onChecked, o
 
 export function RecipeLibrary({ data }) {
   const [query, setQuery] = useState('');
+  const [logoutError, setLogoutError] = useState('');
   const [category, setCategory] = useState('todas');
   const [activeId, setActiveId] = useState(data.recipes[0]?.id);
   const [favorites, setFavorites] = useStoredState('favorites', []);
@@ -429,6 +465,14 @@ export function RecipeLibrary({ data }) {
   const active = visibleRecipes.find((recipe) => recipe.id === activeId) || visibleRecipes[0];
   const activeIndex = data.recipes.findIndex((recipe) => recipe.id === active?.id);
   const toggleMapItem = (setter, map, recipeId, itemId) => setter({ ...map, [recipeId]: toggleInList(map[recipeId] || [], itemId) });
+  const logout = async () => {
+    setLogoutError('');
+    try {
+      const response = await fetch('/api/recipes/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' });
+      if (!response.ok) throw new Error();
+      window.location.assign(data.publicPath);
+    } catch { setLogoutError('Não foi possível sair agora. Tente novamente.'); }
+  };
 
   return (
     <>
@@ -443,7 +487,7 @@ export function RecipeLibrary({ data }) {
         <div className="shell recipe-toolbar__inner">
           <label className="recipe-search"><span className="sr-only">Pesquisar receita ou ingrediente</span><Icon name="search" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar receita ou ingrediente" /></label>
           <fieldset className="recipe-filters"><legend className="sr-only">Filtrar receitas por categoria</legend>{['todas', 'doce', 'salgada'].map((filter) => <button type="button" aria-pressed={category === filter} onClick={() => setCategory(filter)} key={filter}>{filter === 'todas' ? 'Todas' : filter === 'doce' ? 'Doces' : 'Salgadas'}</button>)}</fieldset>
-          <div className="recipe-downloads"><a href={`${data.downloadEndpoint}?format=html`}><Icon name="download" />Versão offline</a><a href={`${data.downloadEndpoint}?format=pdf`}><Icon name="download" />PDF</a></div>
+          <div className="recipe-downloads"><a href={`${data.downloadEndpoint}?format=html`}><Icon name="download" />Versão offline</a><a href={`${data.downloadEndpoint}?format=pdf`}><Icon name="download" />PDF</a><button type="button" onClick={logout}>Sair da conta</button>{logoutError ? <span role="alert">{logoutError}</span> : null}</div>
         </div>
       </section>
 
@@ -469,12 +513,53 @@ export function RecipeLibrary({ data }) {
 }
 
 function ProductAccessGate() {
+  const [email, setEmail] = useState('');
+  const [waiting, setWaiting] = useState(false);
+  const [status, setStatus] = useState('login');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('payment')) { setStatus('payment'); setWaiting(true); }
+  }, []);
+  useEffect(() => {
+    if (!waiting) return undefined;
+    let active = true;
+    const check = async () => {
+      try {
+        const response = await fetch('/api/recipes/status', { credentials: 'same-origin', cache: 'no-store' });
+        const data = await response.json();
+        if (!active) return;
+        if (data.state === 'ready') { window.location.reload(); return; }
+        setStatus(data.state);
+        if (data.state === 'login') setWaiting(false);
+      } catch { if (active) setStatus('error'); }
+    };
+    check();
+    const timer = window.setInterval(check, 3000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [waiting]);
+  const login = async (event) => {
+    event.preventDefault(); setBusy(true); setMessage('');
+    try {
+      const response = await fetch('/api/recipes/login', {
+        method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ email }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Não foi possível enviar o link.');
+      setMessage(result.message); setStatus('email'); setWaiting(true);
+    } catch (error) { setMessage(error.message); }
+    finally { setBusy(false); }
+  };
   return (
     <section className="shell recipe-access-gate">
       <BrandMark />
       <p className="eyebrow eyebrow--gold">Área da coleção</p>
-      <h1>Seu acesso ainda não está liberado.</h1>
-      <p>Volte à apresentação para iniciar o fluxo de acesso. Se você já havia entrado, a sessão pode ter expirado ou o modo de demonstração pode ter sido encerrado.</p>
+      <h1>{status === 'payment' ? 'Aguardando a confirmação do pagamento.' : status === 'email' ? 'Confira seu e-mail.' : 'Entre na sua coleção.'}</h1>
+      <p>{status === 'payment' ? 'Assim que o pagamento for confirmado, enviaremos um link de acesso ao e-mail informado. Esta página acompanha a confirmação automaticamente.' : status === 'email' ? 'Abra o link enviado por e-mail no computador ou no celular. Quando você confirmar, esta página entrará automaticamente.' : 'Se você já comprou, informe o mesmo e-mail usado no pagamento para receber um link de acesso.'}</p>
+      <form className="recipe-access-gate__form" onSubmit={login}><label>Seu e-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="voce@exemplo.com" required /></label><button className="button" type="submit" disabled={busy}><span>{busy ? 'Enviando…' : 'Receber link de acesso'}</span><span className="button__icon"><Arrow /></span></button></form>
+      {message ? <p role="status">{message}</p> : null}
       <a className="button" href={product.publicPath}><span>Voltar à coleção</span><span className="button__icon"><Arrow /></span></a>
     </section>
   );

@@ -18,11 +18,11 @@ if (instagram) {
 }
 
 const professionalRegistration = Object.freeze({
-  council: 'CRN-10',
+  council: 'CRN-2',
   number: '22562',
-  councilName: 'Conselho Regional de Nutrição da Décima Região',
-  councilUrl: 'https://crn10.org.br/',
-  directoryUrl: 'https://crn-sc.implanta.net.br/servicosOnline/Publico/ConsultaInscritos/',
+  councilName: 'Conselho Regional de Nutricionistas da 2ª Região',
+  councilUrl: 'https://crn2.org.br/',
+  directoryUrl: 'https://crn2.implanta.net.br/servicosOnline/Publico/ConsultaInscritos/',
 });
 const professionalName = 'Gislaine Muller Duarte';
 const registrationLabel = `${professionalRegistration.council} nº ${professionalRegistration.number}`;

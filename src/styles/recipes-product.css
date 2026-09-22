@@ -149,6 +149,13 @@
 .product-checkout-dialog > p:not(.eyebrow) { margin-top: 20px; color: var(--leaf); font-size: 13px; }
 .product-checkout-dialog > form:not(.product-checkout-dialog__close) { margin-top: 27px; }
 .product-checkout-dialog__fineprint { font-size: 9px !important; }
+.product-checkout-dialog__price { margin-top: 18px!important; color: var(--forest)!important; }
+.product-checkout-dialog__price strong { font: 400 30px var(--serif); display: block; margin-top: 4px; }
+.product-checkout-dialog__email { display: grid; gap: 9px; margin-bottom: 18px; font-size: 11px; font-weight: 700; }
+.product-checkout-dialog__email input,.recipe-access-gate__form input { min-height: 48px; width: min(100%, 390px); box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--color-line); border-radius: 4px; background: #fff; color: var(--forest); font: inherit; }
+.product-checkout-dialog__error { color: #9b4934!important; }
+.product-checkout-dialog__fineprint a { color: var(--forest); text-underline-offset: 3px; }
+.product-live-price { margin-top: 14px; color: var(--forest); font-size: 13px; font-weight: 700; }
 
 /* Área adquirida */
 .recipe-app-hero { padding-block: clamp(55px, 7vw, 90px); background: var(--forest); color: var(--ivory); }
@@ -173,7 +180,7 @@
 .recipe-filters button { min-height: 44px; padding: 8px 15px; border: 1px solid transparent; background: transparent; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
 .recipe-filters button[aria-pressed="true"] { border-color: var(--forest); background: var(--forest); color: var(--ivory); }
 .recipe-downloads { display: flex; gap: 8px; }
-.recipe-downloads a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 13px; border: 1px solid var(--color-line); background: var(--ivory); font-size: 11px; }
+.recipe-downloads a,.recipe-downloads button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 13px; border: 1px solid var(--color-line); background: var(--ivory); color: inherit; font: inherit; font-size: 11px; text-decoration: none; cursor: pointer; }
 .recipe-downloads svg { width: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
 
 .recipe-app-layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: clamp(32px, 5vw, 80px); padding-block: 55px var(--section-space); }
@@ -305,6 +312,9 @@ input:focus-visible + .recipe-checkbox { outline: 2px solid var(--gold-ink); out
 .recipe-access-gate h1 { max-width: 850px; }
 .recipe-access-gate > p:not(.eyebrow) { max-width: 580px; margin-top: 25px; color: var(--leaf); }
 .recipe-access-gate .button { margin-top: 28px; }
+.recipe-access-gate__form { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; margin-top: 26px; }
+.recipe-access-gate__form label { display: grid; gap: 8px; font-size: 11px; font-weight: 700; }
+.recipe-access-gate__form .button { margin-top: 0; }
 @keyframes recipe-pulse { 50% { opacity: .45; transform: translateY(-5px); } }
 
 @media (max-width: 1100px) {
@@ -371,7 +381,7 @@ input:focus-visible + .recipe-checkbox { outline: 2px solid var(--gold-ink); out
   .recipe-filters { width: 100%; }
   .recipe-filters button { flex: 1; }
   .recipe-downloads { grid-column: auto; padding-bottom: 0; overflow-x: auto; }
-  .recipe-downloads a { flex: 1 0 auto; justify-content: center; }
+  .recipe-downloads a,.recipe-downloads button { flex: 1 0 auto; justify-content: center; }
   .recipe-app-layout { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-top: 30px; }
   .recipe-app-sidebar { position: static; min-width: 0; }
   .recipe-library-nav { grid-template-columns: repeat(7, 220px); max-width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; border-bottom: 1px solid var(--color-line); }

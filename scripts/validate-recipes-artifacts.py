@@ -35,6 +35,6 @@ for index, recipe in enumerate(DATA["recipes"], start=4):
 
 assert any(page.get("/Annots") for page in reader.pages), "PDF sem links clicáveis"
 assert "Lista de compras" in reader.pages[10].extract_text()
-assert "CRN-10" in reader.pages[12].extract_text()
+assert "CRN-2" in reader.pages[12].extract_text()
 
 print("PDF: 14 páginas A4, sete receitas completas, fotos, texto extraível, metadados e links validados.")

@@ -21,10 +21,10 @@ async function loadProductArtifact(format) {
 
 export async function handleDownloadRequest(request, {
   env = process.env,
-  now = Date.now(),
+  store,
   loadArtifact = loadProductArtifact,
 } = {}) {
-  const entitlement = await verifyProductEntitlement(request, { env, now });
+  const entitlement = await verifyProductEntitlement(request, { env, store });
   if (!entitlement.granted) {
     return Response.json(
       { error: 'Acesso não autorizado.', reason: entitlement.reason },
@@ -57,4 +57,3 @@ export async function handleDownloadRequest(request, {
 export function GET(request) {
   return handleDownloadRequest(request);
 }
-

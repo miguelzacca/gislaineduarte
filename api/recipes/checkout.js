@@ -1,53 +1,25 @@
-import { recipesProduct } from '../../src/data/recipes-product.js';
-import {
-  ProductAccessConfigurationError,
-  createMockProductSession,
-  isAllowedCheckoutRequest,
-  isSecureRequest,
-  productAccessHeaders,
-  safeProductUrl,
-  serializeProductSessionCookie,
-} from '../../server/recipes/access.js';
+import { isAllowedCheckoutRequest, productAccessHeaders } from '../../server/recipes/access.js';
+import { ProductConfigurationError } from '../../server/recipes/config.js';
+import { claimCookie, startCheckout } from '../../server/recipes/flow.js';
 
 const wantsJson = (request) => request.headers.get('accept')?.includes('application/json');
 
-export async function handleCheckoutRequest(request, { env = process.env, now = Date.now() } = {}) {
-  if (!isAllowedCheckoutRequest(request)) {
-    return Response.json({ error: 'Origem não autorizada.' }, { status: 403, headers: productAccessHeaders() });
-  }
+export async function handleCheckoutRequest(request, options = {}) {
+  const env = options.env || process.env;
+  if (!isAllowedCheckoutRequest(request)) return Response.json({ error: 'Origem não autorizada.' }, { status: 403, headers: productAccessHeaders() });
+  if (Number(request.headers.get('content-length') || 0) > 4096) return Response.json({ error: 'Solicitação muito grande.' }, { status: 413, headers: productAccessHeaders() });
   try {
-    const session = createMockProductSession({ env, now });
-    const headers = productAccessHeaders({
-      'Set-Cookie': serializeProductSessionCookie(session.token, {
-        maxAge: session.maxAge,
-        secure: isSecureRequest(request, env),
-      }),
-      'Location': safeProductUrl(recipesProduct.experiencePath, request).href,
-    });
-    if (wantsJson(request)) {
-      return Response.json({ ok: true, redirect: recipesProduct.experiencePath }, { status: 200, headers });
-    }
-    return new Response(null, { status: 303, headers });
+    const data = await request.formData();
+    const result = await startCheckout(data.get('email'), request, options);
+    if (result.error) return Response.json({ error: result.error }, { status: result.status, headers: productAccessHeaders() });
+    const headers = productAccessHeaders({ 'Set-Cookie': claimCookie(result.claim, request, env) });
+    if (wantsJson(request)) return Response.json({ checkoutUrl: result.url }, { headers });
+    return new Response(null, { status: 303, headers: { ...headers, Location: result.url } });
   } catch (error) {
-    if (!(error instanceof ProductAccessConfigurationError)) throw error;
-    if (wantsJson(request)) {
-      return Response.json({ error: 'Acesso temporariamente indisponível.' }, { status: 423, headers: productAccessHeaders() });
-    }
-    const locked = safeProductUrl(recipesProduct.publicPath, request);
-    locked.searchParams.set('access', 'locked');
-    locked.hash = 'acesso';
-    return new Response(null, {
-      status: 303,
-      headers: productAccessHeaders({ Location: locked.href }),
-    });
+    if (!(error instanceof ProductConfigurationError)) console.error('Falha ao criar checkout:', error);
+    return Response.json({ error: 'Pagamento temporariamente indisponível.' }, { status: 503, headers: productAccessHeaders() });
   }
 }
 
-export function POST(request) {
-  return handleCheckoutRequest(request);
-}
-
-export function GET() {
-  return new Response('Method Not Allowed', { status: 405, headers: productAccessHeaders({ Allow: 'POST' }) });
-}
-
+export function POST(request) { return handleCheckoutRequest(request); }
+export function GET() { return new Response('Method Not Allowed', { status: 405, headers: productAccessHeaders({ Allow: 'POST' }) }); }

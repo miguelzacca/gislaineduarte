@@ -1,8 +1,8 @@
 import { buildProtectedProductPayload } from '../../src/data/recipes-product.js';
 import { productAccessHeaders, verifyProductEntitlement } from '../../server/recipes/access.js';
 
-export async function handleContentRequest(request, { env = process.env, now = Date.now() } = {}) {
-  const entitlement = await verifyProductEntitlement(request, { env, now });
+export async function handleContentRequest(request, { env = process.env, store } = {}) {
+  const entitlement = await verifyProductEntitlement(request, { env, store });
   if (!entitlement.granted) {
     return Response.json(
       { error: 'Acesso não autorizado.', reason: entitlement.reason },
@@ -18,4 +18,3 @@ export async function handleContentRequest(request, { env = process.env, now = D
 export function GET(request) {
   return handleContentRequest(request);
 }
-
