@@ -12,6 +12,11 @@ export async function handleCheckoutRequest(request, options = {}) {
     const data = await request.formData();
     const result = await startCheckout(data.get('email'), request, options);
     if (result.error) return Response.json({ error: result.error }, { status: result.status, headers: productAccessHeaders() });
+    if (result.accessUrl) {
+      const headers = productAccessHeaders(result.cookie ? { 'Set-Cookie': result.cookie } : {});
+      if (wantsJson(request)) return Response.json({ accessUrl: result.accessUrl }, { headers });
+      return new Response(null, { status: 303, headers: { ...headers, Location: result.accessUrl } });
+    }
     const headers = productAccessHeaders({ 'Set-Cookie': claimCookie(result.claim, request, env) });
     if (wantsJson(request)) return Response.json({ checkoutUrl: result.url }, { headers });
     return new Response(null, { status: 303, headers: { ...headers, Location: result.url } });

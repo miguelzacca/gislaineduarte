@@ -8,6 +8,7 @@ export async function handleLoginRequest(request, options = {}) {
     const form = await request.formData();
     const result = await requestLogin(form.get('email'), request, options);
     if (result.error) return Response.json({ error: result.error }, { status: result.status, headers: productAccessHeaders() });
+    if (result.ready) return Response.json({ ok: true, ready: true }, { headers: productAccessHeaders() });
     return Response.json({ ok: true, message: 'Se este e-mail possui acesso, enviamos um link para entrar.' }, {
       headers: productAccessHeaders(result.cookie ? { 'Set-Cookie': result.cookie } : {}),
     });

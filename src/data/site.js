@@ -66,7 +66,7 @@ export const hero = {
   title: site.tagline,
   description: site.heroDescription,
   secondaryLabel: 'Conhecer os atendimentos',
-  secondaryHref: '/atendimentos/',
+  secondaryHref: '/atendimentos',
 };
 
 export const biography = {
@@ -140,7 +140,7 @@ export const services = [
     audience: 'Mulheres e famílias que desejam compreender melhor sua alimentação e seus objetivos de cuidado.',
     seoTitle: 'Consulta nutricional individual | Gislaine Duarte',
     seoDescription: 'Conheça a consulta nutricional individual com Gislaine Duarte: um olhar para sua alimentação, rotina e objetivos. Solicite informações e orçamento.',
-    href: '/atendimentos/consulta-nutricional/',
+    href: '/atendimentos/consulta-nutricional',
   },
   {
     slug: 'ciclos-de-acompanhamento',
@@ -171,7 +171,7 @@ export const services = [
     audience: 'Mulheres e famílias que buscam dar continuidade ao cuidado nutricional.',
     seoTitle: 'Ciclos de acompanhamento nutricional | Gislaine Duarte',
     seoDescription: 'Conheça os ciclos de acompanhamento com Gislaine Duarte, voltados à continuidade do cuidado nutricional e à construção de hábitos. Solicite orçamento.',
-    href: '/atendimentos/ciclos-de-acompanhamento/',
+    href: '/atendimentos/ciclos-de-acompanhamento',
   },
 ];
 
@@ -196,20 +196,20 @@ export const faqs = [
 
 export const navigation = [
   { label: 'Abordagem', href: '/#abordagem' },
-  { label: 'Sobre a Gi', href: '/sobre/' },
-  { label: 'Atendimentos', href: '/atendimentos/' },
-  { label: '7 receitas', href: '/7-receitas-para-ajudar-voce-a-desinflamar/' },
-  { label: 'Contato', href: '/contato/' },
+  { label: 'Sobre a Gi', href: '/sobre' },
+  { label: 'Atendimentos', href: '/atendimentos' },
+  { label: '7 receitas', href: '/7-receitas-para-ajudar-voce-a-desinflamar' },
+  { label: 'Contato', href: '/contato' },
 ];
 
 export const publicRoutes = [
   '/',
-  '/sobre/',
-  '/atendimentos/',
+  '/sobre',
+  '/atendimentos',
   ...services.map((service) => service.href),
-  '/contato/',
-  '/7-receitas-para-ajudar-voce-a-desinflamar/',
-  '/privacidade/',
+  '/contato',
+  '/7-receitas-para-ajudar-voce-a-desinflamar',
+  '/privacidade',
 ];
 
 /**

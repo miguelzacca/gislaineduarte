@@ -4,7 +4,7 @@ import { consumeMagicLink } from '../../server/recipes/flow.js';
 import { recipesProduct } from '../../src/data/recipes-product.js';
 
 function page(message, token = '') {
-  const button = token ? `<form action="/api/recipes/verify/" method="post"><input type="hidden" name="token" value="${token}"><button type="submit">Confirmar meu acesso</button></form>` : '<a href="/minhas-receitas/">Voltar à coleção</a>';
+  const button = token ? `<form action="/api/recipes/verify" method="post"><input type="hidden" name="token" value="${token}"><button type="submit">Confirmar meu acesso</button></form>` : '<a href="/minhas-receitas">Voltar à coleção</a>';
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Confirmar acesso | Gislaine Duarte</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f1eee5;color:#173f35;font-family:Arial,sans-serif;padding:20px;box-sizing:border-box}main{max-width:480px;background:#fff;padding:42px;border-radius:20px;box-shadow:0 24px 70px #173f351a}small{letter-spacing:.25em;color:#927747}h1{font-family:Georgia,serif;font-weight:400;font-size:42px;line-height:1.15}p{line-height:1.6}button,a{display:inline-block;border:0;border-radius:8px;background:#173f35;color:white;text-decoration:none;padding:16px 22px;font:600 15px Arial;cursor:pointer}</style></head><body><main><small>GISLAINE DUARTE</small><h1>${message}</h1><p>Seu link de acesso é pessoal e expira em 15 minutos. Ao confirmar, você poderá abrir a coleção neste dispositivo e no computador onde iniciou o pedido.</p>${button}</main></body></html>`;
 }
 

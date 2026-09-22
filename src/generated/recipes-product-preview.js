@@ -6,8 +6,8 @@ export const recipesProductPreview = Object.freeze({
   "subtitle": "Uma seleção prática de receitas doces e salgadas para trazer mais variedade, sabor e intenção à sua rotina.",
   "description": "Uma coleção digital interativa criada para apoiar uma alimentação equilibrada com preparações possíveis, organização e cuidado no dia a dia.",
   "positioning": "Coleção digital de receitas",
-  "publicPath": "/7-receitas-para-ajudar-voce-a-desinflamar/",
-  "experiencePath": "/minhas-receitas/",
+  "publicPath": "/7-receitas-para-ajudar-voce-a-desinflamar",
+  "experiencePath": "/minhas-receitas",
   "educationalNotice": "Este material possui caráter educativo e não substitui avaliação ou acompanhamento nutricional individualizado. Adapte ingredientes às suas necessidades, alergias e orientações profissionais.",
   "commerce": {
     "currency": "BRL",

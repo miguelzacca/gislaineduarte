@@ -42,7 +42,7 @@ function CheckoutButton({ children = 'Quero acessar as 7 receitas', onActivate, 
   );
 }
 
-function ProductCheckoutDialog({ dialogRef, catalog, onRetry }) {
+function ProductCheckoutDialog({ dialogRef, catalog, onRetry, accessStatus, onCheckAccess }) {
   const { priceCents, available, status } = catalog;
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
@@ -60,7 +60,7 @@ function ProductCheckoutDialog({ dialogRef, catalog, onRetry }) {
         checkoutTab.document.title = 'Preparando pagamento';
         checkoutTab.document.body.textContent = 'Preparando o pagamento seguro…';
       }
-      const response = await fetch('/api/recipes/checkout/', {
+      const response = await fetch('/api/recipes/checkout', {
         method: 'POST', credentials: 'same-origin', cache: 'no-store',
         signal: AbortSignal.timeout(30_000),
         headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -68,6 +68,11 @@ function ProductCheckoutDialog({ dialogRef, catalog, onRetry }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Não foi possível abrir o pagamento.');
+      if (data.accessUrl) {
+        checkoutTab?.close();
+        window.location.assign(data.accessUrl);
+        return;
+      }
       if (checkoutTab) {
         checkoutTab.location.href = data.checkoutUrl;
         window.location.assign(`${product.experiencePath}?payment=pending`);
@@ -84,14 +89,16 @@ function ProductCheckoutDialog({ dialogRef, catalog, onRetry }) {
       <div className="product-checkout-dialog__mark" aria-hidden="true"><BrandMark /></div>
       <p className="eyebrow eyebrow--gold">Coleção digital</p>
       <h2 id="checkout-title">Seu próximo passo começa aqui.</h2>
-      {available ? <p>Informe seu e-mail para receber o acesso após a confirmação do pagamento. Sua conta será criada somente quando a compra for aprovada.</p> : null}
-      <div aria-live="polite" aria-busy={status === 'loading'}>
+      {accessStatus === 'checking' ? <p role="status">Verificando seu acesso…</p> : null}
+      {accessStatus === 'error' ? <><p role="alert">Não foi possível verificar seu acesso. Tente novamente.</p><button className="text-link" type="button" onClick={onCheckAccess}>Tentar novamente <Arrow /></button></> : null}
+      {available && accessStatus === 'login' ? <p>Informe seu e-mail para receber o acesso após a confirmação do pagamento. Vamos preenchê-lo também no checkout da InfinitePay.</p> : null}
+      {accessStatus === 'login' ? <div aria-live="polite" aria-busy={status === 'loading'}>
         {status === 'loading' ? <p className="product-checkout-dialog__price">Consultando a disponibilidade da coleção…</p> : available && priceCents ? <p className="product-checkout-dialog__price">Valor da coleção: <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(priceCents / 100)}</strong></p> : <>
           <p className="product-checkout-dialog__price">{status === 'error' ? 'Não foi possível consultar a disponibilidade. Tente novamente.' : 'Esta coleção ainda não está disponível para compra. Volte em breve.'}</p>
           <button className="text-link" type="button" onClick={onRetry}>Consultar novamente <Arrow /></button>
         </>}
-      </div>
-      {available ? <form onSubmit={submit}>
+      </div> : null}
+      {available && accessStatus === 'login' ? <form onSubmit={submit}>
         <label className="product-checkout-dialog__email">Seu e-mail<input type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="voce@exemplo.com" required /></label>
         <button className="button" type="submit" disabled={busy || !available}><span>{busy ? 'Preparando checkout…' : 'Ir para o pagamento seguro'}</span><span className="button__icon"><Arrow /></span></button>
       </form> : null}
@@ -143,11 +150,12 @@ function ProductFaq() {
 export function RecipeProductLandingPage() {
   const dialogRef = useRef(null);
   const [accessLocked, setAccessLocked] = useState(false);
+  const [checkoutAccess, setCheckoutAccess] = useState('checking');
   const [catalog, setCatalog] = useState({ status: 'loading', available: false, priceCents: null });
   const refreshCatalog = useCallback(async (signal = AbortSignal.timeout(10_000)) => {
     setCatalog({ status: 'loading', available: false, priceCents: null });
     try {
-      const response = await fetch('/api/recipes/catalog/', { cache: 'no-store', signal });
+      const response = await fetch('/api/recipes/catalog', { cache: 'no-store', signal });
       if (!response.ok) throw new Error('Não foi possível consultar a coleção.');
       const data = await response.json();
       const available = data.available === true && Number.isSafeInteger(data.priceCents) && data.priceCents > 0;
@@ -162,9 +170,21 @@ export function RecipeProductLandingPage() {
     void refreshCatalog(AbortSignal.any([controller.signal, AbortSignal.timeout(10_000)]));
     return () => controller.abort();
   }, [refreshCatalog]);
-  const openCheckout = () => {
-    dialogRef.current?.showModal();
-    void refreshCatalog();
+  const openCheckout = async () => {
+    if (!dialogRef.current?.open) dialogRef.current?.showModal();
+    setCheckoutAccess('checking');
+    try {
+      const response = await fetch('/api/recipes/status', { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10_000) });
+      if (!response.ok) throw new Error('Falha ao verificar acesso.');
+      const data = await response.json();
+      if (['ready', 'payment', 'email'].includes(data.state)) {
+        window.location.assign(product.experiencePath);
+        return;
+      }
+      if (data.state !== 'login') throw new Error('Estado de acesso indisponível.');
+      setCheckoutAccess('login');
+      void refreshCatalog();
+    } catch { setCheckoutAccess('error'); }
   };
 
   return (
@@ -283,7 +303,7 @@ export function RecipeProductLandingPage() {
             <p>{biography.short}</p>
             <p>{biography.education}</p>
             <ProfessionalIdentity />
-            <TextLink href="/sobre/">Conhecer a Nutri Gi</TextLink>
+            <TextLink href="/sobre">Conhecer a Nutri Gi</TextLink>
           </div>
         </div>
       </section>
@@ -291,7 +311,7 @@ export function RecipeProductLandingPage() {
       <section className="section product-bridge" aria-labelledby="bridge-title">
         <div className="shell product-bridge__inner">
           <div><p className="eyebrow">Quando a receita é só o começo</p><h2 id="bridge-title">Sua alimentação também pode pedir um olhar <em>só para você.</em></h2></div>
-          <div><p>A coleção ajuda a organizar possibilidades. O acompanhamento nutricional individualizado considera sua história, rotina, necessidades e objetivos com a profundidade que uma seleção de receitas não pretende substituir.</p><TextLink href="/atendimentos/">Conhecer os atendimentos</TextLink></div>
+          <div><p>A coleção ajuda a organizar possibilidades. O acompanhamento nutricional individualizado considera sua história, rotina, necessidades e objetivos com a profundidade que uma seleção de receitas não pretende substituir.</p><TextLink href="/atendimentos">Conhecer os atendimentos</TextLink></div>
         </div>
       </section>
 
@@ -307,7 +327,7 @@ export function RecipeProductLandingPage() {
           <small>{product.educationalNotice}</small>
         </div>
       </section>
-      <ProductCheckoutDialog dialogRef={dialogRef} catalog={catalog} onRetry={() => { void refreshCatalog(); }} />
+      <ProductCheckoutDialog dialogRef={dialogRef} catalog={catalog} onRetry={() => { void refreshCatalog(); }} accessStatus={checkoutAccess} onCheckAccess={openCheckout} />
     </>
   );
 }
@@ -544,51 +564,81 @@ export function RecipeLibrary({ data }) {
 
 function ProductAccessGate() {
   const [email, setEmail] = useState('');
-  const [waiting, setWaiting] = useState(false);
-  const [status, setStatus] = useState('login');
+  const emailRequested = useRef(false);
+  const [waiting, setWaiting] = useState(true);
+  const [status, setStatus] = useState('checking');
+  const [checkoutUrl, setCheckoutUrl] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).has('payment')) { setStatus('payment'); setWaiting(true); }
-  }, []);
-  useEffect(() => {
     if (!waiting) return undefined;
     let active = true;
+    let timer;
+    const controller = new AbortController();
     const check = async () => {
       try {
-        const response = await fetch('/api/recipes/status', { credentials: 'same-origin', cache: 'no-store' });
+        const response = await fetch('/api/recipes/status', { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10_000)]) });
+        if (!response.ok) throw new Error('Falha ao verificar acesso.');
         const data = await response.json();
         if (!active) return;
         if (data.state === 'ready') { window.location.reload(); return; }
-        setStatus(data.state);
+        if (!['login', 'payment', 'email'].includes(data.state)) throw new Error('Estado de acesso indisponível.');
+        setStatus(data.state === 'login' && emailRequested.current ? 'email' : data.state);
+        setCheckoutUrl(data.checkoutUrl || '');
         if (data.state === 'login') setWaiting(false);
-      } catch { if (active) setStatus('error'); }
+        else timer = window.setTimeout(check, 3000);
+      } catch { if (active) { setStatus('error'); setWaiting(false); } }
     };
-    check();
-    const timer = window.setInterval(check, 3000);
-    return () => { active = false; window.clearInterval(timer); };
+    void check();
+    return () => { active = false; controller.abort(); window.clearTimeout(timer); };
   }, [waiting]);
   const login = async (event) => {
-    event.preventDefault(); setBusy(true); setMessage('');
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true); setMessage('');
     try {
       const response = await fetch('/api/recipes/login', {
         method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        signal: AbortSignal.timeout(30_000),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ email }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Não foi possível enviar o link.');
+      if (result.ready) { window.location.reload(); return; }
+      emailRequested.current = true;
       setMessage(result.message); setStatus('email'); setWaiting(true);
     } catch (error) { setMessage(error.message); }
     finally { setBusy(false); }
   };
+  const changeEmail = async () => {
+    setBusy(true); setWaiting(false); setMessage('');
+    try {
+      const response = await fetch('/api/recipes/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10_000) });
+      if (!response.ok) throw new Error('Não foi possível trocar o e-mail agora.');
+      emailRequested.current = false;
+      setEmail(''); setCheckoutUrl(''); setStatus('login');
+    } catch (error) { setMessage(error.message); setStatus('error'); }
+    finally { setBusy(false); }
+  };
+  const copy = {
+    checking: ['Verificando seu acesso.', 'Estamos conferindo sua sessão e o andamento da compra.'],
+    payment: ['Aguardando a confirmação do pagamento.', 'Assim que o pagamento for confirmado, enviaremos um link de acesso ao e-mail informado. Esta página acompanha a confirmação automaticamente.'],
+    email: ['Confira seu e-mail.', 'Abra o link enviado por e-mail no computador ou no celular. Quando você confirmar, esta página entrará automaticamente.'],
+    login: ['Entre na sua coleção.', 'Se você já comprou, informe o mesmo e-mail usado no pagamento. O link entra na sua conta existente, com suas compras preservadas.'],
+    error: ['Não foi possível verificar seu acesso.', 'Tente novamente em instantes. Sua compra e sua conta continuam salvas.'],
+  }[status];
   return (
     <section className="shell recipe-access-gate">
       <BrandMark />
       <p className="eyebrow eyebrow--gold">Área da coleção</p>
-      <h1>{status === 'payment' ? 'Aguardando a confirmação do pagamento.' : status === 'email' ? 'Confira seu e-mail.' : 'Entre na sua coleção.'}</h1>
-      <p>{status === 'payment' ? 'Assim que o pagamento for confirmado, enviaremos um link de acesso ao e-mail informado. Esta página acompanha a confirmação automaticamente.' : status === 'email' ? 'Abra o link enviado por e-mail no computador ou no celular. Quando você confirmar, esta página entrará automaticamente.' : 'Se você já comprou, informe o mesmo e-mail usado no pagamento para receber um link de acesso.'}</p>
-      <form className="recipe-access-gate__form" onSubmit={login}><label>Seu e-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="voce@exemplo.com" required /></label><button className="button" type="submit" disabled={busy}><span>{busy ? 'Enviando…' : 'Receber link de acesso'}</span><span className="button__icon"><Arrow /></span></button></form>
+      <h1>{copy[0]}</h1>
+      <p aria-live="polite">{copy[1]}</p>
+      {status === 'login' ? <form className="recipe-access-gate__form" onSubmit={login}><label>Seu e-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="voce@exemplo.com" required /></label><button className="button" type="submit" disabled={busy}><span>{busy ? 'Enviando…' : 'Receber link de acesso'}</span><span className="button__icon"><Arrow /></span></button></form> : null}
+      {status === 'payment' && checkoutUrl ? <a className="button" href={checkoutUrl} target="_blank" rel="noopener noreferrer"><span>Continuar pagamento</span><span className="button__icon"><Arrow /></span></a> : null}
+      {status === 'email' ? <button className="button" type="button" onClick={login} disabled={busy}><span>{busy ? 'Enviando…' : 'Reenviar link de acesso'}</span><span className="button__icon"><Arrow /></span></button> : null}
+      {['payment', 'email'].includes(status) ? <button className="text-link recipe-access-gate__change" type="button" disabled={busy} onClick={changeEmail}>Usar outro e-mail</button> : null}
+      {status === 'error' ? <button className="button" type="button" disabled={busy} onClick={() => { setStatus('checking'); setWaiting(true); }}><span>Verificar novamente</span><span className="button__icon"><Arrow /></span></button> : null}
       {message ? <p role="status">{message}</p> : null}
       <a className="button" href={product.publicPath}><span>Voltar à coleção</span><span className="button__icon"><Arrow /></span></a>
     </section>

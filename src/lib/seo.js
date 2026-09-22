@@ -8,9 +8,7 @@ export const siteNoindex =
 
 export function canonicalUrl(path) {
   const pathname = new URL(path, site.url).pathname;
-  const normalized = pathname === '/' || /\.[a-z0-9]+$/i.test(pathname)
-    ? pathname
-    : `${pathname.replace(/\/+$/, '')}/`;
+  const normalized = pathname.replace(/\/+$/, '') || '/';
   return `${site.url}${normalized}`;
 }
 
@@ -49,7 +47,7 @@ export function buildJsonLd(
     name: site.fullName,
     alternateName: [site.name, site.familiarName],
     jobTitle: site.profession,
-    url: `${site.url}/sobre/`,
+    url: `${site.url}/sobre`,
     image: new URL(site.portrait, site.url).href,
   };
   if (site.contact.email) person.email = site.contact.email;
@@ -93,10 +91,10 @@ export function buildJsonLd(
     }));
   } else if (serviceId) {
     page.mainEntity = { '@id': serviceId };
-  } else if (url === `${site.url}/sobre/`) {
+  } else if (url === `${site.url}/sobre`) {
     page['@type'] = 'AboutPage';
     page.mainEntity = { '@id': personId };
-  } else if (url === `${site.url}/contato/`) {
+  } else if (url === `${site.url}/contato`) {
     page['@type'] = 'ContactPage';
   }
 

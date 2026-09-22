@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { CLAIM_COOKIE, SESSION_COOKIE, tokenHash, verifyProductEntitlement } from '../../server/recipes/access.js';
-import { confirmPayment, consumeMagicLink, authStatus } from '../../server/recipes/flow.js';
+import { confirmPayment, consumeMagicLink, authStatus, startCheckout, requestLogin } from '../../server/recipes/flow.js';
+import { handleCheckoutRequest } from '../../api/recipes/checkout.js';
+import { handleLoginRequest } from '../../api/recipes/login.js';
+import { handleStatusRequest } from '../../api/recipes/status.js';
 import { handleContentRequest } from '../../api/recipes/content.js';
 import { handleDownloadRequest } from '../../api/recipes/download.js';
 import { handleLogoutRequest } from '../../api/recipes/logout.js';
@@ -18,6 +21,139 @@ const secureEnv = {
 };
 const request = (path, cookie = '') => new Request(`${base}${path}`, { headers: cookie ? { cookie } : {} });
 const result = (rows = []) => ({ rows, rowCount: rows.length });
+
+test('checkout envia à InfinitePay o mesmo e-mail normalizado que vincula o pedido', async () => {
+  const writes = [];
+  const store = {
+    query: async (sql, params) => {
+      if (sql.includes('FROM recipe_entitlements')) return result();
+      if (sql.includes('FROM recipe_products')) return result([{ id: RECIPES_PRODUCT_ID, title: 'Coleção', price_cents: 999, published: true }]);
+      writes.push({ sql, params }); return result();
+    },
+    connect: async () => ({ query: async (sql, params) => { writes.push({ sql, params }); return result(); }, release() {} }),
+  };
+  let payload;
+  const checkout = await startCheckout('  Compradora@Example.com  ', request('/api/recipes/checkout'), {
+    env: secureEnv, store,
+    fetcher: async (_url, options) => { payload = JSON.parse(options.body); return Response.json({ url: 'https://checkout.infinitepay.io/conta_teste?lenc=example' }); },
+  });
+  assert.deepEqual(payload.customer, { email: 'compradora@example.com' });
+  assert.equal(payload.order_nsu, checkout.orderId);
+  assert.equal(payload.redirect_url, `${base}/api/recipes/return`);
+  assert.equal(new URL(payload.webhook_url).pathname, '/api/recipes/webhook');
+  const order = writes.find(({ sql }) => sql.includes('INSERT INTO recipe_orders'));
+  assert.equal(order.params[1], payload.customer.email);
+  assert.equal(order.params[3], 999);
+});
+
+test('sessão válida abre a coleção sem novo checkout, e-mail ou verificação', async () => {
+  const token = 'v'.repeat(43);
+  const store = { query: async (sql) => {
+    assert.ok(sql.includes('FROM recipe_sessions'));
+    return result([{ email: 'buyer@example.com' }]);
+  } };
+  const post = (path) => new Request(`${base}${path}`, {
+    method: 'POST', headers: { cookie: `${SESSION_COOKIE}=${token}`, accept: 'application/json' }, body: new URLSearchParams(),
+  });
+  const options = { env: { ...secureEnv, INFINITEPAY_HANDLE: '' }, store,
+    fetcher: () => { throw new Error('Não deve criar pagamento'); }, mailer: () => { throw new Error('Não deve enviar e-mail'); } };
+  const checkout = await handleCheckoutRequest(post('/api/recipes/checkout'), options);
+  assert.equal(checkout.status, 200);
+  assert.deepEqual(await checkout.json(), { accessUrl: '/minhas-receitas' });
+  const login = await handleLoginRequest(post('/api/recipes/login'), options);
+  assert.equal(login.status, 200);
+  assert.deepEqual(await login.json(), { ok: true, ready: true });
+});
+
+test('compradora sem sessão recebe acesso à compra existente, sem cobrança duplicada', async () => {
+  const sent = [], writes = [];
+  const store = { query: async (sql, params) => {
+    if (sql.includes('FROM recipe_entitlements')) return result([{ ok: 1 }]);
+    if (sql.includes('count(*)')) return result([{ count: 0 }]);
+    writes.push({ sql, params }); return result();
+  } };
+  const req = new Request(`${base}/api/recipes/checkout`, { method: 'POST', headers: { accept: 'application/json' }, body: new URLSearchParams({ email: 'buyer@example.com' }) });
+  const response = await handleCheckoutRequest(req, {
+    env: secureEnv, store,
+    fetcher: () => { throw new Error('Não deve criar outra cobrança'); }, mailer: async (mail) => sent.push(mail),
+  });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { accessUrl: '/minhas-receitas' });
+  assert.ok(response.headers.get('set-cookie').startsWith(`${CLAIM_COOKIE}=`));
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].email, 'buyer@example.com');
+  assert.equal(writes.length, 2);
+  assert.ok(writes.every(({ sql }) => sql.includes('INSERT INTO recipe_login_challenges') || sql.includes('INSERT INTO recipe_magic_links')));
+});
+
+test('cookie de acompanhamento permite reenviar o link sem repetir e-mail nem recriar conta', async () => {
+  const secret = 'r'.repeat(43);
+  const challenge = { id: 'existing-challenge', secret_hash: tokenHash(secret), email: 'buyer@example.com', confirmed_at: null, redeemed_at: null };
+  const writes = [], sent = [];
+  const store = { query: async (sql, params) => {
+    if (sql.includes('FROM recipe_login_challenges')) return result([challenge]);
+    if (sql.includes('FROM recipe_entitlements')) return result([{ ok: 1 }]);
+    if (sql.includes('count(*)')) return result([{ count: 0 }]);
+    writes.push({ sql, params }); return result();
+  } };
+  const req = request('/api/recipes/login', `${CLAIM_COOKIE}=${challenge.id}.${secret}`);
+  const response = await requestLogin('', req, { env: secureEnv, store, mailer: async (mail) => sent.push(mail) });
+  assert.equal(response.sent, true);
+  assert.equal(response.cookie, undefined, 'mantém o cookie e o acompanhamento em outros dispositivos');
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].email, challenge.email);
+  assert.equal(writes.length, 1);
+  assert.ok(writes[0].sql.includes('INSERT INTO recipe_magic_links'));
+  assert.equal(writes[0].params[2], challenge.id);
+});
+
+test('reenvio sem e-mail rejeita acompanhamento forjado e respeita limite de envios', async () => {
+  const secret = 'r'.repeat(43);
+  const challenge = { id: 'existing-challenge', secret_hash: tokenHash(secret), email: 'buyer@example.com' };
+  const store = { query: async (sql) => {
+    if (sql.includes('FROM recipe_login_challenges')) return result([challenge]);
+    if (sql.includes('FROM recipe_entitlements')) return result([{ ok: 1 }]);
+    if (sql.includes('count(*)')) return result([{ count: 3 }]);
+    throw new Error('Não deve alterar o banco');
+  } };
+  const options = { env: secureEnv, store, mailer: () => { throw new Error('Não deve enviar e-mail'); } };
+  assert.equal((await requestLogin('', request('/api/recipes/login', `${CLAIM_COOKIE}=${challenge.id}.${'x'.repeat(43)}`), options)).status, 400);
+  assert.equal((await requestLogin('', request('/api/recipes/login', `${CLAIM_COOKIE}=${challenge.id}.${secret}`), options)).sent, true);
+});
+
+test('sessão expirada pede novo link para a conta existente, preservando compras', async () => {
+  const writes = [], sent = [];
+  const store = { query: async (sql, params) => {
+    if (sql.includes('FROM recipe_sessions')) return result();
+    if (sql.includes('FROM recipe_entitlements')) return result([{ ok: 1 }]);
+    if (sql.includes('count(*)')) return result([{ count: 0 }]);
+    writes.push({ sql, params }); return result();
+  } };
+  const req = request('/api/recipes/login', `${SESSION_COOKIE}=${'e'.repeat(43)}`);
+  const response = await requestLogin('buyer@example.com', req, { env: secureEnv, store, mailer: async (mail) => sent.push(mail) });
+  assert.equal(response.sent, true);
+  assert.equal(sent[0].email, 'buyer@example.com');
+  assert.equal(writes.length, 2);
+  assert.ok(writes.every(({ sql }) => sql.includes('INSERT INTO recipe_login_challenges') || sql.includes('INSERT INTO recipe_magic_links')));
+});
+
+test('acompanhamento retoma pagamento sem pedir e-mail e sem conceder acesso antecipado', async () => {
+  const secret = 'p'.repeat(43);
+  const challenge = { id: 'payment-challenge', secret_hash: tokenHash(secret), email: 'buyer@example.com', confirmed_at: null, order_id: 'order' };
+  let paid = false;
+  const store = { query: async (sql) => {
+    if (sql.includes('FROM recipe_login_challenges')) return result([challenge]);
+    if (sql.includes('FROM recipe_orders')) return result([{ status: paid ? 'paid' : 'pending', checkout_url: 'https://checkout.infinitepay.io/conta_teste?lenc=example' }]);
+    throw new Error(`Consulta inesperada: ${sql}`);
+  } };
+  const req = request('/api/recipes/status', `${CLAIM_COOKIE}=${challenge.id}.${secret}`);
+  assert.deepEqual(await (await handleStatusRequest(req, { env: secureEnv, store })).json(), { state: 'payment', checkoutUrl: 'https://checkout.infinitepay.io/conta_teste?lenc=example' });
+  assert.equal((await handleContentRequest(req, { env: secureEnv, store })).status, 401);
+  paid = true;
+  assert.deepEqual(await (await handleStatusRequest(req, { env: secureEnv, store })).json(), { state: 'email' });
+  assert.equal((await handleContentRequest(req, { env: secureEnv, store })).status, 401);
+  assert.deepEqual(await authStatus(request('/api/recipes/status', `${CLAIM_COOKIE}=${challenge.id}.${'x'.repeat(43)}`), { env: secureEnv, store }), { state: 'login' });
+});
 
 test('conteúdo e arquivos negam acesso sem sessão comprada, inclusive com cookie do mock antigo', async () => {
   const mockCookie = 'gd_recipes_access=old-mock-session';
@@ -113,7 +249,7 @@ test('pagamento confirmado pela InfinitePay concede acesso e envia link para o e
   assert.equal(checked[0].body.transaction_nsu, transactionNsu);
   assert.ok(writes.some(({ sql }) => sql.includes('INSERT INTO recipe_entitlements')));
   assert.equal(sent[0].email, order.email);
-  assert.match(sent[0].url, /^https:\/\/gislaineduarte\.com\.br\/api\/recipes\/verify\/\?token=/);
+  assert.match(sent[0].url, /^https:\/\/gislaineduarte\.com\.br\/api\/recipes\/verify\?token=/);
 });
 
 test('link aberto no celular autentica também o computador com o cookie de solicitação', async () => {
@@ -140,6 +276,7 @@ test('link aberto no celular autentica também o computador com o cookie de soli
   };
   const mobileSession = await consumeMagicLink(token, { env: secureEnv, store });
   assert.ok(mobileSession?.token);
+  assert.equal(mobileSession.maxAge, 30 * 86400);
   assert.equal(await consumeMagicLink(token, { env: secureEnv, store }), null);
   const pc = await authStatus(request('/api/recipes/status', `${CLAIM_COOKIE}=${challenge.id}.${claimSecret}`), { env: secureEnv, store });
   assert.equal(pc.state, 'ready');

@@ -3,7 +3,8 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "trailingSlash": true,
+  "cleanUrls": true,
+  "trailingSlash": false,
   "functions": {
     "api/recipes/download.js": {
       "includeFiles": "artifacts/recipes/**"

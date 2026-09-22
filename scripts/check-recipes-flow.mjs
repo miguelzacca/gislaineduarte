@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 const origin = process.env.RECIPES_PRODUCT_TEST_ORIGIN || 'http://127.0.0.1:4321';
 const request = (path, options = {}) => {
   const url = new URL(path, origin);
-  if (url.pathname.startsWith('/api/')) url.pathname = `${url.pathname.replace(/\/+$/, '')}/`;
+  url.pathname = url.pathname.replace(/\/+$/, '') || '/';
   return fetch(url, { redirect: 'manual', ...options });
 };
 
-const landing = await request('/7-receitas-para-ajudar-voce-a-desinflamar/');
+const landing = await request('/7-receitas-para-ajudar-voce-a-desinflamar');
 assert.equal(landing.status, 200);
 assert.match(await landing.text(), /7 receitas para ajudar você a desinflamar!/);
 

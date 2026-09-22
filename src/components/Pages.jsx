@@ -71,7 +71,7 @@ export function HomePage() {
             <p className="hero-description">{site.heroDescription}</p>
             <div className="actions">
               <Button href={contactLink()} external>{contactLabel}</Button>
-              <TextLink href="/atendimentos/">Conhecer os atendimentos</TextLink>
+              <TextLink href="/atendimentos">Conhecer os atendimentos</TextLink>
             </div>
           </div>
           <div className="hero-art">
@@ -141,7 +141,7 @@ export function HomePage() {
             <h2>Antes da profissão,<br />uma busca<br /><em>por saúde.</em></h2>
             <p>{biography.short}</p>
             <div className="education-note">{biography.education}</div>
-            <TextLink href="/sobre/">Conheça minha história</TextLink>
+            <TextLink href="/sobre">Conheça minha história</TextLink>
           </div>
         </div>
       </section>
@@ -310,7 +310,7 @@ export function ContactPage() {
           <p>Você também pode enviar sua dúvida sobre os atendimentos por e-mail.</p>
           <a className="contact-email" href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
           <p style={{ marginTop: 24 }}>Para esse primeiro contato, basta contar qual atendimento deseja conhecer. Informações de saúde podem ser conversadas no contexto da avaliação individual.</p>
-          <TextLink href="/privacidade/">Como cuidamos da sua privacidade</TextLink>
+          <TextLink href="/privacidade">Como cuidamos da sua privacidade</TextLink>
         </div>
       </section>
     </>
@@ -362,7 +362,7 @@ export function NotFoundPage() {
         <p>A página que você procurou não está por aqui. Você pode voltar ao início ou conhecer meus atendimentos.</p>
         <div className="actions">
           <Button href="/">Voltar ao início</Button>
-          <TextLink href="/atendimentos/">Conhecer atendimentos</TextLink>
+          <TextLink href="/atendimentos">Conhecer atendimentos</TextLink>
         </div>
       </div>
       <BrandMark />

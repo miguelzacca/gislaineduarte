@@ -11,7 +11,7 @@ export function Wordmark() {
 
 function NavLinks({ path, mobile = false, onNavigate }) {
   return navigation.map((item, index) => {
-    const current = item.href === path || (path.startsWith('/atendimentos/') && item.href === '/atendimentos/');
+    const current = item.href === path || (path.startsWith('/atendimentos/') && item.href === '/atendimentos');
     return <a href={item.href} key={item.href} aria-current={current ? 'page' : undefined} onClick={onNavigate}>{mobile ? <small aria-hidden="true">0{index + 1}</small> : null}{item.label}</a>;
   });
 }
@@ -73,7 +73,7 @@ export function ProfessionalIdentity() {
 }
 
 export function Footer() {
-  return <footer className="site-footer"><div className="shell"><div className="footer-top"><div className="footer-brand"><Wordmark /><p>{site.tagline}</p><ProfessionalIdentity /></div><div><p className="footer-label">Explore com calma</p><nav className="footer-links" aria-label="Navegação do rodapé">{navigation.map(item => <a key={item.href} href={item.href}>{item.label}</a>)}</nav></div><div><p className="footer-label">Vamos conversar</p><div className="footer-links"><a href={contactLink()} target="_blank" rel="noopener noreferrer">WhatsApp · {site.contact.whatsappDisplay}</a><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>{site.contact.instagram ? <a href={site.contact.instagram} target="_blank" rel="noopener noreferrer">Instagram ↗</a> : null}<a href="/privacidade/">Política de privacidade</a></div></div></div><div className="footer-bottom"><p>© 2026 {site.fullName} · {site.profession}</p><p>{site.editorialNotice}</p></div></div></footer>;
+  return <footer className="site-footer"><div className="shell"><div className="footer-top"><div className="footer-brand"><Wordmark /><p>{site.tagline}</p><ProfessionalIdentity /></div><div><p className="footer-label">Explore com calma</p><nav className="footer-links" aria-label="Navegação do rodapé">{navigation.map(item => <a key={item.href} href={item.href}>{item.label}</a>)}</nav></div><div><p className="footer-label">Vamos conversar</p><div className="footer-links"><a href={contactLink()} target="_blank" rel="noopener noreferrer">WhatsApp · {site.contact.whatsappDisplay}</a><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>{site.contact.instagram ? <a href={site.contact.instagram} target="_blank" rel="noopener noreferrer">Instagram ↗</a> : null}<a href="/privacidade">Política de privacidade</a></div></div></div><div className="footer-bottom"><p>© 2026 {site.fullName} · {site.profession}</p><p>{site.editorialNotice}</p></div></div></footer>;
 }
 
 export function Breadcrumbs({ items }) {

@@ -10,7 +10,7 @@ const renderer = await createServer({ mode: 'production', logLevel: 'error', ser
 try {
 const { renderPages } = await renderer.ssrLoadModule('/src/entry-server.jsx');
 for (const page of renderPages()) {
-  const relative = page.path.endsWith('.html') ? page.path.slice(1) : `${page.path.slice(1)}index.html`;
+  const relative = page.path.endsWith('.html') ? page.path.slice(1) : `${page.path.slice(1)}/index.html`.replace(/^\//, '');
   const destination = resolve('.site', relative);
   await mkdir(dirname(destination), { recursive: true });
   await writeFile(destination, page.html, 'utf8');

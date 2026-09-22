@@ -29,9 +29,9 @@ Os dados estão em `src/data/site.js`, módulo ESM usado pelo gerador de HTML. `
 
 ## Conteúdo e indexação
 
-Sete URLs institucionais reais previstas: `/`, `/sobre/`, `/atendimentos/`, `/atendimentos/consulta-nutricional/`, `/atendimentos/ciclos-de-acompanhamento/`, `/contato/`, `/privacidade/`. Nenhuma rota de materiais vazios, artigos fictícios, busca interna ou localização não confirmada. A página 404 é excluída do sitemap.
+Sete URLs institucionais reais previstas: `/`, `/sobre`, `/atendimentos`, `/atendimentos/consulta-nutricional`, `/atendimentos/ciclos-de-acompanhamento`, `/contato`, `/privacidade`. Nenhuma rota de materiais vazios, artigos fictícios, busca interna ou localização não confirmada. A página 404 é excluída do sitemap.
 
-`buildMetadata` gera canonical absoluto com barra final, título por página, descrição, locale, robots e dados da imagem social. `PUBLIC_SITE_NOINDEX=true`, modo dev, previews Vercel e previews/branches Netlify produzem `noindex, nofollow`. O robots mantém rastreamento permitido para que o robô possa ler o `noindex`; nos previews omite o sitemap. A hospedagem de preview também pode exigir autenticação se o conteúdo precisar ser privado.
+`buildMetadata` gera canonical absoluto sem barra final nas páginas internas, título por página, descrição, locale, robots e dados da imagem social. `PUBLIC_SITE_NOINDEX=true`, modo dev, previews Vercel e previews/branches Netlify produzem `noindex, nofollow`. O robots mantém rastreamento permitido para que o robô possa ler o `noindex`; nos previews omite o sitemap. A hospedagem de preview também pode exigir autenticação se o conteúdo precisar ser privado.
 
 O sitemap tem somente as rotas públicas configuradas, sem datas artificiais de atualização. A imagem social esperada é `/images/og-gislaine-duarte.jpg` (1200 × 630). A fotografia nos dados estruturados é `/images/gislaine-duarte-960.webp`. Ambos os arquivos devem existir na verificação de build.
 

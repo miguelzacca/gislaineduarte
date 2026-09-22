@@ -66,8 +66,8 @@ test('landing e shell protegido não entregam o preparo; sitemap omite área adq
   assert.equal(landing.includes('Misture todos os ingredientes até obter uma massa uniforme.'), false);
   assert.equal(protectedPage.includes('Misture todos os ingredientes até obter uma massa uniforme.'), false);
   assert.match(protectedPage, /noindex, nofollow/);
-  assert.equal(sitemap.includes('/minhas-receitas/'), false);
-  assert.equal(sitemap.includes('/7-receitas-para-ajudar-voce-a-desinflamar/'), true);
+  assert.equal(sitemap.includes('/minhas-receitas'), false);
+  assert.equal(sitemap.includes('/7-receitas-para-ajudar-voce-a-desinflamar'), true);
   const bundles = (await readdir('dist/assets')).filter((file) => file.endsWith('.js'));
   for (const bundle of bundles) {
     const source = await readFile(`dist/assets/${bundle}`, 'utf8');

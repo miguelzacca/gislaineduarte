@@ -5,12 +5,12 @@
 ## Informações institucionais
 
 - [Página inicial](https://gislaineduarte.com.br/): identidade, abordagem, atendimentos e perguntas frequentes.
-- [Sobre Gislaine](https://gislaineduarte.com.br/sobre/): história e formação. É bacharel em Nutrição e está cursando pós-graduação em Nutrição Estética e Nutrição Aplicada à Saúde da Mulher.
-- [Atendimentos](https://gislaineduarte.com.br/atendimentos/): consulta individual e ciclos de acompanhamento.
-- [Consulta nutricional individual](https://gislaineduarte.com.br/atendimentos/consulta-nutricional/): Avaliação individualizada para conhecer sua rotina e orientar os próximos passos do seu cuidado nutricional.
-- [Ciclos de acompanhamento](https://gislaineduarte.com.br/atendimentos/ciclos-de-acompanhamento/): Continuidade no cuidado nutricional para apoiar a construção de hábitos duradouros.
-- [Contato](https://gislaineduarte.com.br/contato/): canais oficiais para informações e orçamento.
-- [Privacidade](https://gislaineduarte.com.br/privacidade/): informações sobre o funcionamento deste site.
+- [Sobre Gislaine](https://gislaineduarte.com.br/sobre): história e formação. É bacharel em Nutrição e está cursando pós-graduação em Nutrição Estética e Nutrição Aplicada à Saúde da Mulher.
+- [Atendimentos](https://gislaineduarte.com.br/atendimentos): consulta individual e ciclos de acompanhamento.
+- [Consulta nutricional individual](https://gislaineduarte.com.br/atendimentos/consulta-nutricional): Avaliação individualizada para conhecer sua rotina e orientar os próximos passos do seu cuidado nutricional.
+- [Ciclos de acompanhamento](https://gislaineduarte.com.br/atendimentos/ciclos-de-acompanhamento): Continuidade no cuidado nutricional para apoiar a construção de hábitos duradouros.
+- [Contato](https://gislaineduarte.com.br/contato): canais oficiais para informações e orçamento.
+- [Privacidade](https://gislaineduarte.com.br/privacidade): informações sobre o funcionamento deste site.
 
 ## Escopo
 

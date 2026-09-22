@@ -23,8 +23,13 @@ const types = {
 
 const server = createServer(async (request, response) => {
   try {
-    if (await handleProductApiRequest(request, response)) return;
     const url = new URL(request.url, `http://127.0.0.1:${port}`);
+    if (url.pathname !== '/' && url.pathname.endsWith('/')) {
+      response.writeHead(308, { Location: `${url.pathname.replace(/\/+$/, '') || '/'}${url.search}` });
+      response.end();
+      return;
+    }
+    if (await handleProductApiRequest(request, response)) return;
     const relative = decodeURIComponent(url.pathname).replace(/^\/+/, '');
     const target = resolve(root, relative);
     if (target !== root && !target.startsWith(`${root}${sep}`)) {
@@ -36,7 +41,7 @@ const server = createServer(async (request, response) => {
     response.writeHead(exists?.isFile() ? 200 : 404, {
       'Content-Type': types[extname(candidate)] || 'application/octet-stream',
       'Cache-Control': 'no-store',
-      ...(url.pathname === '/minhas-receitas/' ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}),
+      ...(url.pathname === '/minhas-receitas' ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}),
     });
     response.end(content);
   } catch (error) {

@@ -13,6 +13,21 @@ async function htmlEntries(dir) {
   return (await Promise.all(files.map(entry => entry.isDirectory() ? htmlEntries(resolve(dir, entry.name)) : entry.name.endsWith('.html') ? [resolve(dir, entry.name)] : []))).flat();
 }
 
+function cleanPageUrls(directory) {
+  return (request, response, next) => {
+    const url = new URL(request.url, 'http://localhost');
+    if (url.pathname !== '/' && url.pathname.endsWith('/')) {
+      response.writeHead(308, { Location: `${url.pathname.replace(/\/+$/, '') || '/'}${url.search}` });
+      response.end();
+      return;
+    }
+    if (!url.pathname.startsWith('/api/') && existsSync(resolve(directory, `.${url.pathname}`, 'index.html'))) {
+      request.url = `${url.pathname === '/' ? '' : url.pathname}/index.html${url.search}`;
+    }
+    next();
+  };
+}
+
 export default defineConfig({
   root: generated,
   envDir: root,
@@ -28,6 +43,7 @@ export default defineConfig({
     name: 'static-pages',
     configureServer(server) {
       if (server.config.server.middlewareMode) return;
+      server.middlewares.use(cleanPageUrls(generated));
       const productEnv = { ...process.env, ...loadEnv(server.config.mode, root, 'RECIPES_PRODUCT_') };
       server.middlewares.use((request, response, next) => {
         handleProductApiRequest(request, response, { env: productEnv })
@@ -51,6 +67,7 @@ export default defineConfig({
       });
     },
     configurePreviewServer(server) {
+      server.middlewares.use(cleanPageUrls(resolve(root, 'dist')));
       return () => server.middlewares.use(async (req, res, next) => {
         const pathname = new URL(req.url, 'http://localhost').pathname;
         if (existsSync(resolve(root, 'dist', `.${pathname}`, 'index.html')) || existsSync(resolve(root, 'dist', `.${pathname}`))) return next();
