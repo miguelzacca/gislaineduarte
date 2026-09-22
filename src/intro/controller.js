@@ -123,13 +123,15 @@ function createRun(lease) {
   button.addEventListener('click', skip, { signal });
   contentSkip?.addEventListener('click', () => finish('skipped'), { signal });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); skip(); }
-    if (event.key === 'Tab') {
-      event.preventDefault();
-      if (document.activeElement === contentSkip || event.shiftKey && document.activeElement !== button) revealSkip(true);
-      else (contentSkip ?? button).focus({ preventScroll: true });
-    }
-    if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key) && event.target !== button) event.preventDefault();
+    // Skip on every key, while preserving native browser shortcuts.
+    if (!event.ctrlKey && !event.metaKey && !event.altKey) event.preventDefault();
+    event.stopImmediatePropagation();
+    skip();
+  }, { capture: true, signal });
+  document.addEventListener('dblclick', event => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    skip();
   }, { capture: true, signal });
   // The document remains exposed to assistive technology; only visual interaction is gated.
   document.addEventListener('focusin', event => { if (!overlay.contains(event.target) && event.target !== contentSkip) revealSkip(true); }, { signal });

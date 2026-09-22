@@ -33,7 +33,7 @@ Configure estas variáveis **apenas no ambiente de servidor da Vercel**. Não us
 | `SMTP_APP_PASSWORD` | Senha de app do Google, sem expor a senha principal. |
 | `SMTP_FROM` | Remetente, por exemplo `Gislaine Duarte <email@gmail.com>`. |
 | `RECIPES_ADMIN_USERNAME` | Nome de usuário administrativo, com ao menos três caracteres. |
-| `RECIPES_ADMIN_PASSWORD` | Senha administrativa forte, com ao menos 16 caracteres. |
+| `RECIPES_ADMIN_PASSWORD` | Senha administrativa definida pelo responsável, com ao menos 8 caracteres. |
 | `RECIPES_ADMIN_SESSION_SECRET` | Segredo aleatório com ao menos 32 caracteres. |
 | `RECIPES_PRODUCT_SESSION_TTL_DAYS` | Opcional; `30` por padrão, aceitando 1 a 365. |
 

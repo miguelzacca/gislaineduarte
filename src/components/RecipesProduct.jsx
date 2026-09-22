@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { recipesProductPreview as product } from '../generated/recipes-product-preview.js';
 import { biography, contactLink } from '../data/site.js';
 import { BrandMark } from './Brand.jsx';
@@ -42,22 +42,27 @@ function CheckoutButton({ children = 'Quero acessar as 7 receitas', onActivate, 
   );
 }
 
-function ProductCheckoutDialog({ dialogRef, priceCents, available }) {
+function ProductCheckoutDialog({ dialogRef, catalog, onRetry }) {
+  const { priceCents, available, status } = catalog;
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const submit = async (event) => {
-    event.preventDefault(); setBusy(true); setError('');
-    const keepWaitingHere = window.matchMedia('(min-width: 800px) and (pointer: fine)').matches;
-    const checkoutTab = keepWaitingHere ? window.open('about:blank', '_blank') : null;
-    if (checkoutTab) {
-      checkoutTab.opener = null;
-      checkoutTab.document.title = 'Preparando pagamento';
-      checkoutTab.document.body.textContent = 'Preparando o pagamento seguro…';
-    }
+    event.preventDefault();
+    if (busy || !available) return;
+    setBusy(true); setError('');
+    let checkoutTab = null;
     try {
-      const response = await fetch('/api/recipes/checkout', {
+      const keepWaitingHere = window.matchMedia('(min-width: 800px) and (pointer: fine)').matches;
+      checkoutTab = keepWaitingHere ? window.open('about:blank', '_blank') : null;
+      if (checkoutTab) {
+        checkoutTab.opener = null;
+        checkoutTab.document.title = 'Preparando pagamento';
+        checkoutTab.document.body.textContent = 'Preparando o pagamento seguro…';
+      }
+      const response = await fetch('/api/recipes/checkout/', {
         method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        signal: AbortSignal.timeout(30_000),
         headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ email }),
       });
@@ -67,7 +72,11 @@ function ProductCheckoutDialog({ dialogRef, priceCents, available }) {
         checkoutTab.location.href = data.checkoutUrl;
         window.location.assign(`${product.experiencePath}?payment=pending`);
       } else window.location.assign(data.checkoutUrl);
-    } catch (failure) { checkoutTab?.close(); setError(failure.message); setBusy(false); }
+    } catch (failure) {
+      checkoutTab?.close();
+      setError(failure.name === 'TimeoutError' ? 'O pagamento demorou para responder. Tente novamente.' : failure.message);
+      setBusy(false);
+    }
   };
   return (
     <dialog className="product-checkout-dialog" ref={dialogRef} aria-labelledby="checkout-title">
@@ -75,14 +84,19 @@ function ProductCheckoutDialog({ dialogRef, priceCents, available }) {
       <div className="product-checkout-dialog__mark" aria-hidden="true"><BrandMark /></div>
       <p className="eyebrow eyebrow--gold">Coleção digital</p>
       <h2 id="checkout-title">Seu próximo passo começa aqui.</h2>
-      <p>Informe seu e-mail para receber o acesso após a confirmação do pagamento. Sua conta será criada somente quando a compra for aprovada.</p>
-      {available && priceCents ? <p className="product-checkout-dialog__price">Valor da coleção: <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(priceCents / 100)}</strong></p> : <p className="product-checkout-dialog__price">Compra temporariamente indisponível.</p>}
-      <form onSubmit={submit}>
+      {available ? <p>Informe seu e-mail para receber o acesso após a confirmação do pagamento. Sua conta será criada somente quando a compra for aprovada.</p> : null}
+      <div aria-live="polite" aria-busy={status === 'loading'}>
+        {status === 'loading' ? <p className="product-checkout-dialog__price">Consultando a disponibilidade da coleção…</p> : available && priceCents ? <p className="product-checkout-dialog__price">Valor da coleção: <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(priceCents / 100)}</strong></p> : <>
+          <p className="product-checkout-dialog__price">{status === 'error' ? 'Não foi possível consultar a disponibilidade. Tente novamente.' : 'Esta coleção ainda não está disponível para compra. Volte em breve.'}</p>
+          <button className="text-link" type="button" onClick={onRetry}>Consultar novamente <Arrow /></button>
+        </>}
+      </div>
+      {available ? <form onSubmit={submit}>
         <label className="product-checkout-dialog__email">Seu e-mail<input type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="voce@exemplo.com" required /></label>
         <button className="button" type="submit" disabled={busy || !available}><span>{busy ? 'Preparando checkout…' : 'Ir para o pagamento seguro'}</span><span className="button__icon"><Arrow /></span></button>
-      </form>
+      </form> : null}
       {error ? <p className="product-checkout-dialog__error" role="alert">{error}</p> : null}
-      <p className="product-checkout-dialog__fineprint">O pagamento é feito na InfinitePay. Após a aprovação, enviaremos um link de confirmação para seu e-mail. <a href={product.experiencePath}>Já comprou? Entre aqui.</a></p>
+      <p className="product-checkout-dialog__fineprint">{available ? 'O pagamento é feito na InfinitePay. Após a aprovação, enviaremos um link de confirmação para seu e-mail. ' : ''}<a href={product.experiencePath}>Já comprou? Entre aqui.</a></p>
     </dialog>
   );
 }
@@ -129,12 +143,28 @@ function ProductFaq() {
 export function RecipeProductLandingPage() {
   const dialogRef = useRef(null);
   const [accessLocked, setAccessLocked] = useState(false);
-  const [catalog, setCatalog] = useState({ available: false, priceCents: null });
+  const [catalog, setCatalog] = useState({ status: 'loading', available: false, priceCents: null });
+  const refreshCatalog = useCallback(async (signal = AbortSignal.timeout(10_000)) => {
+    setCatalog({ status: 'loading', available: false, priceCents: null });
+    try {
+      const response = await fetch('/api/recipes/catalog/', { cache: 'no-store', signal });
+      if (!response.ok) throw new Error('Não foi possível consultar a coleção.');
+      const data = await response.json();
+      const available = data.available === true && Number.isSafeInteger(data.priceCents) && data.priceCents > 0;
+      setCatalog({ status: 'ready', available, priceCents: available ? data.priceCents : null });
+    } catch (failure) {
+      if (failure.name !== 'AbortError') setCatalog({ status: 'error', available: false, priceCents: null });
+    }
+  }, []);
   useEffect(() => setAccessLocked(new URLSearchParams(window.location.search).get('access') === 'locked'), []);
-  useEffect(() => { fetch('/api/recipes/catalog', { cache: 'no-store' }).then((response) => response.json()).then(setCatalog).catch(() => {}); }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    void refreshCatalog(AbortSignal.any([controller.signal, AbortSignal.timeout(10_000)]));
+    return () => controller.abort();
+  }, [refreshCatalog]);
   const openCheckout = () => {
     dialogRef.current?.showModal();
-    fetch('/api/recipes/catalog', { cache: 'no-store' }).then((response) => response.json()).then(setCatalog).catch(() => {});
+    void refreshCatalog();
   };
 
   return (
@@ -277,7 +307,7 @@ export function RecipeProductLandingPage() {
           <small>{product.educationalNotice}</small>
         </div>
       </section>
-      <ProductCheckoutDialog dialogRef={dialogRef} priceCents={catalog.priceCents} available={catalog.available} />
+      <ProductCheckoutDialog dialogRef={dialogRef} catalog={catalog} onRetry={() => { void refreshCatalog(); }} />
     </>
   );
 }

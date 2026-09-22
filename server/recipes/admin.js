@@ -10,8 +10,8 @@ function config(env) {
   const username = String(env.RECIPES_ADMIN_USERNAME || '').trim();
   const password = String(env.RECIPES_ADMIN_PASSWORD || '');
   const secret = String(env.RECIPES_ADMIN_SESSION_SECRET || '');
-  if (username.length < 3 || password.length < 16 || secret.length < 32) {
-    throw new ProductConfigurationError('Configure RECIPES_ADMIN_USERNAME, RECIPES_ADMIN_PASSWORD (16+ caracteres) e RECIPES_ADMIN_SESSION_SECRET (32+ caracteres).');
+  if (username.length < 3 || password.length < 8 || secret.length < 32) {
+    throw new ProductConfigurationError('Configure RECIPES_ADMIN_USERNAME, RECIPES_ADMIN_PASSWORD (8+ caracteres) e RECIPES_ADMIN_SESSION_SECRET (32+ caracteres).');
   }
   const key = createHmac('sha256', secret).update(password).digest();
   return { username, password, key, secret };

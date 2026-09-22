@@ -5,6 +5,8 @@ import { acquireIntro } from '../intro/controller.js';
 
 export function initializeMotion() {
   const main = document.querySelector('main');
+  // Layouts without the public site's main must not start observers or frames.
+  if (!main) return () => {};
   const world = main?.querySelector('[data-world]');
   const sceneRoot = main?.querySelector('[data-brand-scene]');
   const hero = main?.querySelector('.hero');

@@ -153,9 +153,14 @@ async function withController(options, action) {
         bounds = nextBounds;
       },
       click(target = button) { target.dispatchEvent(new Event('click', { cancelable: true })); },
-      key(key, { shiftKey = false, target = doc.activeElement } = {}) {
+      doubleClick() {
+        const event = new Event('dblclick', { cancelable: true });
+        doc.dispatchEvent(event);
+        return event;
+      },
+      key(key, { shiftKey = false, ctrlKey = false, metaKey = false, altKey = false, target = doc.activeElement } = {}) {
         const event = new Event('keydown', { cancelable: true });
-        Object.defineProperties(event, { key: { value: key }, shiftKey: { value: shiftKey }, target: { value: target } });
+        Object.defineProperties(event, { key: { value: key }, shiftKey: { value: shiftKey }, ctrlKey: { value: ctrlKey }, metaKey: { value: metaKey }, altKey: { value: altKey }, target: { value: target } });
         doc.dispatchEvent(event);
         return event;
       },
@@ -401,19 +406,46 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
     });
   });
 
-  test('Tab e Shift+Tab preservam skip-link e acesso imediato ao skip da intro', async () => {
+  test('qualquer tecla pula a intro e libera o teclado após a saída', async () => {
+    for (const key of ['a', 'Enter', ' ', 'Tab', 'ArrowDown', 'Shift', 'Escape']) {
+      await withController(async h => {
+        const handle = h.acquire();
+        h.tick(handle, 1000);
+        assert.equal(h.key(key).defaultPrevented, true, key);
+        assert.equal(h.root.dataset.introState, 'leaving');
+        assertHeroEndpoint(h.tick(handle, 1280));
+        assert.equal(h.overlay.dataset.result, 'skipped');
+        assert.equal(h.doc.activeElement, h.main);
+        assert.equal(h.listenerCount(), 0);
+        assert.equal(h.key(key).defaultPrevented, false, key);
+      });
+    }
+  });
+
+  test('atalhos do navegador também pulam sem cancelar sua ação nativa', async () => {
+    for (const modifier of ['ctrlKey', 'metaKey', 'altKey']) {
+      await withController(async h => {
+        const handle = h.acquire();
+        assert.equal(h.key('f', { [modifier]: true }).defaultPrevented, false);
+        assert.equal(handle.run.active, false);
+        assert.equal(h.overlay.dataset.result, 'skipped');
+      });
+    }
+  });
+
+  test('duplo clique na tela pula; clique isolado não pula nem reinicia a saída', async () => {
     await withController(async h => {
-      h.acquire();
-      assert.equal(h.button.tabIndex, -1);
-      assert.equal(h.key('Tab').defaultPrevented, true);
-      assert.equal(h.doc.activeElement, h.contentSkip);
-      h.key('Tab');
-      assert.equal(h.doc.activeElement, h.button);
-      assert.equal(h.button.tabIndex, 0);
-      assert.equal(h.overlay.dataset.skipReady, 'true');
-      h.key('Tab', { shiftKey: true });
-      assert.equal(h.doc.activeElement, h.contentSkip);
-      for (const call of [...h.button.focusCalls, ...h.contentSkip.focusCalls]) assert.deepEqual(call, { preventScroll: true });
+      const handle = h.acquire();
+      h.tick(handle, 1000);
+      h.click(h.doc);
+      assert.equal(h.root.dataset.introState, 'playing');
+      assert.equal(h.doubleClick().defaultPrevented, true);
+      h.tick(handle, 1100);
+      h.doubleClick();
+      assertHeroEndpoint(h.tick(handle, 1280));
+      assert.equal(h.overlay.dataset.result, 'skipped');
+      assert.equal(h.listenerCount(), 0);
+      assert.equal(h.doubleClick().defaultPrevented, false);
     });
   });
 

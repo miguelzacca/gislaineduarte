@@ -149,10 +149,10 @@ test('link aberto no celular autentica também o computador com o cookie de soli
 });
 
 test('senha e segredo do painel ficam só no servidor; troca da senha invalida cookie anterior', async () => {
-  const env = { RECIPES_ADMIN_USERNAME: 'gestora', RECIPES_ADMIN_PASSWORD: 'very-long-private-password', RECIPES_ADMIN_SESSION_SECRET: 's'.repeat(40) };
+  const env = { RECIPES_ADMIN_USERNAME: 'gestora', RECIPES_ADMIN_PASSWORD: 'test-admin!', RECIPES_ADMIN_SESSION_SECRET: 's'.repeat(40) };
   const store = { query: async (sql) => sql.includes('count(*)') ? result([{ count: 0 }]) : result() };
   const loginRequest = new Request(`${base}/api/admin/login`, { method: 'POST' });
-  assert.equal(await verifyAdminCredentials('gestora', 'very-long-private-password', loginRequest, { env, store }), true);
+  assert.equal(await verifyAdminCredentials('gestora', env.RECIPES_ADMIN_PASSWORD, loginRequest, { env, store }), true);
   assert.equal(await verifyAdminCredentials('gestora', 'wrong-password', loginRequest, { env, store }), false);
   const session = adminCookie(loginRequest, env);
   assert.match(session, /HttpOnly/);
