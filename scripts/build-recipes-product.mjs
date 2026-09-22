@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { delimiter, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
@@ -104,9 +104,9 @@ function buildPdfData() {
   };
 }
 
-function run(command, args) {
+function run(command, args, env = process.env) {
   return new Promise((resolvePromise, reject) => {
-    const child = spawn(command, args, { cwd: root, stdio: 'inherit', shell: false });
+    const child = spawn(command, args, { cwd: root, stdio: 'inherit', shell: false, env });
     child.on('error', reject);
     child.on('exit', (code) => code === 0 ? resolvePromise() : reject(new Error(`${command} terminou com código ${code}`)));
   });
@@ -115,7 +115,8 @@ function run(command, args) {
 async function buildPdf() {
   const dataFile = resolve(pdfTemp, 'recipes-product.json');
   await writeFile(dataFile, `${JSON.stringify(buildPdfData(), null, 2)}\n`, 'utf8');
-  const python = process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3');
+  const python = process.env.PYTHON || 'python';
+  const pythonPath = [resolve(root, 'tmp/product-python'), process.env.PYTHONPATH].filter(Boolean).join(delimiter);
   const output = resolve(artifactRoot, pdfFilename);
   await run(python, [
     resolve(root, 'scripts/build-recipes-pdf.py'),
@@ -125,7 +126,7 @@ async function buildPdf() {
     '--editorial-font', resolve(root, 'public/fonts/editorial.woff2'),
     '--editorial-italic-font', resolve(root, 'public/fonts/editorial-italic.woff2'),
     '--body-font', resolve(root, 'public/fonts/body.woff2'),
-  ]);
+  ], { ...process.env, PYTHONPATH: pythonPath });
   return output;
 }
 

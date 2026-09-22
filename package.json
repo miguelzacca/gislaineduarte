@@ -6,7 +6,7 @@
   "engines": { "node": ">=22.12.0" },
   "scripts": {
     "product:preview": "node scripts/generate-recipes-preview.mjs",
-    "product:deps": "python -m pip install --disable-pip-version-check -r requirements-product.txt",
+    "product:deps": "python -m pip install --disable-pip-version-check --upgrade --target tmp/product-python -r requirements-product.txt",
     "preproduct:build": "npm run product:deps",
     "product:build": "node scripts/build-recipes-product.mjs",
     "dev:product": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/serve-recipes-product.mjs",
