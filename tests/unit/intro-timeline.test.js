@@ -44,10 +44,10 @@ function expectedFinal(hero) {
 }
 
 describe('linha do tempo cinematográfica da abertura', () => {
-  test('duração visível fica entre 4 e 6 s, inclusive orçamento máximo de assets', () => {
+  test('duração visível fica entre 3 e 4,4 s, inclusive orçamento máximo de assets', () => {
     assert.ok(Object.isFrozen(INTRO_TIMING));
-    assert.ok(INTRO_TIMING.duration >= 4000);
-    assert.ok(INTRO_TIMING.duration + INTRO_TIMING.assetHold <= 6000);
+    assert.ok(INTRO_TIMING.duration >= 3000);
+    assert.ok(INTRO_TIMING.duration + INTRO_TIMING.assetHold <= 4400);
     assert.ok(INTRO_TIMING.skip > 0 && INTRO_TIMING.skip <= 300);
     assert.ok(INTRO_TIMING.skipAvailable <= INTRO_TIMING.draw);
     assert.ok(INTRO_TIMING.draw < INTRO_TIMING.depth);
@@ -74,10 +74,10 @@ describe('linha do tempo cinematográfica da abertura', () => {
   test('cada fronteira temporal troca para o estado esperado sem dependência de amostras anteriores', () => {
     const { hero, stage } = fixture();
     const states = [
-      [-100, 'fragments'], [0, 'fragments'], [649.999, 'fragments'],
-      [650, 'drawing'], [1649.999, 'drawing'], [1650, 'depth'],
-      [3199.999, 'depth'], [3200, 'assembled'], [3799.999, 'assembled'],
-      [3800, 'handoff'], [4799.999, 'handoff'], [4800, 'handoff'],
+      [-100, 'fragments'], [0, 'fragments'], [499.999, 'fragments'],
+      [500, 'drawing'], [1249.999, 'drawing'], [1250, 'depth'],
+      [2399.999, 'depth'], [2400, 'assembled'], [2799.999, 'assembled'],
+      [2800, 'handoff'], [3599.999, 'handoff'], [3600, 'handoff'],
     ];
     for (const [elapsed, phase] of states) assert.equal(sampleIntro(elapsed, hero, stage).intro.phase, phase, `${elapsed} ms`);
     for (const [elapsed, phase] of states.toReversed()) assert.equal(sampleIntro(elapsed, hero, stage).intro.phase, phase, `${elapsed} ms ao retornar`);
@@ -94,26 +94,26 @@ describe('linha do tempo cinematográfica da abertura', () => {
       previous = frame.intro;
       finite(frame);
     }
-    assert.equal(sampleIntro(120, hero, stage).intro.build, 0);
-    assert.equal(sampleIntro(2050, hero, stage).intro.build, 1);
-    assert.equal(sampleIntro(750, hero, stage).intro.assembly, 0);
-    assert.equal(sampleIntro(3200, hero, stage).intro.assembly, 1);
-    assert.equal(sampleIntro(3800, hero, stage).intro.handoff, 0);
+    assert.equal(sampleIntro(90, hero, stage).intro.build, 0);
+    assert.equal(sampleIntro(1540, hero, stage).intro.build, 1);
+    assert.equal(sampleIntro(560, hero, stage).intro.assembly, 0);
+    assert.equal(sampleIntro(2400, hero, stage).intro.assembly, 1);
+    assert.equal(sampleIntro(2800, hero, stage).intro.handoff, 0);
   });
 
   test('profundidade só assume a cena durante seu trecho e chega a opacidade completa', () => {
     const { hero, stage } = fixture();
-    assert.equal(sampleIntro(1650, hero, stage).world.opacity, 0);
-    const partial = sampleIntro(2050, hero, stage).world.opacity;
+    assert.equal(sampleIntro(1250, hero, stage).world.opacity, 0);
+    const partial = sampleIntro(1540, hero, stage).world.opacity;
     assert.ok(partial > 0 && partial < 1);
-    assert.equal(sampleIntro(2450, hero, stage).world.opacity, 1);
-    assert.equal(sampleIntro(3800, hero, stage).world.opacity, 1);
+    assert.equal(sampleIntro(1840, hero, stage).world.opacity, 1);
+    assert.equal(sampleIntro(2800, hero, stage).world.opacity, 1);
   });
 
   test('recuo realmente muda distância, azimute e elevação antes de fechar a marca', () => {
     const { hero, stage } = fixture();
-    const close = sampleIntro(650, hero, stage);
-    const wide = sampleIntro(2200, hero, stage);
+    const close = sampleIntro(500, hero, stage);
+    const wide = sampleIntro(1650, hero, stage);
     near(close.camera.distance, 7.8, 'distância inicial');
     near(wide.camera.distance, 14, 'distância do recuo');
     near(wide.camera.azimuth, 0.8, 'órbita do recuo');
@@ -134,15 +134,15 @@ describe('linha do tempo cinematográfica da abertura', () => {
     assert.equal(formed.intro.handoff, 0);
     assert.equal(formed.world.x, stage.x);
     assert.equal(formed.world.y, stage.y);
-    near(sampleIntro(2500, hero, stage).energy, 0.85, 'pico de energia');
-    near(sampleIntro(3800, hero, stage).energy, 0, 'energia em repouso');
+    near(sampleIntro(1850, hero, stage).energy, 0.85, 'pico de energia');
+    near(sampleIntro(2800, hero, stage).energy, 0, 'energia em repouso');
   });
 
   test('respiração é pequena, finita e retorna à escala-base antes de transportar', () => {
     const { hero, stage } = fixture();
-    const initial = sampleIntro(3200, hero, stage);
-    const breath = sampleIntro(3500, hero, stage);
-    const end = sampleIntro(3800, hero, stage);
+    const initial = sampleIntro(2400, hero, stage);
+    const breath = sampleIntro(2600, hero, stage);
+    const end = sampleIntro(2800, hero, stage);
     assert.equal(initial.world.size, stage.size);
     near(breath.world.size, stage.size * 1.024, 'amplitude da respiração');
     assert.equal(end.world.size, stage.size);
@@ -177,7 +177,7 @@ describe('linha do tempo cinematográfica da abertura', () => {
   test('endpoint recebe alvo atualizado após resize, sem cache de coordenadas antigas', () => {
     const desktop = fixture();
     const mobile = fixture(true);
-    sampleIntro(3000, desktop.hero, desktop.stage);
+    sampleIntro(2250, desktop.hero, desktop.stage);
     const final = sampleIntro(INTRO_TIMING.duration, mobile.hero, mobile.stage, { mobile: true });
     assert.deepEqual(final, expectedFinal(mobile.hero));
     assert.notDeepEqual(final.world, desktop.hero.world);
@@ -186,8 +186,8 @@ describe('linha do tempo cinematográfica da abertura', () => {
   test('a versão mobile conserva profundidade com órbita menor e mais espaço de câmera', () => {
     const { hero, stage } = fixture(true);
     const first = sampleIntro(0, hero, stage, { mobile: true });
-    const wide = sampleIntro(2200, hero, stage, { mobile: true });
-    const desktop = sampleIntro(2200, hero, stage);
+    const wide = sampleIntro(1650, hero, stage, { mobile: true });
+    const desktop = sampleIntro(1650, hero, stage);
     near(first.camera.azimuth, -0.55, 'órbita inicial mobile');
     near(first.camera.distance, 7.8, 'câmera inicial mobile');
     near(wide.camera.azimuth, 0.22, 'órbita final mobile');
@@ -201,7 +201,7 @@ describe('linha do tempo cinematográfica da abertura', () => {
 
   test('câmera, geometria e posição não saltam nas fronteiras da narrativa natural', () => {
     const { hero, stage } = fixture();
-    for (const boundary of [120, 650, 750, 1500, 1650, 2050, 2200, 2350, 2450, 3000, 3200, 3800, 4800]) {
+    for (const boundary of [90, 500, 560, 1125, 1250, 1540, 1650, 1760, 1840, 2250, 2400, 2800, 3600]) {
       const before = sampleIntro(boundary - 0.0001, hero, stage);
       const after = sampleIntro(boundary + 0.0001, hero, stage);
       for (const key of ['opening', 'focus', 'assembly', 'energy']) near(before[key], after[key], `${boundary}: ${key}`, 0.0001);
@@ -213,12 +213,12 @@ describe('linha do tempo cinematográfica da abertura', () => {
 
   test('amostragem não modifica hero, stage ou skipFrom e independe da ordem das chamadas', () => {
     const { hero, stage } = fixture();
-    const first = sampleIntro(2100, hero, stage);
+    const first = sampleIntro(1575, hero, stage);
     const skipFrom = freeze(structuredClone(first));
     const before = structuredClone({ hero, stage, skipFrom });
-    for (const elapsed of [0, 4100, 1200, 4800, 3800]) sampleIntro(elapsed, hero, stage);
-    assert.deepEqual(sampleIntro(2100, hero, stage), first);
-    sampleIntro(2200, hero, stage, { skipFrom, skipProgress: 0.4 });
+    for (const elapsed of [0, 3100, 900, 3600, 2800]) sampleIntro(elapsed, hero, stage);
+    assert.deepEqual(sampleIntro(1575, hero, stage), first);
+    sampleIntro(1650, hero, stage, { skipFrom, skipProgress: 0.4 });
     assert.deepEqual({ hero, stage, skipFrom }, before);
   });
 
@@ -235,8 +235,8 @@ describe('linha do tempo cinematográfica da abertura', () => {
 describe('saída voluntária e handoff do skip', () => {
   test('skip parte da geometria e câmera atuais, sem um reset visual', () => {
     const { hero, stage } = fixture();
-    const from = sampleIntro(2100, hero, stage);
-    const start = sampleIntro(2200, hero, stage, { skipFrom: from, skipProgress: 0 });
+    const from = sampleIntro(1575, hero, stage);
+    const start = sampleIntro(1650, hero, stage, { skipFrom: from, skipProgress: 0 });
     assert.deepEqual(start.world, from.world);
     assert.deepEqual(start.camera, from.camera);
     for (const key of ['opening', 'focus', 'assembly', 'branch', 'energy']) assert.equal(start[key], from[key], key);
@@ -247,8 +247,8 @@ describe('saída voluntária e handoff do skip', () => {
 
   test('metade do skip interpola cada propriedade de geometria, câmera e posição', () => {
     const { hero, stage } = fixture();
-    const from = sampleIntro(2100, hero, stage);
-    const middle = sampleIntro(2200, hero, stage, { skipFrom: from, skipProgress: 0.5 });
+    const from = sampleIntro(1575, hero, stage);
+    const middle = sampleIntro(1650, hero, stage, { skipFrom: from, skipProgress: 0.5 });
     for (const key of ['opening', 'focus', 'assembly', 'branch', 'energy']) near(middle[key], (from[key] + hero[key]) / 2, key);
     for (const group of ['camera', 'world']) {
       for (const key of Object.keys(hero[group])) near(middle[group][key], (from[group][key] + hero[group][key]) / 2, `${group}.${key}`);
@@ -259,20 +259,20 @@ describe('saída voluntária e handoff do skip', () => {
   for (const mobile of [false, true]) {
     test(`skip completo ${mobile ? 'mobile' : 'desktop'} chega exatamente ao mesmo frame que o término natural`, () => {
       const { hero, stage } = fixture(mobile);
-      const from = sampleIntro(1900, hero, stage, { mobile });
+      const from = sampleIntro(1400, hero, stage, { mobile });
       for (const skipProgress of [1, 2]) {
-        assert.deepEqual(sampleIntro(2100, hero, stage, { mobile, skipFrom: from, skipProgress }), expectedFinal(hero));
+        assert.deepEqual(sampleIntro(1575, hero, stage, { mobile, skipFrom: from, skipProgress }), expectedFinal(hero));
       }
     });
   }
 
   test('skip ainda em andamento não é forçado ao endpoint apenas pelo relógio natural', () => {
     const { hero, stage } = fixture();
-    const from = sampleIntro(4700, hero, stage);
-    const halfway = sampleIntro(4900, hero, stage, { skipFrom: from, skipProgress: 0.5 });
+    const from = sampleIntro(INTRO_TIMING.duration - 100, hero, stage);
+    const halfway = sampleIntro(INTRO_TIMING.duration + 100, hero, stage, { skipFrom: from, skipProgress: 0.5 });
     assert.equal(halfway.scene, 'intro');
     assert.notDeepEqual(halfway.world, hero.world);
-    assert.deepEqual(sampleIntro(4900, hero, stage, { skipFrom: from, skipProgress: 1 }), expectedFinal(hero));
+    assert.deepEqual(sampleIntro(INTRO_TIMING.duration + 100, hero, stage, { skipFrom: from, skipProgress: 1 }), expectedFinal(hero));
   });
 
   test('skip não extrapola a pose de origem com progresso negativo ou inválido', () => {
@@ -289,16 +289,16 @@ describe('saída voluntária e handoff do skip', () => {
 
 describe('relógio com espera real e limitada por assets', () => {
   test('assets já prontos não acrescentam duração artificial', () => {
-    for (const elapsed of [0, 650, 2000, 2650, 3800, 4800, 6000]) assert.deepEqual(introClock(elapsed, true), { elapsed, hold: 0 });
+    for (const elapsed of [0, 500, 1500, 2000, 2800, 3600, 4400]) assert.deepEqual(introClock(elapsed, true), { elapsed, hold: 0 });
   });
 
   test('assets pendentes não atrasam fragmentos nem desenho inicial', () => {
-    for (const elapsed of [0, 650, 1200, 2050, INTRO_TIMING.holdAt]) assert.deepEqual(introClock(elapsed, false), { elapsed, hold: 0 });
+    for (const elapsed of [0, 500, 900, 1540, INTRO_TIMING.holdAt]) assert.deepEqual(introClock(elapsed, false), { elapsed, hold: 0 });
   });
 
-  test('espera congela apenas a montagem e cresce no máximo 1200 ms', () => {
+  test('espera congela apenas a montagem e cresce no máximo 800 ms', () => {
     let hold = 0;
-    for (const offset of [0, 100, 400, 800, INTRO_TIMING.assetHold]) {
+    for (const offset of [0, 100, 400, 600, INTRO_TIMING.assetHold]) {
       const clock = introClock(INTRO_TIMING.holdAt + offset, false, hold);
       assert.equal(clock.elapsed, INTRO_TIMING.holdAt);
       assert.equal(clock.hold, offset);
@@ -310,20 +310,20 @@ describe('relógio com espera real e limitada por assets', () => {
   });
 
   test('resolver assets durante a espera preserva tempo consumido sem salto', () => {
-    const waiting = introClock(3000, false);
+    const waiting = introClock(INTRO_TIMING.holdAt + 350, false);
     assert.equal(waiting.hold, 350);
-    assert.equal(waiting.elapsed, 2650);
-    const released = introClock(3000, true, waiting.hold);
+    assert.equal(waiting.elapsed, 2000);
+    const released = introClock(INTRO_TIMING.holdAt + 350, true, waiting.hold);
     assert.deepEqual(released, waiting);
-    const later = introClock(3100, true, released.hold);
-    assert.deepEqual(later, { elapsed: 2750, hold: 350 });
+    const later = introClock(INTRO_TIMING.holdAt + 450, true, released.hold);
+    assert.deepEqual(later, { elapsed: INTRO_TIMING.holdAt + 100, hold: 350 });
   });
 
-  test('falha permanente de assets ainda chega à hero em no máximo seis segundos', () => {
+  test('falha permanente de assets ainda chega à hero em no máximo 4,4 segundos', () => {
     const { hero, stage } = fixture();
     let hold = 0;
     let previous = 0;
-    for (let elapsed = 0; elapsed <= 6000; elapsed += 25) {
+    for (let elapsed = 0; elapsed <= 4400; elapsed += 25) {
       const clock = introClock(elapsed, false, hold);
       hold = clock.hold;
       assert.ok(hold >= 0 && hold <= INTRO_TIMING.assetHold);
@@ -342,14 +342,14 @@ describe('relógio com espera real e limitada por assets', () => {
   test('o relógio carrega hold anterior sem ultrapassar o orçamento em sequência normal', () => {
     let hold = 0;
     let previous = 0;
-    for (let elapsed = 0; elapsed <= 6000; elapsed += 20) {
-      const clock = introClock(elapsed, elapsed >= 3300, hold);
+    for (let elapsed = 0; elapsed <= 4400; elapsed += 20) {
+      const clock = introClock(elapsed, elapsed >= 2600, hold);
       assert.ok(clock.hold >= hold && clock.hold <= INTRO_TIMING.assetHold);
       assert.ok(clock.elapsed >= previous);
       hold = clock.hold;
       previous = clock.elapsed;
     }
-    assert.equal(hold, 630);
-    assert.equal(previous, 5370);
+    assert.equal(hold, 580);
+    assert.equal(previous, 3820);
   });
 });

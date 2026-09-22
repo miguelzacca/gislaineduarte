@@ -8,13 +8,13 @@ Uma timeline pura, amostrada pelo RAF que já pertence ao controlador de movimen
 
 | Tempo nominal | Cena | Transformação |
 | --- | --- | --- |
-| 0–650 ms | Fragmentos | Casca, folha, polpa e semente em planos CSS 3D independentes, traços incompletos e câmera próxima. |
-| 650–1650 ms | Desenho espacial | `stroke-dashoffset`, máscaras individuais e preenchimento progressivo; os planos convergem. |
-| 1650–3200 ms | Profundidade | Extrusões chanfradas dos paths substituem o desenho; câmera recua/contorna, shader revela superfície, peças se encaixam. |
-| 3200–3800 ms | Símbolo completo | Mesma geometria reunida, luz rasante, uma única respiração de 2,4%. Sem rotação contínua. |
-| 3800–4800 ms | Nascimento da página | O contorno da polpa abre a cobertura; máscara da foto revela os pixels originais. Centro, tamanho e câmera convergem para o frame real da hero. |
+| 0–500 ms | Fragmentos | Casca, folha, polpa e semente em planos CSS 3D independentes, traços incompletos e câmera próxima. |
+| 500–1250 ms | Desenho espacial | `stroke-dashoffset`, máscaras individuais e preenchimento progressivo; os planos convergem. |
+| 1250–2400 ms | Profundidade | Extrusões chanfradas dos paths substituem o desenho; câmera recua/contorna, shader revela superfície, peças se encaixam. |
+| 2400–2800 ms | Símbolo completo | Mesma geometria reunida, luz rasante, uma única respiração de 2,4%. Sem rotação contínua. |
+| 2800–3600 ms | Nascimento da página | O contorno da polpa abre a cobertura; máscara da foto revela os pixels originais. Centro, tamanho e câmera convergem para o frame real da hero. |
 
-A montagem absorve até 1200 ms adicionais de espera por fotografia, fontes e GPU. A readiness é latched: resize ou troca de capacidade não fazem o tempo retroceder. Deadline de segurança de 6600 ms; aba oculta pausa o relógio e o deadline. A duração normal é 4,8–6 s, sem uma espera extra depois dos assets.
+A montagem absorve até 800 ms adicionais de espera por fotografia, fontes e GPU. A readiness é latched: resize ou troca de capacidade não fazem o tempo retroceder. Deadline de segurança de 5000 ms; aba oculta pausa o relógio e o deadline. A duração normal é 3,6–4,4 s, sem uma espera extra depois dos assets. Essa revisão reduz em 25% a duração nominal, preservando as curvas de movimento e o renderer compartilhado; as medições de navegador registradas abaixo são históricas, anteriores a este ajuste de tempo.
 
 ## Arquivos e contratos
 
@@ -55,8 +55,8 @@ location.assign('/');
 
 ## Interação e capacidades
 
-- Botão **Pular introdução**, alvo de pelo menos 48 px, aparece após 650 ms. Escape funciona desde o começo; saída de 280 ms.
-- O skip link original continua sendo o primeiro destino do teclado e permite ir diretamente ao conteúdo. Tab também alcança o botão da intro; elementos decorativos nunca recebem foco.
+- Botão **Pular introdução**, alvo de pelo menos 48 px, aparece após 500 ms. Qualquer tecla ou duplo clique também pula desde o começo; saída de 280 ms.
+- O skip link original permite ir diretamente ao conteúdo. Atalhos nativos do navegador são preservados; elementos decorativos nunca recebem foco.
 - Overlay intercepta ponteiro e scroll simples, preservando pinch zoom. Compensa scrollbar e restaura estilos, posição original e foco. O conteúdo não recebe `aria-hidden` nem `inert`.
 - **High**: extrusão completa, câmera ampla, DPR até 1,5.
 - **Medium/mobile**: menos segmentos e pontos, DPR até 1,25 nos aparelhos capazes. Capacidade desconhecida ou intermediária limita o DPR a 1, usa 24 pontos, geometria mais simples e iluminação mais leve. Frames lentos confirmados pela GPU reduzem o DPR progressivamente.

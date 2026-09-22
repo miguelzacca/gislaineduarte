@@ -203,8 +203,8 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
       assert.equal(h.listenerCount(), listeners);
       assert.equal(h.timers.size, 1);
       assert.equal(h.storageWrites.filter(([key, value]) => key === INTRO_KEY && value === 'playing').length, 1);
-      assert.equal(h.tick(replay, 650).intro.phase, 'drawing');
-      assert.equal(h.tick(replay, 650).intro.progress, 650 / 4800);
+      assert.equal(h.tick(replay, 500).intro.phase, 'drawing');
+      assert.equal(h.tick(replay, 500).intro.progress, 500 / 3600);
     });
   });
 
@@ -254,7 +254,7 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
       const replay = h.acquire();
       await Promise.resolve();
       assert.equal(replay.run, first.run);
-      assertHeroEndpoint(h.tick(replay, 4800));
+      assertHeroEndpoint(h.tick(replay, 3600));
       assert.equal(h.acquire(), null);
       assert.equal(h.listenerCount(), 0);
       assert.equal(h.timers.size, 0);
@@ -264,7 +264,7 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
   test('execução concluída não volta a criar listeners ou reservar playing', async () => {
     await withController(async h => {
       const handle = h.acquire();
-      assertHeroEndpoint(h.tick(handle, 4800));
+      assertHeroEndpoint(h.tick(handle, 3600));
       const writes = h.storageWrites.length;
       assert.equal(h.acquire(), null);
       assert.equal(h.acquire(), null);
@@ -278,14 +278,14 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
   test('limpar storage após término permite um run novo sem reter o anterior', async () => {
     await withController(async h => {
       const first = h.acquire();
-      h.tick(first, 4800);
+      h.tick(first, 3600);
       const oldToken = h.overlay.dataset.run;
       h.storageValues.clear();
       const second = h.acquire();
       assert.notEqual(second.run, first.run);
       assert.notEqual(h.overlay.dataset.run, oldToken);
       assert.equal(second.run.active, true);
-      assert.equal(h.tick(second, 4800).intro.progress, 0);
+      assert.equal(h.tick(second, 3600).intro.progress, 0);
       assert.equal(h.timers.size, 1);
       assert.equal(first.run.active, false);
     });
@@ -294,12 +294,12 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
   test('readiness fica liberada após resize e não rebobina o relógio nem a geometria', async () => {
     await withController(async h => {
       const handle = h.acquire();
-      const before = h.tick(handle, 3400);
+      const before = h.tick(handle, 2500);
       h.resize(390, 844, { left: 125, top: 220, width: 140, height: 200 });
       handle.run.measure();
-      const after = h.tick(handle, 3500, { webglReady: false, quality: { mode: 'mobile' } });
-      assert.equal(before.intro.progress, 3400 / 4800);
-      assert.equal(after.intro.progress, 3500 / 4800);
+      const after = h.tick(handle, 2600, { webglReady: false, quality: { mode: 'mobile' } });
+      assert.equal(before.intro.progress, 2500 / 3600);
+      assert.equal(after.intro.progress, 2600 / 3600);
       assert.ok(after.intro.progress > before.intro.progress);
       assert.equal(after.intro.phase, 'assembled');
       assert.equal(after.world.x, 195);
@@ -308,19 +308,19 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
     });
   });
 
-  test('skip em 4750 ms permanece ativo até 5030 e termina exatamente na hero', async () => {
+  test('skip em 3550 ms permanece ativo até 3830 e termina exatamente na hero', async () => {
     await withController(async h => {
       const handle = h.acquire();
-      h.tick(handle, 4750);
+      h.tick(handle, 3550);
       h.click();
       assert.equal(h.storageValues.get(INTRO_KEY), 'seen', 'intenção de skip é persistida imediatamente');
-      const afterNaturalDeadline = h.tick(handle, 4810);
+      const afterNaturalDeadline = h.tick(handle, 3610);
       assert.equal(handle.run.active, true);
       assert.equal(afterNaturalDeadline.scene, 'intro');
       assert.notDeepEqual(afterNaturalDeadline.world, hero.world);
-      h.tick(handle, 5029);
+      h.tick(handle, 3829);
       assert.equal(handle.run.active, true);
-      assertHeroEndpoint(h.tick(handle, 5030));
+      assertHeroEndpoint(h.tick(handle, 3830));
       assert.equal(handle.run.active, false);
       assert.equal(h.overlay.dataset.result, 'skipped');
       assert.equal(h.listenerCount(), 0);
@@ -387,8 +387,8 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
       const after = h.tick(handle, 22050);
       assert.deepEqual(after, before);
       assert.equal(h.timers.size, 1);
-      assert.ok([...h.timers.values()].some(timer => timer.at === 26600));
-      assertHeroEndpoint(h.tick(handle, 24800));
+      assert.ok([...h.timers.values()].some(timer => timer.at === 25000));
+      assertHeroEndpoint(h.tick(handle, 23600));
       assert.equal(handle.run.active, false);
     });
   });
@@ -401,8 +401,8 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
       assert.equal(handle.run.active, true);
       h.visibility(false, 20000);
       assert.equal(h.tick(handle, 20000).intro.progress, 0);
-      assert.equal([...h.timers.values()][0].at, 26600);
-      assertHeroEndpoint(h.tick(handle, 24800));
+      assert.equal([...h.timers.values()][0].at, 25000);
+      assertHeroEndpoint(h.tick(handle, 23600));
     });
   });
 
@@ -490,7 +490,7 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
       const handle = h.acquire();
       h.previous.isConnected = false;
       h.button.focus({ preventScroll: true });
-      h.tick(handle, 4800);
+      h.tick(handle, 3600);
       assert.equal(h.doc.activeElement, h.main);
       assert.deepEqual(h.main.focusCalls, [{ preventScroll: true }]);
     });
@@ -535,13 +535,13 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
     });
   });
 
-  test('assets que nunca terminam não mantêm o visitante preso após seis segundos', async () => {
+  test('assets que nunca terminam não mantêm o visitante preso após 4,4 segundos', async () => {
     await withController(async h => {
       const handle = h.acquire();
       const pending = { assetsReady: false, webglReady: false };
-      for (const time of [0, 2650, 3000, 3850, 5999]) h.tick(handle, time, pending);
+      for (const time of [0, 2000, 2300, 2800, 4399]) h.tick(handle, time, pending);
       assert.equal(handle.run.active, true);
-      assertHeroEndpoint(h.tick(handle, 6000, pending));
+      assertHeroEndpoint(h.tick(handle, 4400, pending));
       assert.equal(handle.run.active, false);
       assert.equal(h.overlay.dataset.result, 'complete');
       assert.equal(h.listenerCount(), 0);
@@ -567,9 +567,9 @@ describe('ciclo de vida do controller da intro', { concurrency: false }, () => {
   test('guard libera a página mesmo sem novos frames do motor', async () => {
     await withController(async h => {
       const handle = h.acquire();
-      h.advance(6599);
+      h.advance(4999);
       assert.equal(handle.run.active, true);
-      h.advance(6600);
+      h.advance(5000);
       assert.equal(handle.run.active, false);
       assert.equal(h.overlay.dataset.result, 'timeout');
       assert.equal(h.root.style.overflow, '');
