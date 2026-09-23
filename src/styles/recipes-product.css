@@ -18,17 +18,20 @@
 .product-hero__trust span { display: inline-flex; align-items: center; }
 .product-hero__trust span + span::before { content: ''; width: 3px; height: 3px; margin-inline: 12px; border-radius: 50%; background: var(--gold-ink); }
 
-.product-hero-art { position: relative; min-width: 0; aspect-ratio: 1.05 / 1; perspective: 1600px; isolation: isolate; }
+.product-hero-art { position: relative; min-width: 0; aspect-ratio: 1.05 / 1; isolation: isolate; }
 .product-hero-art__halo { position: absolute; inset: 9% 4% 3% 12%; border-radius: 50% 50% 8% 8%; background: #d8dbcd; transform: rotate(-3deg); }
 .product-hero-art__halo::after { content: ''; position: absolute; inset: 4%; border: 1px solid rgb(23 63 53 / 16%); border-radius: inherit; }
+.product-hero-art__portrait { position: absolute; z-index: 1; inset: 0 21% 6% 0; display: block; }
+.product-hero-art__portrait img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
+.product-hero-recipes { position: absolute; z-index: 2; width: 64%; aspect-ratio: 1.05 / 1; right: -4%; bottom: 4%; perspective: 1600px; }
 .product-card-stack { position: absolute; inset: 4% 5% 7% 8%; transform-style: preserve-3d; transform: rotateY(-7deg) rotateX(2deg); transition: opacity 300ms ease; }
 .product-card-stack > span { --offset: calc(var(--card-index) * 1); position: absolute; inset: calc(10% + var(--offset) * 3px) calc(9% - var(--offset) * 7px) calc(6% - var(--offset) * 2px) calc(3% + var(--offset) * 5px); border: 1px solid rgb(23 63 53 / 24%); border-radius: 3px 42px 3px 3px; background: color-mix(in srgb, var(--ivory) calc(96% - var(--offset) * 4%), var(--sage)); box-shadow: 0 18px 35px rgb(16 45 38 / 8%); transform: translateZ(calc(var(--offset) * 6px)) rotate(calc((var(--offset) - 3) * .9deg)); }
 .product-card-stack__photo { position: absolute; inset: 7% 13% 10% 8%; overflow: hidden; border-radius: 2px 38px 2px 2px; box-shadow: 0 24px 55px rgb(16 45 38 / 16%); transform: translateZ(48px) rotate(-1deg); }
 .product-card-stack__photo img { width: 100%; height: 100%; object-fit: cover; }
 .product-scene-canvas { position: absolute; inset: 0; z-index: 4; opacity: 0; transition: opacity 500ms ease; pointer-events: none; }
 .product-scene-canvas canvas { width: 100%; height: 100%; max-width: none; }
-.product-hero-art[data-scene-ready] .product-scene-canvas { opacity: 1; }
-.product-hero-art[data-scene-ready] .product-card-stack { opacity: 0; }
+.product-hero-recipes[data-scene-ready] .product-scene-canvas { opacity: 1; }
+.product-hero-recipes[data-scene-ready] .product-card-stack { opacity: 0; }
 .product-hero-art__caption { position: absolute; z-index: 5; right: 3%; bottom: 3%; padding: 12px 18px; background: var(--forest); color: var(--ivory); font-size: 8px; letter-spacing: .16em; text-transform: uppercase; }
 
 .product-access-message { display: flex; align-items: center; gap: 18px; margin-top: 24px; padding: 18px 22px; border: 1px solid var(--gold); background: #fff8e7; color: var(--forest); }

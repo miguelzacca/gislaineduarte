@@ -6,6 +6,14 @@ import { ProfessionalIdentity } from './Layout.jsx';
 import { Arrow, Portrait, TextLink } from './UI.jsx';
 
 const STORAGE_PREFIX = 'gislaine:receitas:v1';
+const cookingPortrait = {
+  src: '/images/recipes/gislaine-cozinheira-960.webp',
+  srcSet: [360, 540, 720, 960].map((width) => `/images/recipes/gislaine-cozinheira-${width}.webp ${width}w`).join(', '),
+  avifSrcSet: [360, 540, 720, 960].map((width) => `/images/recipes/gislaine-cozinheira-${width}.avif ${width}w`).join(', '),
+  width: 960,
+  height: 1280,
+  alt: 'Gislaine Duarte sorrindo, com avental verde de cozinha e um bolinho de coco e maçã na mão.',
+};
 
 function ProductPhoto({ image, className = '', eager = false, sizes = '(min-width: 900px) 50vw, 100vw' }) {
   return (
@@ -119,14 +127,12 @@ function RecipeCardsScene({ fallbackImage }) {
     return () => { cancelled = true; destroy(); };
   }, []);
   return (
-    <div className="product-hero-art" ref={hostRef} data-recipe-scene="" data-scene-images={product.recipes.map((recipe) => recipe.image.src).join('|')} aria-hidden="true">
-      <div className="product-hero-art__halo" />
+    <div className="product-hero-recipes" ref={hostRef} data-recipe-scene="" data-scene-images={product.recipes.map((recipe) => recipe.image.src).join('|')} aria-hidden="true">
       <div className="product-card-stack">
         {[0, 1, 2, 3, 4, 5, 6].map((index) => <span style={{ '--card-index': index }} key={index} />)}
-        <ProductPhoto image={fallbackImage} className="product-card-stack__photo" eager sizes="(min-width: 900px) 44vw, 90vw" />
+        <ProductPhoto image={fallbackImage} className="product-card-stack__photo" eager sizes="(min-width: 768px) 24vw, 48vw" />
       </div>
       <div className="product-scene-canvas" data-recipe-scene-canvas="" />
-      <span className="product-hero-art__caption">7 lâminas · uma jornada prática</span>
     </div>
   );
 }
@@ -202,7 +208,12 @@ export function RecipeProductLandingPage() {
             {catalog.available && catalog.priceCents ? <p className="product-live-price">Acesso completo por {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(catalog.priceCents / 100)}</p> : null}
             <p className="product-hero__trust"><span>7 receitas</span><span>3 formatos</span><span>acesso organizado</span></p>
           </div>
-          <RecipeCardsScene fallbackImage={product.hero.image} />
+          <div className="product-hero-art">
+            <div className="product-hero-art__halo" aria-hidden="true" />
+            <ProductPhoto image={cookingPortrait} className="product-hero-art__portrait" eager sizes="(min-width: 1645px) 560px, (min-width: 768px) 34vw, (min-width: 625px) 420px, 67vw" />
+            <RecipeCardsScene fallbackImage={product.hero.image} />
+            <span className="product-hero-art__caption">7 lâminas · uma jornada prática</span>
+          </div>
         </div>
       </section>
 

@@ -26,6 +26,12 @@ for (const size of [360, 540, 720, 960]) {
 }
 console.log(`Portrait derivatives: ${width}×${height}; original RGB pixels, generated alpha only.`);
 
+const cookingPortrait = 'src/assets/recipes/original/gislaine-cozinheira.png';
+for (const size of [360, 540, 720, 960]) {
+  await sharp(cookingPortrait).resize(size).webp({ quality: 86, alphaQuality: 95 }).toFile(`public/images/recipes/gislaine-cozinheira-${size}.webp`);
+  await sharp(cookingPortrait).resize(size).avif({ quality: 65, effort: 6 }).toFile(`public/images/recipes/gislaine-cozinheira-${size}.avif`);
+}
+
 {
   const brand = await readFile('public/images/brand-mark.svg');
   for (const size of [32, 180, 192, 512]) {
