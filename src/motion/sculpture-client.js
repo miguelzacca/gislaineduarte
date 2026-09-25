@@ -51,6 +51,10 @@ export async function createSculpture({ canvas, quality = {}, signal, onContextL
   if (!canvas || typeof canvas.getContext !== 'function') throw new TypeError('A canvas is required for the brand sculpture.');
   if (signal?.aborted) throw abortError();
   const options = { canvas, quality, signal, onContextLost, onInvalidate };
+  // Keep desktop PBR rendering on the HTML canvas in the controller's scroll
+  // frame, without an independently committed worker bitmap lagging behind
+  // its viewport transform. Mobile retains the off-thread renderer.
+  if (quality.mode !== 'mobile') return createMainThread(options);
   if (typeof Worker !== 'function' || typeof OffscreenCanvas !== 'function' || typeof canvas.transferControlToOffscreen !== 'function') {
     return quality.mode === 'mobile' ? null : createMainThread(options);
   }
@@ -70,6 +74,7 @@ export async function createSculpture({ canvas, quality = {}, signal, onContextL
   let transferred = false;
   let initialized = false;
   let ready = false;
+  let renderedScene = null;
   let settled = false;
   let notified = false;
   let inFlight = null;
@@ -184,7 +189,12 @@ export async function createSculpture({ canvas, quality = {}, signal, onContextL
   }
 
   let initializationMs = 0;
-  const api = { render, resize, getStats, isReady: () => ready && !disposed, dispose };
+  const api = {
+    render, resize, getStats,
+    // A late intro bitmap must not replace the assembled SVG after handoff.
+    isReady: frame => ready && !disposed && !(renderedScene === 'intro' && frame && frame.scene !== 'intro'),
+    dispose,
+  };
 
   function receive(event) {
     const message = event.data;
@@ -230,16 +240,17 @@ export async function createSculpture({ canvas, quality = {}, signal, onContextL
       if (!inFlight || message.id !== inFlight.id) return;
       clearTimeout(frameDeadline);
       lastAcknowledged = inFlight.key;
+      renderedScene = inFlight.frame.scene;
       inFlight = null;
       stats = message.stats;
       acknowledgments += 1;
       publishFrame(canvas, message.metadata, stats.frames);
       canvas.dataset.rendererState = 'ready';
       canvas.dataset.workerPending = 'false';
-      const first = !ready;
       ready = true;
       flush();
-      if (first) onInvalidate();
+      // Also publish the final queued frame when scrolling/intro has stopped.
+      onInvalidate();
     } else if (message.type === 'failure') {
       stats = message.stats ?? stats;
       const error = new Error(message.error?.message ?? 'The sculpture worker is unavailable.');

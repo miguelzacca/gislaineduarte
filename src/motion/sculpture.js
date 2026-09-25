@@ -500,6 +500,11 @@ export async function createSculpture({ canvas, quality = {}, onContextLost = ()
       renderer.render(scene, camera);
       initialization.warmupDrawCalls = renderer.info.render.calls;
       if (shaderDiagnostics.errors.length > 0) throw new Error('The narrative material could not be compiled.');
+      // Three can submit draw calls without throwing on a driver/GL error.
+      // Never promote that canvas over the intact SVG fallback.
+      if (context.isContextLost() || context.getError() !== context.NO_ERROR) {
+        throw new Error('The sculpture GPU could not draw the brand surfaces.');
+      }
     } finally {
       renderer.setScissorTest(false);
     }

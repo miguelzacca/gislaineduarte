@@ -50,7 +50,9 @@ export function initializeMotion() {
   let idleTask;
   let deadline;
   let debug;
-  const cinematic = hero ? acquireIntro(schedule) : null;
+  // Ending the intro restores scrollbars and scroll position; remeasure the
+  // anchors before the next scroll frame instead of retaining the locked layout.
+  const cinematic = hero ? acquireIntro(invalidate) : null;
 
   const rect = element => {
     if (!element) return null;
@@ -103,6 +105,12 @@ export function initializeMotion() {
   function canEnhance() {
     return world && !disposed && !failed && quality?.webgl && assets >= 1 && !document.hidden && world.dataset.worldVisible === 'true' && !document.body.classList.contains('menu-open');
   }
+  function sculptureFailed(information) {
+    if (sceneRoot) sceneRoot.dataset.sceneFailure = information?.reason ?? 'render';
+    failed = true;
+    destroySculpture();
+    schedule();
+  }
   async function enhance() {
     if (!canEnhance() || loading || runtime) return;
     loading = true;
@@ -115,11 +123,11 @@ export function initializeMotion() {
       // The transport keeps GPU preparation off this controller's only RAF.
       const { createSculpture } = await import('./sculpture-client.js');
       if (version !== generation || !canEnhance()) return;
-      const created = await createSculpture({ canvas, quality, signal: creation.signal, onInvalidate: schedule, onContextLost: () => { if (disposed || version !== generation) return; failed = true; destroySculpture(); schedule(); } });
+      const created = await createSculpture({ canvas, quality, signal: creation.signal, onInvalidate: schedule, onContextLost: information => { if (disposed || version !== generation) return; sculptureFailed(information); } });
       if (version !== generation || !canEnhance()) { created?.dispose(); return; }
       if (!created) throw new Error('No WebGL context');
       runtime = created; world.querySelector('[data-scene-canvas]').replaceChildren(canvas); runtime.resize(base, quality.dpr); schedule();
-    } catch { if (!disposed && version === generation) { failed = true; destroySculpture(); schedule(); } canvas.remove(); }
+    } catch { if (!disposed && version === generation) sculptureFailed({ reason: 'initialization' }); canvas.remove(); }
     finally { if (creationAbort === creation) creationAbort = null; loading = false; if (!runtime && canEnhance()) schedule(); }
   }
   function schedule() { if (!disposed && !frameId && !document.hidden) frameId = requestAnimationFrame(draw); }
@@ -168,10 +176,15 @@ export function initializeMotion() {
           const sample = stats?.transport?.acknowledgments ?? stats?.frames ?? renders;
           renderBudget = sampleRenderBudget(renderBudget, { sample, mainMs: performance.now() - started, cpuMs: stats?.lastFrameCpuMs, gpuMs: stats?.workerFrameGpuMs });
           if (renderBudget.dpr !== quality.dpr) { quality.dpr = renderBudget.dpr; runtime.resize(base, quality.dpr); }
-          if (runtime.isReady?.() !== false) {
+          if (runtime.isReady?.(frame) !== false) {
             sceneRoot.dataset.sceneReady = 'true'; sceneRoot.dataset.sceneState = 'enhanced'; world.dataset.webglReady = 'true'; world.dataset.renderCount = String(renders); world.dataset.dpr = quality.dpr.toFixed(2);
+          } else {
+            // Keep the vector visible until the post-intro frame is presented.
+            delete sceneRoot.dataset.sceneReady;
+            sceneRoot.dataset.sceneState = 'loading';
+            world.removeAttribute('data-webgl-ready');
           }
-        } catch { failed = true; destroySculpture(); }
+        } catch { sculptureFailed({ reason: 'render' }); }
       }
       if (!runtime && assets >= 1 && visible) void enhance();
     }
