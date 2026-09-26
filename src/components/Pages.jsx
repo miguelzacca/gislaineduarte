@@ -6,13 +6,13 @@ import {
   approach,
   approachIntroduction,
   contactLink,
-  contactLabel,
 } from '../data/site.js';
 import { Arrow, Portrait, Button, TextLink } from './UI.jsx';
 import { BrandMark, BrandScene, PortraitReveal } from './Brand.jsx';
 import { ContactBand, ProfessionalIdentity } from './Layout.jsx';
 import { BirthMark } from './MotionGraphics.jsx';
 import { INTRO_KEY, INTRO_TAB_KEY } from '../intro/session.js';
+import { NutritionHomeSection } from './NutritionPublic.jsx';
 
 export function ServiceCards({ headingTag = 'h3' } = {}) {
   const Heading = headingTag;
@@ -70,7 +70,7 @@ export function HomePage() {
             </h1>
             <p className="hero-description">{site.heroDescription}</p>
             <div className="actions">
-              <Button href={contactLink()} external>{contactLabel}</Button>
+              <Button href="/plano-alimentar">Quero meu plano alimentar</Button>
               <TextLink href="/atendimentos">Conhecer os atendimentos</TextLink>
             </div>
           </div>
@@ -95,6 +95,7 @@ export function HomePage() {
         </div>
       </section>
 
+      <NutritionHomeSection />
       <section id="abordagem" className="section approach" aria-labelledby="approach-title">
         <div className="shell">
           <div className="section-top">
@@ -327,17 +328,23 @@ export function PrivacyPage() {
       </section>
       <section className="shell privacy-layout">
         <div className="prose">
-          <p className="privacy-date">Atualizada em 21 de setembro de 2026.</p>
+          <p className="privacy-date">Atualizada em 26 de setembro de 2026.</p>
           <h2>Identificação profissional</h2>
           <p>Este é o site profissional de {site.fullName}, {site.profession.toLowerCase()}, {site.registration}. O contato para questões sobre privacidade é <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.</p>
           <h2>Durante a navegação</h2>
-          <p>Este site apresenta informações sobre Gislaine Duarte, seus atendimentos e a coleção digital “7 receitas para ajudar você a desinflamar!”. Não há formulário de saúde ou área de prontuário. Não instalamos ferramentas de publicidade, pixels de rastreamento ou cookies de análise.</p>
+          <p>Este site apresenta informações sobre Gislaine Duarte, seus atendimentos, a coleção digital “7 receitas para ajudar você a desinflamar!” e a solicitação de planos alimentares personalizados. Não instalamos ferramentas de publicidade, pixels de rastreamento ou cookies de análise.</p>
           <p>Para não repetir a introdução na mesma aba, o navegador guarda temporariamente o estado da abertura em <code>{INTRO_KEY}</code> e um identificador aleatório da aba em <code>{INTRO_TAB_KEY}</code>. A preferência <code>gi-visited</code> também ajusta a apresentação em visitas repetidas. Esses registros ficam no armazenamento da sessão do navegador, não são enviados a Gislaine e não são usados para rastreamento.</p>
           <h2>Na coleção digital</h2>
           <p>Quando você decide comprar a coleção, solicitamos seu e-mail para criar um pedido. O pagamento acontece no checkout da InfinitePay. Recebemos a confirmação e conferimos a transação diretamente com a InfinitePay antes de liberar qualquer conteúdo. Após o pagamento, enviamos um link de acesso ao e-mail informado.</p>
           <p>Guardamos o e-mail, o pedido, o valor, os identificadores da transação e o prazo da sessão para entregar a coleção e prestar suporte. O link de acesso é de uso único e expira em 15 minutos; a sessão de acesso dura até 30 dias e usa cookie <code>httpOnly</code>. Os segredos de acesso ficam armazenados como hashes no servidor. O envio de e-mail é feito por uma conta de e-mail configurada para este site.</p>
           <p>O painel de gestão é reservado à equipe responsável e permite acompanhar pedidos e ajustar preço e disponibilidade. Os dados de compra não aparecem na página pública.</p>
           <p>Favoritos, receitas preparadas, checklists, multiplicadores e a lista de compras são preferências não sensíveis guardadas somente no armazenamento local do seu navegador. Elas não são enviadas a Gislaine. Você pode removê-las limpando os dados deste site no navegador. A experiência continua em memória quando esse armazenamento está indisponível.</p>
+          <h2>Nos planos alimentares personalizados</h2>
+          <p>Ao preencher a anamnese, você informa nome, contato, medidas, rotina, preferências e informações de saúde. Esses dados são usados por Gislaine para avaliar e preparar seu atendimento. As respostas ainda não enviadas ficam na memória da página. Depois do envio, a anamnese, o plano e os relatos de acompanhamento são cifrados no banco de dados e acessíveis no painel privado. Identificadores do pedido, valores e situação do pagamento são armazenados separadamente.</p>
+          <p>O checkout da InfinitePay recebe o e-mail e os dados necessários ao pagamento, sem a anamnese. A confirmação é conferida no servidor. O cookie de acesso ao plano é HttpOnly, dura até 90 dias e pode ser removido em “Encerrar acesso neste dispositivo”. Um link privado de recuperação é de uso único e vale por sete dias; usá-lo substitui o acesso anterior.</p>
+          <p>A assistência por IA é opcional. Com sua autorização específica, a NVIDIA recebe apenas categorias de condições, sintomas, restrições, objetivos e as refeições propostas, sem nome, e-mail, telefone, textos livres ou suas medidas exatas. Esse processamento ocorre na infraestrutura do fornecedor, que pode estar fora do Brasil e segue suas condições de serviço. Recusar IA não impede o atendimento. Nenhum plano é liberado sem revisão profissional.</p>
+          <p>O HTML e o PDF contêm o nome e as orientações destinadas a você, sem o registro clínico privado. O HTML funciona offline e guarda marcações, hidratação, compras e anotações apenas no navegador onde foi aberto. Esses registros não são enviados automaticamente à nutricionista e podem ser apagados no próprio arquivo. Guarde os arquivos em um local privado.</p>
+          <p>Gislaine é responsável pelo atendimento e pelo tratamento dessas informações. Vercel, o provedor do banco de dados, InfinitePay e, quando autorizada, NVIDIA participam conforme suas funções. Os dados são mantidos pelo tempo necessário ao atendimento e às obrigações profissionais aplicáveis. Você pode solicitar acesso, correção, informações sobre conservação ou revogação da autorização opcional pelo e-mail abaixo; pedidos de exclusão serão avaliados considerando obrigações de guarda. Revogar o uso de IA não desfaz um processamento já realizado.</p>
           <h2>Ao entrar em contato</h2>
           <p>Os botões de WhatsApp abrem um serviço externo, com uma mensagem que você pode revisar antes de enviar. Os links de e-mail abrem o aplicativo configurado no seu dispositivo. A abertura do link, por si só, não envia uma mensagem ou confirma um atendimento.</p>
           <p>Se você enviar uma mensagem, o canal escolhido receberá os dados que você decidir compartilhar. O funcionamento e o tratamento de dados nessas plataformas seguem também suas próprias políticas. Para o primeiro contato, prefira informações sobre o atendimento desejado; não é necessário enviar exames ou histórico de saúde.</p>

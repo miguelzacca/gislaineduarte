@@ -7,6 +7,8 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "test:nutrition": "node --test tests/unit/nutrition*.test.js",
+    "nutrition:preview": "node scripts/preview-nutrition-export.mjs",
     "product:preview": "node scripts/generate-recipes-preview.mjs",
     "product:deps": "python -m pip install --disable-pip-version-check --upgrade --target tmp/product-python -r requirements-product.txt",
     "preproduct:build": "npm run product:deps",
@@ -22,7 +24,7 @@
     "test:product": "node --test tests/unit/product-*.test.js",
     "product:validate": "npm run test:product && python scripts/validate-recipes-artifacts.py",
     "product:smoke": "node scripts/check-recipes-flow.mjs",
-    "audit": "node --env-file-if-exists=.env scripts/audit-site.mjs",
+    "audit": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/audit-site.mjs",
     "assets": "node scripts/prepare-assets.mjs",
     "check": "npm run lint && npm run build && npm run audit"
   },
@@ -30,6 +32,7 @@
     "@fontsource-variable/cormorant-garamond": "5.3.0",
     "@fontsource-variable/manrope": "5.3.0",
     "nodemailer": "^10.0.10",
+    "pdfkit": "^0.20.2",
     "pg": "^8.23.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -37,6 +40,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
+    "@electric-sql/pglite": "^0.5.8",
     "@eslint/js": "10.0.1",
     "@playwright/test": "^1.58.2",
     "@vitejs/plugin-react": "6.1.1",

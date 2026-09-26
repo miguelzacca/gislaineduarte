@@ -6,6 +6,15 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "functions": {
+    "api/nutrition/return.js": { "maxDuration": 30 },
+    "api/nutrition/index.js": {
+      "includeFiles": "{public/fonts,public/images/foods,server/nutrition/fonts}/**",
+      "maxDuration": 60
+    },
+    "api/admin/nutrition.js": {
+      "includeFiles": "{public/fonts,public/images/foods,server/nutrition/fonts}/**",
+      "maxDuration": 60
+    },
     "api/recipes/download.js": {
       "includeFiles": "artifacts/recipes/**"
     }

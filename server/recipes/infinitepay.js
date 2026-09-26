@@ -11,14 +11,14 @@ async function post(path, payload, fetcher = fetch) {
   return response.json();
 }
 
-export async function createPaymentLink({ handle, orderId, title, amountCents, email, origin, webhookToken }, fetcher = fetch) {
+export async function createPaymentLink({ handle, orderId, title, amountCents, email, origin, webhookToken, returnPath = '/api/recipes/return', webhookPath = '/api/recipes/webhook' }, fetcher = fetch) {
   const response = await post('/links', {
     handle,
     order_nsu: orderId,
     items: [{ quantity: 1, price: amountCents, description: title }],
     ...(email ? { customer: { email } } : {}),
-    redirect_url: `${origin}/api/recipes/return`,
-    webhook_url: `${origin}/api/recipes/webhook?order=${encodeURIComponent(orderId)}&key=${encodeURIComponent(webhookToken)}`,
+    redirect_url: `${origin}${returnPath}`,
+    webhook_url: `${origin}${webhookPath}${webhookPath.includes('?') ? '&' : '?'}order=${encodeURIComponent(orderId)}&key=${encodeURIComponent(webhookToken)}`,
   }, fetcher);
   const url = new URL(response.url);
   if (url.protocol !== 'https:' || !/(^|\.)infinitepay\.(io|com\.br)$/.test(url.hostname) || url.username || url.password) {

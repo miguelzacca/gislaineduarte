@@ -2,5 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /api/recipes/
 Disallow: /api/admin/
+Disallow: /api/nutrition
+Disallow: /meu-plano
 
 Sitemap: https://gislaineduarte.com.br/sitemap.xml

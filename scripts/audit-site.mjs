@@ -12,7 +12,7 @@ const configuredInstagram = process.env.PUBLIC_INSTAGRAM?.trim() || null;
 const expectedRoutes = [
   '/', '/sobre', '/atendimentos', '/atendimentos/consulta-nutricional',
   '/atendimentos/ciclos-de-acompanhamento', '/contato',
-  '/7-receitas-para-ajudar-voce-a-desinflamar', '/privacidade',
+  '/7-receitas-para-ajudar-voce-a-desinflamar', '/privacidade', '/plano-alimentar',
 ];
 const errors = [];
 const warnings = [];
@@ -159,9 +159,9 @@ async function main() {
     const canonical = $('link[rel="canonical"]').attr('href');
     if (!is404 || canonical) check(canonical === base, `${route}: canonical incorreto ${canonical ?? '(ausente)'}`);
     const noindex = /noindex/i.test($('meta[name="robots"]').attr('content') ?? '');
-    if (is404 || route === '/minhas-receitas') check(noindex, `${route}: rota reservada precisa de noindex`);
+    if (is404 || ['/minhas-receitas', '/meu-plano', '/painel'].includes(route)) check(noindex, `${route}: rota reservada precisa de noindex`);
     else if (noindex) warnings.push(`${route}: noindex ativo; confirmar ambiente antes do lançamento.`);
-    if (process.env.AUDIT_REQUIRE_INDEXABLE === '1' && !is404 && route !== '/minhas-receitas') check(!noindex, `${route}: noindex em auditoria de publicação`);
+    if (process.env.AUDIT_REQUIRE_INDEXABLE === '1' && !is404 && !['/minhas-receitas', '/meu-plano', '/painel'].includes(route)) check(!noindex, `${route}: noindex em auditoria de publicação`);
 
     for (const property of ['og:title', 'og:description', 'og:type', 'og:image', 'og:locale']) {
       check(Boolean($(`meta[property="${property}"]`).attr('content')), `${route}: ${property} ausente`);
@@ -207,12 +207,13 @@ async function main() {
     check(!/\b(?:3|5|6|três|cinco|seis)\s*(?:ou\s*(?:3|5|6|três|cinco|seis)\s*)?meses\b/i.test(page.bodyText), `${route}: duração de ciclo não confirmada`);
     check(!/desparasita[çc][ãa]o|resultados? garantidos?/i.test(page.bodyText), `${route}: alegação não confirmada`);
     const footerIdentity = normalize($('.site-footer .professional-identity').text());
-    check(footerIdentity.includes(site.fullName) && footerIdentity.includes(site.registration) && footerIdentity.includes(site.profession), `${route}: identificação profissional incompleta no rodapé`);
+    if (route !== '/painel') check(footerIdentity.includes(site.fullName) && footerIdentity.includes(site.registration) && footerIdentity.includes(site.profession), `${route}: identificação profissional incompleta no rodapé`);
     check(!/\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/.test(page.html), `${route}: documento pessoal exposto no HTML`);
     if (route === '/7-receitas-para-ajudar-voce-a-desinflamar') {
-      const forms = $('form[action="/api/recipes/checkout"]');
-      check(forms.length > 0 && forms.length === $('form').not('[method="dialog"]').length, `${route}: formulário de acesso divergente do fluxo protegido`);
-      forms.each((_, form) => check($(form).attr('method')?.toLowerCase() === 'post', `${route}: checkout precisa usar POST`));
+      // The current checkout verifies session and availability before showing any email form.
+      check($('.product-checkout-button[type="button"]').length > 0, `${route}: abertura de checkout ausente`);
+      check($('.product-checkout-dialog [role="status"]').length === 1, `${route}: consulta inicial de acesso ausente`);
+      check($('form').not('[method="dialog"]').length === 0, `${route}: formulário de compra exposto antes da consulta de acesso`);
     } else {
       check($('form').length === 0, `${route}: formulário não previsto na coleta real`);
     }

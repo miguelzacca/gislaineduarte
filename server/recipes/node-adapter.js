@@ -14,8 +14,14 @@ import { handleAdminLoginRequest } from '../../api/admin/login.js';
 import { handleAdminLogoutRequest } from '../../api/admin/logout.js';
 import { handleAdminProductsRequest } from '../../api/admin/products.js';
 import { handleAdminOrdersRequest } from '../../api/admin/orders.js';
+import { handleNutritionRequest } from '../../api/nutrition/index.js';
+import { handleAdminNutritionRequest } from '../../api/admin/nutrition.js';
+import { handleNutritionReturnRequest } from '../../api/nutrition/return.js';
 
 const routes = {
+  '/api/nutrition': { method: ['GET', 'POST'], handle: handleNutritionRequest },
+  '/api/nutrition/return': { method: 'GET', handle: handleNutritionReturnRequest },
+  '/api/admin/nutrition': { method: ['GET', 'POST', 'PATCH'], handle: handleAdminNutritionRequest },
   '/api/recipes/checkout': { method: 'POST', handle: handleCheckoutRequest },
   '/api/recipes/content': { method: 'GET', handle: handleContentRequest },
   '/api/recipes/download': { method: 'GET', handle: handleDownloadRequest },
@@ -67,7 +73,7 @@ export async function handleProductApiRequest(request, response, { env } = {}) {
     let size = 0;
     for await (const chunk of request) {
       size += chunk.length;
-      if (size > 16_384) {
+      if (size > (url.pathname === '/api/admin/nutrition' ? 180_000 : url.pathname === '/api/nutrition' ? 32_000 : 16_384)) {
         await sendWebResponse(new Response('Payload Too Large', { status: 413 }), response);
         return true;
       }
