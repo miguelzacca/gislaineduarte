@@ -1,0 +1,69 @@
+/* Client journey: inherited Manrope / Cormorant and forest / ivory palette. */
+.ni-section{padding:25px 0;border-top:1px solid #e0e6d8;margin-top:24px;min-width:0}
+.ni-section:first-of-type{border-top:0;padding-top:10px;margin-top:10px}
+.ni-section__heading{display:flex;gap:15px;align-items:flex-start;margin-bottom:18px}
+.ni-section__heading>span{display:grid;place-items:center;flex:none;min-width:32px;height:32px;border:1px solid #bccaaf;border-radius:50%;font:600 10px var(--sans);color:#546746;background:#f0f3e8;margin-top:4px}
+.nutrition-public .ni-section__heading h3{font-size:28px;line-height:1.18;margin:0 0 8px}
+.nutrition-public .ni-section__heading p{font-size:14px;color:var(--leaf);margin:0;line-height:1.8}
+.ni-section--clinical{border-radius:14px;background:#faf5eb;padding:24px!important;border:1px solid #e3d7bf!important}
+.ni-section .nutrition-choices:first-child{margin-top:0}
+.ni-restrictions{border:1px solid #dbbea7;border-left:4px solid #98704e;background:#fff9f0;border-radius:10px;padding:20px;margin:22px 0;overflow-wrap:anywhere}
+.ni-restrictions__heading{display:flex;gap:12px;align-items:flex-start}
+.ni-restrictions__heading>span{display:grid;place-items:center;flex:none;width:24px;height:24px;border:1px solid #ac8360;border-radius:50%;font-size:12px;font-weight:700;color:#795139}
+.ni-restrictions__heading strong{font-size:15px}
+.nutrition-public .ni-restrictions__heading p{font-size:13px;line-height:1.75;color:#70543f;margin:4px 0 0}
+.ni-restrictions dl,.ni-food-summary dl{display:grid;gap:13px;margin:17px 0 0}
+.ni-restrictions dt,.ni-food-summary dt{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#796047}
+.ni-restrictions dd,.ni-food-summary dd{margin:3px 0 0;font-size:14px;line-height:1.8}
+.ni-restrictions dd small{display:block;font-size:13px;white-space:pre-wrap}
+.ni-restrictions--compact{padding:17px}
+.ni-food-summary{border:1px solid #d6dfce;border-radius:12px;background:#f1f5ea;padding:18px 20px}
+.ni-food-summary dl{margin:0;gap:16px}
+.ni-food-summary dt{color:#54674a}
+.ni-food-summary__excluded{padding-top:13px;border-top:1px solid #d3dacc}
+.ni-food-summary__excluded dt{color:#895435}
+.nutrition-public .ni-help,.nw .ni-help{font-size:14px;line-height:1.85;color:var(--leaf);margin:14px 0}
+.nutrition-public .ni-result-count{font-size:13px;color:var(--leaf);margin:12px 0}
+.ni-food-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-height:570px;overflow-y:auto;overscroll-behavior:contain;padding:4px 5px 8px 1px;scrollbar-width:thin;scrollbar-color:#9aab89 #eef2e8}
+.ni-food-card{border:1px solid #d8e0d0;background:#fffdf8;border-radius:11px;overflow:hidden;min-width:0;align-self:start}
+.ni-food-card.is-chosen{border-color:#759265;background:#eff5e8}
+.ni-food-card.is-excluded{border-color:#af7d59;background:#fff3e8}
+.ni-food-card>img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}
+.ni-food-card>div{padding:12px 10px}
+.ni-food-card h4{font:600 13px/1.6 var(--sans);margin:0 0 12px;min-height:42px;overflow-wrap:anywhere}
+.nutrition-public .ni-food-card select{font-size:14px;padding:9px 5px;border-radius:6px;min-height:44px;background:#fffdfb}
+.nutrition-public .ni-empty{padding:20px;border:1px dashed #c2cdb8;border-radius:10px;font-size:14px}
+.ni-bristol{padding:0;border:0;min-width:0;margin:22px 0}
+.ni-bristol legend{font-size:15px;font-weight:700;line-height:1.7}
+.ni-bristol legend span{font-weight:400;color:var(--leaf);font-size:13px;margin-left:5px}
+.ni-bristol__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.nutrition-public .ni-bristol__choice,.nw .ni-bristol__choice{display:grid;grid-template-columns:19px 70px minmax(0,1fr);gap:9px;align-items:center;padding:13px 12px;border:1px solid #d5decb;border-radius:10px;background:#fffdf9;cursor:pointer}
+.ni-bristol__choice.is-selected{border-color:#48673b;background:#eaf2df}
+.ni-bristol__choice:focus-within{outline:3px solid var(--gold);outline-offset:2px}
+.nutrition-public .ni-bristol input[type=radio],.nw .ni-bristol input[type=radio]{width:17px;height:17px;min-height:17px;margin:0;accent-color:var(--forest);padding:0;box-shadow:none}
+.ni-bristol__choice strong{display:block;font-size:14px;line-height:1.6}
+.ni-bristol__choice small{display:block;font-size:13px!important;line-height:1.7;font-weight:400;margin-top:3px}
+.ni-bristol__image{display:block;width:70px;height:58px}
+.ni-bristol__line{fill:none;stroke:#cfab7e;stroke-width:2;stroke-linecap:round}
+.ni-bristol__skip{margin-top:18px;min-height:44px;align-items:center!important;font-size:14px}
+.ni-bristol:disabled .ni-bristol__choice{cursor:default}
+.ni-photos input[type=file]{font-size:13px;padding:10px;background:#f9faf5;border-style:dashed;cursor:pointer}
+.ni-photos input[type=file]::file-selector-button{border:0;border-radius:5px;padding:10px;margin:0 10px 0 0;background:#dfe8d5;color:var(--forest);font:600 13px var(--sans);min-height:44px;cursor:pointer}
+.ni-photo-previews{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:15px 0}
+.ni-photo-previews figure{margin:0;border:1px solid #d0d9c5;border-radius:10px;overflow:hidden;background:#f5f6ef}
+.ni-photo-previews img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:contain;background:#e7ecdf}
+.ni-photo-previews figcaption{padding:10px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
+.ni-photo-previews figcaption span{overflow-wrap:anywhere;min-width:0}
+.ni-photo-previews button{font:600 14px var(--sans);border:0;background:none;text-decoration:underline;color:#824f35;min-height:44px;cursor:pointer;padding:5px}
+.ni-sr-only{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap}
+.ni-review-note{border-radius:12px;background:#eaf0e2;border:1px solid #cad8bf;padding:20px;margin:20px 0}
+.nutrition-public .ni-review-note p{font-size:14px;line-height:1.85;margin:0}
+.ni-field-help{display:block;font-size:13px;line-height:1.8;color:var(--leaf)}
+.nutrition-public .ni-section label{font-size:14px}
+.nutrition-public .ni-section label small,.nutrition-public .ni-restrictions dd small{font-size:13px;line-height:1.8}
+.nutrition-public .ni-section :is(input,textarea,select):not([type=checkbox]):not([type=radio]){font-size:14px}
+@media(min-width:1100px){.ni-restrictions--compact dl{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.ni-food-summary dl{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.ni-food-summary__excluded{border-top:0;border-left:1px solid #d3dacc;padding:0 0 0 14px}}
+@media(max-width:1000px){.ni-bristol__grid{grid-template-columns:1fr}.ni-food-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.nutrition-public .nutrition-form{padding:26px 20px}.nutrition-public .ni-section__heading h3{font-size:27px}.ni-section--clinical{padding:20px 15px!important}.ni-restrictions{padding:17px 13px}.ni-section__heading{gap:12px}.ni-food-grid{gap:10px;max-height:540px}.nutrition-public .ni-section :is(input,textarea,select):not([type=checkbox]):not([type=radio]){font-size:16px}.ni-photo-previews{grid-template-columns:1fr}.nutrition-public .ni-bristol__choice{grid-template-columns:18px 64px minmax(0,1fr)}.nutrition-public .ni-bristol__image{width:64px}.nutrition-public .nutrition-form-actions{flex-wrap:wrap}.nutrition-public .nutrition-form-actions .nutrition-button:last-child{max-width:100%}.nutrition-public .nutrition-review>div{gap:12px}.nutrition-public .nutrition-review button{flex:none}.nutrition-public .nutrition-order-summary{flex-wrap:wrap}}
+@media(max-width:420px){.ni-food-grid{grid-template-columns:1fr}.ni-food-card{display:grid;grid-template-columns:84px minmax(0,1fr)}.ni-food-card>img{height:100%;aspect-ratio:auto;object-fit:cover}.ni-food-card>div{padding:10px}.ni-food-card h4{min-height:0;margin-bottom:8px}.nutrition-public .ni-bristol__choice{padding:12px 9px;column-gap:7px}}
+@media(prefers-reduced-motion:reduce){.ni-food-card,.ni-bristol__choice{transition:none}}

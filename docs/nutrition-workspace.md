@@ -1,5 +1,7 @@
 # Consultório e planos alimentares
 
+> Atualização de 27/09/2026: o mapa detalhado, campos, regras, critérios de aceite e decisões profissionais estão em [nutrition-journey-upgrade.md](nutrition-journey-upgrade.md).
+
 Implementação em Vite + React, JavaScript/JSX, Functions Node e no Postgres já utilizado pelo projeto. O design mantém verde, marfim, dourado, Cormorant e Manrope. A gestão anterior de produtos e vendas continua disponível no painel.
 
 ## Fluxo da pessoa atendida
@@ -27,13 +29,13 @@ As ações incluem troca por energia, proteína ou carboidrato; seleção de tro
 
 Filtros consideram dieta vegetariana/vegana, alérgenos, glúten, lactose e alimentos excluídos. Restrições escritas em texto livre precisam de conferência profissional. As trocas automáticas preservam a função culinária, o estado de preparo e limites de porção definidos por família; não tratam todo alimento do mesmo grupo como equivalente. Restrições muito amplas podem deixar um rascunho incompleto, que precisa ser corrigido antes de salvar ou liberar.
 
-Os modelos próprios preservam refeições e orientações; removem metas e registro clínico. É necessário retirar informações pessoais das orientações antes de reutilizá-las. Modelos próprios incompatíveis com as restrições da nova pessoa são rejeitados para revisão, em vez de serem aplicados silenciosamente. Depois de salvar um modelo, ele já aparece no seletor do atendimento.
+Os modelos próprios preservam a estrutura e as quantidades das refeições; removem metas, avaliação, cálculos, conteúdos adicionais e textos personalizados. Rótulos dos dias e refeições são normalizados. Objetivos e contexto organizam a pesquisa sem definir conduta clínica. Modelos próprios incompatíveis com as restrições da nova pessoa são rejeitados para revisão, em vez de serem aplicados silenciosamente. Depois de salvar um modelo, ele já aparece no seletor do atendimento.
 
 O catálogo tem 60 alimentos com fotografias reais locais e valores da TACO por 100 g: energia, macronutrientes, fibras, sódio, potássio e fósforo. Página, número e nome na fonte acompanham cada item. Valores ausentes de minerais aparecem como soma parcial, não como zero garantido. Medidas caseiras são aproximações; preparos, rótulos e sal adicionado podem alterar a composição.
 
 As fotografias foram selecionadas visualmente no Wikimedia Commons e ficam em `public/images/foods`, sem hotlink em tempo de uso. As licenças CC/CC0/domínio público, autoria, fonte, descrição e transformações estão em `CREDITS.md` e `credits.json`; cada arquivo JPEG tem SHA-256 e tamanho registrados. As fotos de ingredientes crus ou de variedades representativas têm legenda específica; nenhuma foto representa uma porção prescrita. O gerador anterior de ilustrações foi removido. Uma nova importação nutricional preserva os créditos aprovados. O teste de fotografias confere cobertura de todos os alimentos, integridade, licenciamento registrado e orçamento de tamanho dos arquivos offline.
 
-As calculadoras incluem IMC, repouso por Mifflin–St Jeor, gasto com fator de atividade, mudança relativa de peso, relações cintura/quadril e cintura/altura, massa livre de gordura a partir do percentual informado, proteína em g/kg, água em ml/kg e distribuição energética de macros. Metas são escolhidas pela profissional. Nenhum déficit, meta hídrica ou proteína é prescrito automaticamente.
+As calculadoras incluem IMC, repouso por Mifflin–St Jeor, gasto com fator de atividade, mudança relativa de peso, relações cintura/quadril e cintura/altura, massa livre de gordura a partir do percentual informado, proteína em g/kg, água em ml/kg e distribuição energética de macros. Metas são escolhidas pela profissional. Nenhum déficit, meta hídrica ou proteína é prescrito automaticamente. Aplicar as metas registra as entradas para recomputação no servidor e preservação na versão cifrada. Resumo e critérios públicos são exigidos antes da aprovação.
 
 **Revisão e entrega** mostra sete requisitos objetivos e exige pagamento confirmado, plano válido, metas de energia/proteína, registro clínico e confirmação dos alertas aplicáveis. Registro clínico é privado. Os alertas também consideram o contexto da base selecionada e diferenças relevantes de energia/proteína. Reabrir uma versão suspende novos downloads até aprovação; arquivos já baixados não podem ser recolhidos. Revisões concorrentes são recusadas pelo número da versão, e mudanças não salvas têm proteção de navegação.
 
@@ -57,7 +59,7 @@ O HTML contém CSS, JavaScript, fontes e imagens base64. Símbolos SVG reutiliza
 
 O arquivo não transmite marcações, não faz conexões externas automáticas e respeita redução de movimento. Para usar a interatividade, abra o HTML em um navegador; alguns visualizadores de anexos não executam JavaScript. O diário offline não é enviado à nutricionista. O compartilhamento entre aparelhos é feito pela cópia exportada, sem sincronização em nuvem. As cópias contêm informações pessoais e precisam ser guardadas pela pessoa em local privado.
 
-O PDF é gerado no servidor com PDFKit, fontes incorporadas, fotografias, porções, trocas e compras. Alimentos que aparecem apenas nas alternativas também recebem fotos em uma galeria própria. Refeições extensas podem continuar em outra página. Ambos omitem o registro clínico, medicamentos, contato e anamnese; incluem o nome e as orientações destinadas à pessoa. Autoria, fonte e licença das fotos acompanham as duas entregas.
+O PDF é gerado no servidor com PDFKit, fontes incorporadas, fotografias, porções, trocas e compras. Alimentos que aparecem apenas nas alternativas também recebem fotos em uma galeria própria. Refeições extensas podem continuar em outra página. Ambos omitem registro clínico privado, medicamentos livres, contatos e fotos anexadas; incluem nome, orientações e resumo público revisado. Este resumo traz as categorias estruturadas consideradas, critérios, entradas e resultados dos cálculos aplicados, método e origem das metas. Dados não calculados permanecem explicitamente ausentes. Autoria, fonte e licença das fotos acompanham as duas entregas.
 
 `npm run nutrition:preview` cria exemplos **fictícios e explicitamente marcados como rascunho** em `tmp/nutrition/exemplo-plano.html` e `.pdf`. Não são prescrições. Tamanho e quantidade de páginas variam conforme alimentos, trocas e orientações; as prévias devem ser regeneradas após mudanças nas fotos ou nos modelos.
 

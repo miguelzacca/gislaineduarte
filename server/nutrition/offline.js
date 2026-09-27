@@ -93,6 +93,8 @@ export function initializeOfflinePlan(config) {
       const total = { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
       day.meals.forEach((meal, m) => {
         let mealEnergy = 0;
+        const mealValues = { protein: 0, carbs: 0, fat: 0 };
+        const selectedItems = [];
         meal.items.forEach((item, i) => {
           const itemKey = choiceKey(d, m, i);
           const option = selected(item, itemKey);
@@ -102,15 +104,38 @@ export function initializeOfflinePlan(config) {
           card.querySelector('svg').setAttribute('aria-label', 'Fotografia de ' + food.name);
           card.querySelector('[data-food-name]').textContent = food.name;
           card.querySelector('[data-food-grams]').textContent = number(option.grams) + ' g';
-          card.querySelector('[data-food-portion]').textContent = '≈ ' + number(option.grams / food.portionGrams) + ' × ' + food.portionLabel;
+          card.querySelector('[data-food-portion]').textContent = option.portionText;
           const values = Object.fromEntries(Object.keys(total).map(nutrient => [nutrient, (Number(food[nutrient]) || 0) * option.grams / 100]));
-          card.querySelector('[data-food-nutrients]').textContent = number(values.kcal) + ' kcal · P ' + number(values.protein) + ' g · C ' + number(values.carbs) + ' g · G ' + number(values.fat) + ' g';
+          card.querySelector('[data-food-nutrients]').textContent = number(values.kcal) + ' kcal · Proteínas ' + number(values.protein) + ' g · Carboidratos ' + number(values.carbs) + ' g · Gorduras ' + number(values.fat) + ' g';
+          for (const nutrient of Object.keys(mealValues)) mealValues[nutrient] += values[nutrient];
+          selectedItems.push({ name: food.name, grams: option.grams });
           for (const nutrient of Object.keys(total)) total[nutrient] += values[nutrient];
           mealEnergy += values.kcal;
           card.querySelectorAll('[data-choice]').forEach(radio => { radio.checked = Number(radio.value) === item.options.indexOf(option); });
           card.classList.toggle('has-swap', item.options.indexOf(option) !== 0);
         });
         byId('meal-energy-' + d + '-' + m).textContent = number(mealEnergy) + ' kcal';
+        const visual = byId('visual-' + d + '-' + m);
+        const maximum = Math.max(10, Math.ceil(Math.max(...Object.values(mealValues)) / 10) * 10);
+        for (const [nutrient, value] of Object.entries(mealValues)) {
+          visual.querySelector('[data-macro-label="' + nutrient + '"]').textContent = number(value) + ' g';
+          visual.querySelector('[data-macro-bar="' + nutrient + '"]').style.width = value / maximum * 100 + '%';
+        }
+        visual.querySelector('[data-macro-scale]').textContent = 'Mesma escala: 0 a ' + number(maximum) + ' g de nutriente.';
+        const chart = visual.querySelector('[data-mass-chart]'); const legend = visual.querySelector('[data-mass-legend]');
+        chart.replaceChildren(); legend.replaceChildren();
+        const mass = selectedItems.reduce((sum, item) => sum + item.grams, 0);
+        const colors = ['#315e49', '#b38d45', '#9b6557', '#668092', '#879747', '#77648b', '#477b73'];
+        let angle = -Math.PI / 2;
+        selectedItems.forEach((item, index) => {
+          const start = angle; angle += item.grams / mass * Math.PI * 2;
+          const steps = Math.max(1, Math.ceil((angle - start) / .10));
+          const points = Array.from({ length: steps + 1 }, (_, i) => { const a = start + (angle - start) * i / steps; return (60 + 52 * Math.cos(a)).toFixed(2) + ' ' + (60 + 52 * Math.sin(a)).toFixed(2); });
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', 'M 60 60 L ' + points.join(' L ') + ' Z'); path.setAttribute('fill', colors[index % colors.length]); path.setAttribute('stroke', '#fffdf7'); path.setAttribute('stroke-width', '1.5'); chart.append(path);
+          const row = document.createElement('li'); const dot = document.createElement('i'); dot.style.background = colors[index % colors.length]; dot.setAttribute('aria-hidden', 'true');
+          row.append(dot, item.name + ': ' + number(item.grams) + ' g'); legend.append(row);
+        });
       });
       for (const [nutrient, value] of Object.entries(total)) byId('total-' + d + '-' + nutrient).textContent = number(value) + (nutrient === 'kcal' ? '' : ' g');
     });
@@ -128,7 +153,7 @@ export function initializeOfflinePlan(config) {
       const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'choice-' + itemKey; radio.value = String(index); radio.dataset.choice = itemKey;
       const photo = byId('food-' + itemKey).querySelector('svg').cloneNode(true); photo.setAttribute('class', 'swap-image'); photo.setAttribute('aria-hidden', 'true'); photo.removeAttribute('aria-label'); photo.removeAttribute('role'); photo.querySelector('use').setAttribute('href', '#photo-' + option.foodId);
       const name = document.createElement('span'); name.textContent = foods[option.foodId].name;
-      const quantity = document.createElement('small'); quantity.textContent = number(option.grams) + ' g' + (index === 0 ? ' · principal' : ''); name.append(quantity);
+      const quantity = document.createElement('small'); quantity.textContent = option.portionText + (index === 0 ? ' · principal' : ''); name.append(quantity);
       label.append(radio, photo, name); fieldset.append(label);
     });
     container.replaceChildren(fieldset);

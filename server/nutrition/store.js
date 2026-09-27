@@ -55,6 +55,8 @@ export async function getNutritionStore(env = process.env, injectedStore) {
         id uuid PRIMARY KEY, title text NOT NULL, profile text NOT NULL, plan_encrypted text NOT NULL,
         created_at timestamptz NOT NULL DEFAULT now()
       )`);
+      await client.query("ALTER TABLE nutrition_templates ADD COLUMN IF NOT EXISTS goals jsonb NOT NULL DEFAULT '[]'::jsonb");
+      await client.query("ALTER TABLE nutrition_templates ADD COLUMN IF NOT EXISTS tags jsonb NOT NULL DEFAULT '[]'::jsonb");
       await client.query(`CREATE TABLE IF NOT EXISTS nutrition_plan_versions (
         request_id uuid NOT NULL REFERENCES nutrition_requests(id) ON DELETE CASCADE,
         revision integer NOT NULL, stage text NOT NULL, reason text NOT NULL,

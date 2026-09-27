@@ -1,4 +1,5 @@
 import catalogue from './nutrition-foods.json' with { type: 'json' };
+import { goalOptions } from './nutrition-journey.js';
 
 export const foods = catalogue.foods;
 export const foodSource = { title: catalogue.edition, url: catalogue.source, notes: catalogue.notes };
@@ -45,6 +46,8 @@ const variants = [
 export const planTemplates = clinicalProfiles.flatMap(profile => variants.map(variant => ({
   id: `${profile.id}-${variant.id}`, profile: profile.id, name: `${profile.name} · ${variant.name}`,
   description: `${variant.description} ${profile.focus}`, pattern: variant.pattern, meals: variant.pattern === 2 ? 6 : 5,
+  goals: ['balanced', 'diabetes', 'glp1'].includes(profile.id) ? goalOptions.map(goal => goal.id) : ['renal', 'oncology'].includes(profile.id) ? ['clinical'] : ['clinical', 'wellbeing', 'weight-management'],
+  tags: [profile.name, variant.name, ...(profile.id === 'balanced' ? goalOptions.filter(goal => goal.id !== 'clinical').map(goal => goal.label) : ['Contexto clínico', profile.id === 'glp1' ? 'GLP-1' : profile.name])],
 })));
 
 // Culinary modules are draft assemblies, not disease prescriptions. All weights refer
@@ -98,5 +101,6 @@ export const mealModules = [
 export const defaultOffer = {
   title: 'Seu plano, do seu jeito.', description: 'Plano alimentar personalizado com avaliação e acompanhamento de Gislaine Duarte.',
   priceCents: null, deliveryDays: null, followupDays: null, published: false,
+  bristolReviewed: false,
 };
-export const consentVersion = 'nutrition-2026-09-v1';
+export const consentVersion = 'nutrition-2026-09-v2';

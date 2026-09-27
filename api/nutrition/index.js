@@ -3,7 +3,7 @@ import { isAllowedCheckoutRequest, productAccessHeaders, randomToken, tokenHash 
 import { transaction } from '../../server/recipes/store.js';
 import { readCommerceConfig } from '../../server/recipes/config.js';
 import { site } from '../../src/data/site.js';
-import { accessCookie, checkout, commerceReady, confirmNutritionPayment, createIntake, followupStatus, NutritionError, readBody, readOffer, readPatient } from '../../server/nutrition/service.js';
+import { accessCookie, checkout, commerceReady, confirmNutritionPayment, createIntake, followupStatus, NutritionError, publicOffer, readBody, readOffer, readPatient } from '../../server/nutrition/service.js';
 import { event, getNutritionStore, seal, unseal } from '../../server/nutrition/store.js';
 import { buildPlanHtml, buildPlanPdf } from '../../server/nutrition/export.js';
 
@@ -17,9 +17,9 @@ export async function handleNutritionRequest(request, { env = process.env, store
   try {
     if (action === 'offer' && !commerceReady(env)) return json({ available: false });
     const db = store || await getNutritionStore(env);
-    if (action === 'offer') { const offer = await readOffer(db); return json({ available: offer.published && commerceReady(env), offer: offer.published ? offer : null }); }
+    if (action === 'offer') { const offer = await readOffer(db); return json({ available: offer.published && commerceReady(env), offer: offer.published ? publicOffer(offer) : null }); }
     if (action === 'intake') {
-      const result = await createIntake(await readBody(request, 32000), request, { db, env });
+      const result = await createIntake(await readBody(request, 650 * 1024), request, { db, env });
       return json({ id: result.id }, 201, result.cookie ? { 'Set-Cookie': result.cookie } : {});
     }
     if (action === 'webhook') {
@@ -64,7 +64,7 @@ export async function handleNutritionRequest(request, { env = process.env, store
       const paid = patient.payment_status === 'paid';
       const ready = paid && patient.stage === 'approved';
       return json({ id: patient.id, payment: patient.payment_status, stage: patient.stage, ready, amountCents: patient.amount_cents,
-        offer: patient.offer_snapshot, createdAt: patient.created_at, paidAt: patient.paid_at, approvedAt: patient.approved_at, aiConsent: unseal(patient.intake_encrypted, env).aiConsent, ...followupStatus(patient),
+        offer: publicOffer(patient.offer_snapshot), createdAt: patient.created_at, paidAt: patient.paid_at, approvedAt: patient.approved_at, aiConsent: unseal(patient.intake_encrypted, env).aiConsent, ...followupStatus(patient),
         checkoutUrl: !paid ? patient.checkout_url : null,
         whatsappUrl: paid ? `https://wa.me/${site.contact.whatsapp}?text=${encodeURIComponent(`Olá, Gislaine! Preenchi minha anamnese e meu pagamento foi confirmado. Pedido ${patient.id.slice(0, 8)}. Gostaria de combinar os próximos passos.`)}` : null,
       });

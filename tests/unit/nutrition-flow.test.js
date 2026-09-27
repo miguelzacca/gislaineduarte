@@ -86,8 +86,14 @@ test('nutrition flow: isolated PostgreSQL intake → checkout → confirmation �
       const detail = await (await request('detail', null, { adminRequest: true, query: `&id=${rowId}` })).json();
       assert.equal((await request('approve', { id: rowId, revision: 1, reviewed: [] }, { adminRequest: true })).status, 422);
       const plan = detail.plan; plan.targets.energy = 1800; plan.targets.protein = 80; plan.clinicalNotes = 'Avaliação fictícia de teste. Metas e restrições conferidas.';
+      plan.assessment = { summary: 'Seu plano considera a rotina e as exclusões informadas.', criteria: 'Metas definidas profissionalmente para este exemplo. Conferidos horários e porções.', calculationInput: { weight: 80, height: 175, age: 38, sex: 'male', activity: 1.2, proteinRatio: 1 }, calculations: [{ id: 'protein', value: 999 }], dataSnapshot: { email: 'forged@example.com' } };
       assert.equal((await request('save', { id: rowId, revision: 0, plan }, { adminRequest: true })).status, 409);
       assert.equal((await request('save', { id: rowId, revision: 1, plan }, { adminRequest: true })).status, 200);
+      const savedDetail = await (await request('detail', null, { adminRequest: true, query: `&id=${rowId}` })).json();
+      assert.equal(savedDetail.plan.assessment.calculations.find(item => item.id === 'protein').value, 80);
+      assert.equal(savedDetail.plan.assessment.targetSources.protein.calculationId, 'protein');
+      assert.equal(savedDetail.plan.assessment.dataSnapshot.email, undefined);
+      assert.ok(savedDetail.plan.assessment.recordedAt);
       assert.equal((await request('approve', { id: rowId, revision: 2, reviewed: clinicalAlerts(detail.intake, plan).map(alert => alert.id) }, { adminRequest: true })).status, 200);
       assert.equal((await (await request('status')).json()).ready, true);
       assert.equal((await request('save', { id: rowId, revision: 2, plan }, { adminRequest: true })).status, 409);
@@ -176,9 +182,16 @@ test('nutrition flow: isolated PostgreSQL intake → checkout → confirmation �
     });
     await t.test('saved template category determines its clinical review context', async () => {
       const detail = await (await request('detail', null, { adminRequest: true, query: `&id=${rowId}` })).json();
+      const personalPlan = structuredClone(detail.plan);
+      personalPlan.days[0].label = 'PERSONAL_DAY_NAME'; personalPlan.days[0].meals[0].name = 'PERSONAL_MEAL_NAME';
+      personalPlan.days[0].meals[0].note = 'PERSONAL_MEAL_NOTE'; personalPlan.guidance = 'PERSONAL_GUIDANCE';
+      await store.query('UPDATE nutrition_requests SET plan_encrypted=$1 WHERE id=$2', [seal(personalPlan, env), rowId]);
       assert.equal((await request('template', { id: rowId, revision: detail.revision, title: 'Modelo renal de teste', profile: 'renal' }, { adminRequest: true })).status, 200);
       const list = await (await request('list', null, { adminRequest: true })).json();
       const template = list.templates.find(template => template.title === 'Modelo renal de teste');
+      const savedTemplate = unseal((await store.query('SELECT plan_encrypted FROM nutrition_templates WHERE id=$1', [template.id])).rows[0].plan_encrypted, env);
+      assert.ok(!JSON.stringify(savedTemplate).includes('PERSONAL_'));
+      assert.equal(savedTemplate.assessment, undefined); assert.deepEqual(savedTemplate.curatedModules, []);
       const response = await request('generate', { id: rowId, revision: detail.revision, templateId: template.id }, { adminRequest: true });
       assert.equal(response.status, 200); const result = await response.json();
       assert.equal(result.plan.templateId, 'renal-pratica');

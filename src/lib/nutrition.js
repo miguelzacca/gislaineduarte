@@ -1,4 +1,6 @@
 import { activityLevels, allergies, conditions, foodById, foods, mealModules, nutrients, planTemplates, symptoms } from '../data/nutrition.js';
+import { intolerances } from '../data/nutrition-journey.js';
+import { journeyPlanErrors } from './nutrition-journey.js';
 
 export const round = (value, digits = 1) => Math.round(value * 10 ** digits) / 10 ** digits;
 export const normalizeText = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -19,6 +21,7 @@ export function calculateAnthropometry({ weight, height, age, sex, activity = 1.
 
 export function intakeErrors(input) {
   const errors = {};
+  const selected = (key, value) => Array.isArray(input?.[key]) && input[key].includes(value);
   if (typeof input?.name !== 'string' || input.name.trim().length < 3 || input.name.length > 100) errors.name = 'Informe seu nome completo.';
   if (typeof input?.email !== 'string' || input.email.length > 254 || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(input.email)) errors.email = 'Confira seu e-mail.';
   if (!/^\+?[\d\s().-]{10,22}$/.test(input?.phone || '') || String(input.phone).replace(/\D/g, '').length < 10) errors.phone = 'Informe seu telefone com DDD.';
@@ -31,11 +34,24 @@ export function intakeErrors(input) {
   for (const [key, options] of [['conditions', conditions], ['allergies', allergies], ['symptoms', symptoms]]) {
     if (!Array.isArray(input?.[key]) || input[key].length > options.length || input[key].some(value => !options.some(option => option.id === value))) errors[key] = 'Confira as opções selecionadas.';
   }
-  for (const key of ['medications', 'clinicalNotes', 'routine', 'preferences', 'dislikes', 'allergyNotes', 'glp1Details', 'weightHistory', 'sleep', 'bowel', 'budget']) {
+  for (const key of ['medications', 'clinicalNotes', 'routine', 'preferences', 'dislikes', 'foodExclusionNotes', 'allergyNotes', 'glp1Details', 'weightHistory', 'sleep', 'bowel', 'budget', 'otherConditionDetails', 'intoleranceNotes', 'seasoningPreferences', 'seasoningExclusions']) {
     if (input?.[key] !== undefined && (typeof input[key] !== 'string' || input[key].length > 2000)) errors[key] = 'Use até 2.000 caracteres.';
   }
-  if ((input?.allergies?.includes('other') || input?.allergies?.length) && !input?.allergyNotes?.trim()) errors.allergyNotes = 'Descreva os alimentos e as reações para a nutricionista.';
+  if (Array.isArray(input?.allergies) && input.allergies.length && (typeof input?.allergyNotes !== 'string' || !input.allergyNotes.trim())) errors.allergyNotes = 'Descreva os alimentos e as reações para a nutricionista.';
+  if (selected('conditions', 'other') && !String(input.otherConditionDetails || '').trim()) errors.otherConditionDetails = 'Descreva a outra condição para a nutricionista.';
+  if (selected('conditions', 'glp1') && !String(input.glp1Details || '').trim()) errors.glp1Details = 'Informe qual medicamento ou substância GLP-1 utiliza.';
+  if (input?.medicationUse !== undefined && typeof input.medicationUse !== 'boolean') errors.medicationUse = 'Confira a informação sobre medicamentos.';
+  if (input?.medicationUse === true && !String(input.medications || '').trim()) errors.medications = 'Informe quais medicamentos ou substâncias utiliza.';
+  if (input?.intolerances !== undefined && (!Array.isArray(input.intolerances) || input.intolerances.length > intolerances.length || input.intolerances.some(id => !intolerances.some(option => option.id === id)))) errors.intolerances = 'Confira as intolerâncias selecionadas.';
+  if (selected('intolerances', 'other') && !String(input.intoleranceNotes || '').trim()) errors.intoleranceNotes = 'Descreva a outra intolerância.';
   if (!Array.isArray(input?.excludedFoodIds) || input.excludedFoodIds.length > foods.length || input.excludedFoodIds.some(id => !foodById[id])) errors.excludedFoodIds = 'Confira os alimentos excluídos.';
+  for (const key of ['likedFoodIds', 'dislikedFoodIds']) if (input?.[key] !== undefined && (!Array.isArray(input[key]) || input[key].length > foods.length || input[key].some(id => !foodById[id]))) errors[key] = 'Confira os alimentos selecionados.';
+  for (const key of ['avoidReadySeasonings', 'photosConsent']) if (input?.[key] !== undefined && typeof input[key] !== 'boolean') errors[key] = 'Confira a opção selecionada.';
+  if (input?.bristolType !== undefined && input.bristolType !== null && (!Number.isInteger(input.bristolType) || input.bristolType < 1 || input.bristolType > 7)) errors.bristolType = 'Selecione um tipo de 1 a 7 ou deixe sem resposta.';
+  if (input?.photos !== undefined) {
+    if (!Array.isArray(input.photos) || input.photos.length > 2 || input.photos.some(photo => !photo || typeof photo.name !== 'string' || !photo.name.trim() || photo.name.length > 100 || photo.type !== 'image/jpeg' || photo.purpose !== 'food-context' || typeof photo.dataUrl !== 'string' || photo.dataUrl.length > 245783 || !/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(photo.dataUrl))) errors.photos = 'Anexe até duas fotos JPEG de alimentos ou refeições, com até 180 KB cada.';
+    if (input.photos?.length && input.photosConsent !== true) errors.photosConsent = 'Autorize o uso opcional das fotos para contextualizar sua alimentação.';
+  }
   if (typeof input?.pregnant !== 'boolean') errors.pregnant = 'Confira a informação sobre gestação ou amamentação.';
   if (input?.consent !== true) errors.consent = 'É necessário autorizar o uso destes dados para o seu atendimento.';
   if (input?.aiConsent !== undefined && typeof input.aiConsent !== 'boolean') errors.aiConsent = 'Confira a autorização opcional de IA.';
@@ -44,22 +60,27 @@ export function intakeErrors(input) {
 
 export function sanitizeIntake(input) {
   const result = {};
-  for (const key of ['name', 'email', 'phone', 'sex', 'goal', 'diet', 'medications', 'clinicalNotes', 'routine', 'preferences', 'dislikes', 'allergyNotes', 'glp1Details', 'weightHistory', 'sleep', 'bowel', 'budget']) result[key] = String(input[key] || '').trim();
+  for (const key of ['name', 'email', 'phone', 'sex', 'goal', 'diet', 'medications', 'clinicalNotes', 'routine', 'preferences', 'dislikes', 'foodExclusionNotes', 'allergyNotes', 'glp1Details', 'weightHistory', 'sleep', 'bowel', 'budget', 'otherConditionDetails', 'intoleranceNotes', 'seasoningPreferences', 'seasoningExclusions']) result[key] = String(input[key] || '').trim();
   result.email = result.email.toLowerCase();
   for (const key of ['age', 'weight', 'height', 'activity']) result[key] = Number(input[key]);
-  for (const key of ['conditions', 'allergies', 'symptoms', 'excludedFoodIds']) result[key] = [...new Set(input[key] || [])];
+  for (const key of ['conditions', 'allergies', 'symptoms', 'excludedFoodIds', 'intolerances', 'likedFoodIds', 'dislikedFoodIds']) result[key] = [...new Set(input[key] || [])];
   result.pregnant = input.pregnant === true; result.consent = true; result.aiConsent = input.aiConsent === true;
+  result.medicationUse = input.medicationUse === true || Boolean(result.medications);
+  result.avoidReadySeasonings = input.avoidReadySeasonings === true;
+  result.bristolType = Number.isInteger(input.bristolType) ? input.bristolType : null;
+  result.photosConsent = input.photosConsent === true;
+  result.photos = (input.photos || []).map(({ name, type, dataUrl, purpose }) => ({ name: name.trim(), type, dataUrl, purpose }));
   return result;
 }
 
 export function foodAllowed(food, intake = {}) {
-  if (!food) return false;
+  if (!food || !Array.isArray(food.allergens)) return false;
   const restricted = new Set(intake.allergies || []);
   if (intake.conditions?.includes('celiac')) restricted.add('gluten');
-  if (intake.conditions?.includes('lactose')) restricted.add('lactose');
+  if (intake.conditions?.includes('lactose') || intake.intolerances?.includes('lactose')) restricted.add('lactose');
   return !food.allergens.some(allergen => restricted.has(allergen)) &&
     !(intake.diet === 'vegan' && !food.vegan) && !(intake.diet === 'vegetarian' && !food.vegetarian) &&
-    !intake.excludedFoodIds?.includes(food.id);
+    !intake.excludedFoodIds?.includes(food.id) && !intake.dislikedFoodIds?.includes(food.id);
 }
 
 export function sumItems(items = []) {
@@ -173,7 +194,7 @@ export function generatePlan(intake, templateId = recommendedTemplate(intake), v
   ];
   const pools = Object.fromEntries([...new Set(slots.map(([type]) => type))].map(type => [type,
     mealModules.filter(module => module.type === type && module.items.every(([id]) => foodAllowed(foodById[id], profileIntake)))
-      .map((module, index) => ({ module, index, score: module.tags.filter(tag => preferredTags.includes(tag)).length * 3 + (template.pattern === 0 && module.tags.includes('practical') ? 1 : 0) }))
+      .map((module, index) => ({ module, index, score: module.tags.filter(tag => preferredTags.includes(tag)).length * 3 + (template.pattern === 0 && module.tags.includes('practical') ? 1 : 0) + module.items.filter(([id]) => intake.likedFoodIds?.includes(id)).length * 2 }))
       .sort((a, b) => b.score - a.score || a.index - b.index).map(entry => entry.module),
   ]));
   const usedModules = new Map();
@@ -223,6 +244,7 @@ export function generatePlan(intake, templateId = recommendedTemplate(intake), v
   return { title: 'Seu plano alimentar', templateId, days, targets: { energy: null, protein: null, carbs: null, fat: null, water: null, sodium: null, potassium: null, phosphorus: null },
     guidance: 'Siga as porções e os preparos combinados em atendimento. Conte como tem sido sua rotina para ajustarmos o plano juntos.',
     clinicalNotes: '', review: {}, version: 1,
+    assessment: { summary: '', criteria: '', calculationInput: null, calculations: [], dataSnapshot: {} }, curatedModules: [],
   };
 }
 
@@ -251,10 +273,12 @@ export function clinicalAlerts(intake = {}, plan) {
   if (intake.conditions?.some(id => ['cardiovascular', 'hypertension'].includes(id))) alerts.push({ id: 'cardiovascular', text: 'Revisar qualidade das gorduras, fibras, pressão arterial e medicamentos. O sódio da tabela não inclui sal acrescentado; não recomendar sal de potássio automaticamente.' });
   if (intake.conditions?.includes('ibs')) alerts.push({ id: 'ibs', text: 'Conferir padrão intestinal, fibras e tolerância. O modelo não é low-FODMAP; restrições e reintroduções precisam de avaliação individual.' });
   if (intake.conditions?.some(id => ['gastric', 'hpylori'].includes(id)) || intake.symptoms?.includes('reflux')) alerts.push({ id: 'gastric', text: 'Revisar gatilhos relatados, volume e horários. Em refluxo noturno, conferir intervalo entre a última refeição e deitar; a ceia sugerida não conhece o horário de sono.' });
-  if (intake.conditions?.includes('lactose')) alerts.push({ id: 'lactose', text: 'Conferir tolerância, rótulos e fontes de cálcio/proteína após as trocas. Bebida de soja não equivale nutricionalmente ao leite, e zero lactose não significa ausência de proteína do leite.' });
+  if (intake.conditions?.includes('lactose') || intake.intolerances?.includes('lactose')) alerts.push({ id: 'lactose', text: 'Conferir tolerância, rótulos e fontes de cálcio/proteína após as trocas. Bebida de soja não equivale nutricionalmente ao leite, e zero lactose não significa ausência de proteína do leite.' });
   if (intake.conditions?.includes('celiac')) alerts.push({ id: 'celiac', text: 'Verificar rótulos, certificação e contaminação cruzada; a seleção de ingredientes não garante preparo sem glúten.' });
   if (intake.conditions?.includes('hpylori')) alerts.push({ id: 'hpylori', text: 'Confirmar acompanhamento médico. Nenhum alimento ou plano erradica H. pylori.' });
-  if (intake.allergies?.length || intake.allergyNotes || intake.dislikes) alerts.push({ id: 'restrictions', text: 'Revisar também as restrições escritas em texto livre e rótulos: o filtro automático usa apenas os alimentos e alérgenos selecionados.' });
+  if (intake.allergies?.length || intake.allergyNotes || intake.dislikes || intake.foodExclusionNotes || intake.intolerances?.length || intake.intoleranceNotes || intake.seasoningExclusions) alerts.push({ id: 'restrictions', text: 'Revisar também as restrições escritas em texto livre e rótulos: o filtro automático usa apenas os alimentos e alérgenos selecionados.' });
+  if (intake.medicationUse || intake.medications || intake.glp1Details) alerts.push({ id: 'medications', text: 'Conferir cada medicamento ou substância informada, sua finalidade e possíveis interações antes de validar o plano e os módulos adicionais.' });
+  if (plan?.curatedModules?.length) alerts.push({ id: 'curated-content', text: 'Revisar individualmente ingredientes, quantidades, alergias, intolerâncias, medicamentos, preferências e temperos de cada módulo. Chás e suplementos exigem conteúdo e orientação próprios da nutricionista.' });
   if (plan?.targets?.water && intake.conditions?.some(id => ['renal', 'cardiovascular'].includes(id))) alerts.push({ id: 'fluid', text: 'Confirmar meta hídrica individual e eventual restrição de líquidos com a equipe.' });
   if (plan?.targets?.energy && plan.days.some(day => Math.abs(dayTotals(day).kcal - plan.targets.energy) / plan.targets.energy > .15)) alerts.push({ id: 'energy', text: 'Há dias com energia mais de 15% distante da meta. Ajustar porções ou justificar a diferença na avaliação.' });
   if (plan?.targets?.protein && plan.days.some(day => Math.abs(dayTotals(day).protein - plan.targets.protein) / plan.targets.protein > .2)) alerts.push({ id: 'protein', text: 'Há dias com proteína mais de 20% distante da meta que você definiu. Conferir distribuição, porções e substituições antes de entregar.' });
@@ -290,5 +314,5 @@ export function validatePlan(plan, intake = {}) {
     if (value !== null && (!Number.isFinite(value) || value <= 0 || value > max)) errors.push(`Meta de ${key} inválida.`);
   }
   for (const key of ['guidance', 'clinicalNotes']) if (typeof plan[key] !== 'string' || plan[key].length > 6000) errors.push('Orientações devem ter até 6.000 caracteres.');
-  return [...new Set(errors)];
+  return [...new Set([...errors, ...journeyPlanErrors(plan, constraints)])];
 }

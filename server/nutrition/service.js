@@ -1,4 +1,5 @@
 import { createHmac, randomUUID } from 'node:crypto';
+import sharp from 'sharp';
 import { cookie, isSecureRequest, parseCookieHeader, randomToken, safeEqual, tokenHash } from '../recipes/access.js';
 import { readCommerceConfig } from '../recipes/config.js';
 import { checkPayment, createPaymentLink } from '../recipes/infinitepay.js';
@@ -22,13 +23,17 @@ export function commerceReady(env) {
 export function validOffer(offer) {
   return Boolean(offer) && typeof offer.title === 'string' && offer.title.trim().length >= 3 && offer.title.length <= 120 &&
     typeof offer.description === 'string' && offer.description.length <= 1000 &&
-    typeof offer.published === 'boolean' &&
+    typeof offer.published === 'boolean' && (offer.bristolReviewed === undefined || typeof offer.bristolReviewed === 'boolean') &&
     (offer.priceCents === null || Number.isSafeInteger(offer.priceCents) && offer.priceCents >= 100 && offer.priceCents <= 10000000) &&
     (offer.deliveryDays === null || Number.isInteger(offer.deliveryDays) && offer.deliveryDays >= 1 && offer.deliveryDays <= 90) &&
     (offer.followupDays === null || Number.isInteger(offer.followupDays) && offer.followupDays >= 0 && offer.followupDays <= 365) &&
     (!offer.published || offer.priceCents !== null && offer.deliveryDays !== null && offer.followupDays !== null);
 }
 export async function readOffer(db) { return (await db.query('SELECT offer FROM nutrition_settings WHERE id = 1')).rows[0].offer; }
+export function publicOffer(offer) {
+  if (!offer) return null;
+  return Object.fromEntries(['title', 'description', 'priceCents', 'deliveryDays', 'followupDays', 'published', 'bristolReviewed'].map(key => [key, key === 'bristolReviewed' ? offer[key] === true : offer[key]]));
+}
 export function followupStatus(patient, now = Date.now()) {
   const days = Number(patient.offer_snapshot?.followupDays || 0);
   const delivered = patient.first_delivered_at ? new Date(patient.first_delivered_at).getTime() : null;
@@ -49,9 +54,10 @@ export async function createIntake(body, request, { db, env }) {
   if (!commerceReady(env)) throw new NutritionError('O atendimento online ainda está sendo preparado. Tente novamente mais tarde.', 503);
   const offer = await readOffer(db);
   if (!validOffer(offer) || !offer.published) throw new NutritionError('As solicitações estão temporariamente fechadas.', 423);
+  if (body.intake.bristolType != null && body.intake.bristolType !== '' && !offer.bristolReviewed) throw new NutritionError('A escala de Bristol ainda aguarda revisão profissional. Atualize o formulário.', 422, { bristolType: 'Escala ainda não liberada pela nutricionista.' });
   if (['title', 'description', 'priceCents', 'deliveryDays', 'followupDays'].some(key => body.offer?.[key] !== offer[key])) {
     const error = new NutritionError('As condições da oferta foram atualizadas. Confira o resumo e confirme novamente antes de prosseguir.', 409);
-    error.offer = offer; throw error;
+    error.offer = publicOffer(offer); throw error;
   }
   const existing = await readPatient(request, db);
   if (existing && existing.payment_status === 'pending') return { id: existing.id };
@@ -61,6 +67,11 @@ export async function createIntake(body, request, { db, env }) {
   const ipHash = createHmac('sha256', dataKey(env)).update(ip).digest('hex');
   const idempotencyHash = tokenHash(body.idempotencyKey);
   const config = readCommerceConfig(env);
+  const intake = sanitizeIntake(body.intake);
+  if (body.intake.photos?.length && body.intake.photosConsent !== true) throw new NutritionError('Confirme a autorização específica antes de anexar fotos opcionais.', 422, { photosConsent: 'Autorize as fotos ou remova os anexos.' });
+  intake.photos = await sanitizePhotos(body.intake.photos || []);
+  intake.photosConsent = intake.photos.length > 0 && body.intake.photosConsent === true;
+  if (intake.bristolType) intake.bristolReview = { at: offer.bristolReviewedAt, by: offer.bristolReviewedBy };
   await transaction(db, async client => {
     await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [ipHash]);
     const count = await client.query("SELECT count(*)::integer AS count FROM nutrition_requests WHERE ip_hash = $1 AND created_at > now() - interval '15 minutes'", [ipHash]);
@@ -68,10 +79,28 @@ export async function createIntake(body, request, { db, env }) {
     const previous = await client.query('SELECT id FROM nutrition_requests WHERE idempotency_hash = $1', [idempotencyHash]);
     if (previous.rowCount) throw new NutritionError('Esta solicitação já foi recebida. Abra o acompanhamento ou fale com Gislaine para recuperar o acesso.', 409);
     await client.query(`INSERT INTO nutrition_requests (id, intake_encrypted, consent_version, access_hash, idempotency_hash, ip_hash, amount_cents, offer_snapshot, merchant_handle, webhook_hash, webhook_encrypted)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, [id, seal(sanitizeIntake(body.intake), env), consentVersion, tokenHash(token), idempotencyHash, ipHash, offer.priceCents, JSON.stringify(offer), config.handle, tokenHash(webhookToken), seal(webhookToken, env)]);
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, [id, seal(intake, env), consentVersion, tokenHash(token), idempotencyHash, ipHash, offer.priceCents, JSON.stringify(offer), config.handle, tokenHash(webhookToken), seal(webhookToken, env)]);
     await event(client, id, 'intake_received', 'patient');
   });
   return { id, cookie: accessCookie(token, request, env) };
+}
+
+export async function sanitizePhotos(photos) {
+  if (!Array.isArray(photos) || photos.length > 2) throw new NutritionError('Envie no máximo duas fotos opcionais.', 422);
+  return Promise.all(photos.map(async photo => {
+    if (photo?.type !== 'image/jpeg' || photo?.purpose !== 'food-context' || typeof photo?.dataUrl !== 'string' || !/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(photo.dataUrl)) throw new NutritionError('As fotos opcionais devem estar no formato JPEG.', 422);
+    const input = Buffer.from(photo.dataUrl.split(',')[1], 'base64');
+    if (!input.length || input.length > 180 * 1024) throw new NutritionError('Cada foto deve ter até 180 KB.', 422);
+    try {
+      const processor = sharp(input, { limitInputPixels: 20000000, failOn: 'warning' });
+      const metadata = await processor.metadata();
+      if (metadata.format !== 'jpeg') throw new Error('format');
+      // Re-encoding drops EXIF/GPS and any user-provided metadata.
+      const output = await processor.rotate().resize({ width: 1280, height: 1280, fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 76 }).toBuffer();
+      if (output.length > 180 * 1024) throw new Error('size');
+      return { name: 'Foto opcional da alimentação', type: 'image/jpeg', purpose: 'food-context', dataUrl: `data:image/jpeg;base64,${output.toString('base64')}` };
+    } catch { throw new NutritionError('Não foi possível validar a foto. Use outra imagem JPEG de até 180 KB.', 422); }
+  }));
 }
 
 export async function checkout(patient, { db, env, fetcher = fetch }) {
