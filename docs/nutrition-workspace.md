@@ -5,7 +5,7 @@ Implementação em Vite + React, JavaScript/JSX, Functions Node e no Postgres j�
 ## Fluxo da pessoa atendida
 
 1. A página inicial e o menu levam a `/plano-alimentar`. A oferta só aceita solicitações quando a nutricionista define e publica preço, prazo em dias corridos e acompanhamento em `/painel` → **Minha oferta**. Não há valores comerciais fictícios publicados.
-2. A anamnese para adultos tem cinco etapas: identificação, medidas/objetivo, saúde, rotina/preferências e revisão/consentimento. Dados não enviados ficam apenas na memória da página. IA tem autorização opcional, separada do atendimento.
+2. A anamnese para adultos tem cinco etapas: identificação, medidas/objetivo, saúde, rotina/preferências e revisão/consentimento. Por padrão, dados não enviados ficam na memória. A pessoa pode optar por salvar um rascunho no `sessionStorage` da aba, com expiração em 12 horas, botão para apagar e remoção após o envio. A revisão exibe alergias, sintomas e alimentos excluídos antes de continuar. IA tem autorização opcional, separada do atendimento.
 3. O servidor valida e cifra a anamnese. Confere se os termos exibidos ainda são atuais antes de gravar o pedido; alterações de oferta exigem nova confirmação, preservando as respostas. Cada pedido conserva sua oferta e a InfiniteTag original.
 4. O checkout hospedado da InfinitePay recebe e-mail, valor e identificação do pedido, sem informações de saúde. Pix e outras modalidades dependem da conta InfinitePay. Tentativas repetidas reutilizam o mesmo link.
 5. Webhook e retorno consultam `payment_check` no servidor. Parâmetros do navegador nunca bastam para marcar pagamento. Após a confirmação, uma semana de rascunho é montada com o modelo inicial e os filtros compatíveis com os dados estruturados.
@@ -17,21 +17,33 @@ Implementação em Vite + React, JavaScript/JSX, Functions Node e no Postgres j�
 
 **Atendimentos** reúne anamneses, situação do pagamento, rascunhos, planos liberados, relatos e histórico de eventos. A busca e os filtros atuam sobre a página de 40 registros carregada.
 
-Há 36 bases de organização: 12 contextos × três variações de rotina. Os contextos são rotina equilibrada, diabetes, cardiovascular, hipertensão, renal, oncologia, intestinal, gástrico, H. pylori, lactose, doença celíaca e GLP-1. São pontos de partida para revisão clínica; não são protocolos terapêuticos validados nem garantias de adequação a um diagnóstico.
+Há 36 bases de organização: 12 contextos × três variações de rotina, construídas a partir de 43 módulos culinários. Os contextos são rotina equilibrada, diabetes, cardiovascular, hipertensão, renal, oncologia, intestinal, gástrico, H. pylori, lactose, doença celíaca e GLP-1. O motor combina preparos e famílias culinárias, varia os sete dias e oferece até duas trocas iniciais compatíveis por alimento, quando disponíveis. A rotina prática reaproveita um conjunto menor de ingredientes; a variada amplia o repertório. São pontos de partida para revisão clínica; não são protocolos terapêuticos validados nem garantias de adequação a um diagnóstico.
 
-O editor permite trabalhar os sete dias, horários, refeições, gramas, orientações e até três alternativas por item. Inclui troca por energia, proteína ou carboidrato, duplicação de um dia, ajuste proporcional da semana à meta energética, lista de compras e modelos próprios reutilizáveis. Filtros consideram dieta vegetariana/vegana, alérgenos, glúten, lactose e alimentos excluídos. Restrições escritas em texto livre precisam de conferência profissional. Os modelos próprios preservam refeições e orientações; removem metas e registro clínico. É necessário retirar informações pessoais das orientações antes de reutilizá-las.
+O editor permite trabalhar os sete dias, horários, refeições, gramas, orientações e até três alternativas por item. A visão semanal compara energia, proteína, variedade e distância da meta. Condições, alergias e preferências ficam visíveis durante a montagem. A biblioteca mostra uma prévia real dos sete dias de cada base antes da escolha.
 
-O catálogo tem 60 alimentos com ilustrações autorais locais e valores da TACO por 100 g: energia, macronutrientes, fibras, sódio, potássio e fósforo. Página, número e nome na fonte acompanham cada item. Valores ausentes de minerais aparecem como soma parcial, não como zero garantido. Medidas caseiras são aproximações; preparos, rótulos e sal adicionado podem alterar a composição. As imagens são ilustrações, não fotografias nem representações da porção.
+As ações incluem troca por energia, proteína ou carboidrato; seleção de trocas da mesma família culinária; duplicação e reordenação de refeições; cópia de um dia para os dias escolhidos; ajuste proporcional da semana à meta energética; e lista de compras. É possível desfazer/refazer até 30 alterações locais antes de salvar. A barra de edição permanece acessível durante a rolagem. A biblioteca de alimentos permite comparar composição por 100 g ou medida caseira e ordenar por energia, proteína ou fibras.
+
+**Gerar outra combinação** avança entre as sementes 0–96 do motor para a mesma base. A profissional confirma a substituição das refeições; metas, orientações e registro clínico podem ser preservados, mas a revisão é reiniciada. Aplicar uma base diferente limpa essas definições e avisa antes de substituir. Alterações não salvas exigem confirmação explícita de descarte; a versão salva anterior permanece no histórico.
+
+Filtros consideram dieta vegetariana/vegana, alérgenos, glúten, lactose e alimentos excluídos. Restrições escritas em texto livre precisam de conferência profissional. As trocas automáticas preservam a função culinária, o estado de preparo e limites de porção definidos por família; não tratam todo alimento do mesmo grupo como equivalente. Restrições muito amplas podem deixar um rascunho incompleto, que precisa ser corrigido antes de salvar ou liberar.
+
+Os modelos próprios preservam refeições e orientações; removem metas e registro clínico. É necessário retirar informações pessoais das orientações antes de reutilizá-las. Modelos próprios incompatíveis com as restrições da nova pessoa são rejeitados para revisão, em vez de serem aplicados silenciosamente. Depois de salvar um modelo, ele já aparece no seletor do atendimento.
+
+O catálogo tem 60 alimentos com fotografias reais locais e valores da TACO por 100 g: energia, macronutrientes, fibras, sódio, potássio e fósforo. Página, número e nome na fonte acompanham cada item. Valores ausentes de minerais aparecem como soma parcial, não como zero garantido. Medidas caseiras são aproximações; preparos, rótulos e sal adicionado podem alterar a composição.
+
+As fotografias foram selecionadas visualmente no Wikimedia Commons e ficam em `public/images/foods`, sem hotlink em tempo de uso. As licenças CC/CC0/domínio público, autoria, fonte, descrição e transformações estão em `CREDITS.md` e `credits.json`; cada arquivo JPEG tem SHA-256 e tamanho registrados. As fotos de ingredientes crus ou de variedades representativas têm legenda específica; nenhuma foto representa uma porção prescrita. O gerador anterior de ilustrações foi removido. Uma nova importação nutricional preserva os créditos aprovados. O teste de fotografias confere cobertura de todos os alimentos, integridade, licenciamento registrado e orçamento de tamanho dos arquivos offline.
 
 As calculadoras incluem IMC, repouso por Mifflin–St Jeor, gasto com fator de atividade, mudança relativa de peso, relações cintura/quadril e cintura/altura, massa livre de gordura a partir do percentual informado, proteína em g/kg, água em ml/kg e distribuição energética de macros. Metas são escolhidas pela profissional. Nenhum déficit, meta hídrica ou proteína é prescrito automaticamente.
 
-**Revisão e entrega** exige pagamento confirmado, plano válido, metas de energia/proteína, registro clínico e confirmação dos alertas aplicáveis. Registro clínico é privado. Reabrir uma versão suspende novos downloads até aprovação; arquivos já baixados não podem ser recolhidos. Revisões concorrentes são recusadas pelo número da versão, e mudanças não salvas têm proteção de navegação.
+**Revisão e entrega** mostra sete requisitos objetivos e exige pagamento confirmado, plano válido, metas de energia/proteína, registro clínico e confirmação dos alertas aplicáveis. Registro clínico é privado. Os alertas também consideram o contexto da base selecionada e diferenças relevantes de energia/proteína. Reabrir uma versão suspende novos downloads até aprovação; arquivos já baixados não podem ser recolhidos. Revisões concorrentes são recusadas pelo número da versão, e mudanças não salvas têm proteção de navegação.
+
+**Acompanhamento** reúne relatos, eventos e versões persistidas. Depois de salvar, gerar, aprovar ou restaurar, o painel atualiza esse histórico e o prazo de acompanhamento sem desmontar o editor. Falhas ao recarregar não substituem o rascunho aberto. Uma versão anterior pode ser restaurada como novo rascunho; planos aprovados precisam ser reabertos primeiro e a restauração sempre exige nova revisão.
 
 ## NVIDIA NIM
 
 - Modelo configurado: `nvidia/nemotron-3-super-120b-a12b`, com inferência no servidor, timeout e limite de solicitações.
 - **Analisar com IA:** resume categorias estruturadas, sugere até três modelos e perguntas/pontos de personalização.
-- **Sugerir variações:** usa resposta JSON com esquema para selecionar trocas em alimentos permitidos, do mesmo grupo. O servidor valida IDs, posições, repetição e restrições; calcula as porções por energia usando a TACO. A candidata pode ser inspecionada, descartada ou aplicada ao rascunho antes de salvar.
+- **Sugerir variações:** usa resposta JSON com esquema para selecionar trocas em alimentos permitidos, da mesma família culinária. O servidor valida IDs, posições, repetição, porções e restrições; calcula as quantidades por energia usando a TACO. O painel compara o plano atual com a sugestão lado a lado, mostrando alimentos, porções, energia e proteína de cada dia. A candidata pode ser descartada ou aplicada ao rascunho antes de salvar.
 - Nome, contato, idade/medidas exatas, medicamentos, textos livres e registro clínico não são enviados. Mesmo sem IA, editor, modelos, cálculos e exportações funcionam.
 - A disponibilidade gratuita é sujeita à conta e aos termos do serviço de prototipagem NVIDIA. Não há garantia de gratuidade ilimitada em produção. Erros ou respostas inválidas preservam o plano salvo.
 
@@ -39,15 +51,23 @@ Referências: [API do modelo](https://docs.api.nvidia.com/nim/reference/nvidia-n
 
 ## Arquivos de entrega
 
-O HTML contém CSS, JavaScript, fontes e imagens base64. Símbolos SVG reutilizam cada imagem incorporada, reduzindo o arquivo. Tem navegação pelos dias, refeições concluídas por data, hidratação, compras e diário local. Funciona sem rede, não transmite marcações e respeita redução de movimento. Para usar a interatividade, abra o arquivo em um navegador; alguns visualizadores de anexos não executam JavaScript. Armazenamento local pode ser indisponível em alguns navegadores, e nesse caso o aviso informa que as marcações duram apenas durante a abertura.
+O HTML contém CSS, JavaScript, fontes e imagens base64. Símbolos SVG reutilizam cada fotografia incorporada, reduzindo o arquivo; eles são contêineres das fotos reais, não desenhos dos alimentos. Tem navegação pelos dias, refeições concluídas por data, hidratação e diário local. A pessoa pode escolher somente as trocas revisadas pela nutricionista: fotografia, porção, macronutrientes, totais do dia e compras são recalculados conforme essas escolhas. As compras podem ser consultadas por dia ou pela semana e baixadas em texto.
 
-O PDF é gerado no servidor com PDFKit, fontes incorporadas, ilustrações, porções, trocas e compras. Refeições extensas podem continuar em outra página. Ambos omitem o registro clínico, medicamentos, contato e anamnese; incluem o nome e as orientações destinadas à pessoa.
+**Salvar cópia com meu progresso** gera outro HTML completo com escolhas, marcações por data, água e diário incorporados. A cópia permite continuar em outro aparelho sem rede. As marcações também ficam no navegador quando o armazenamento local está disponível; se não estiver, o arquivo avisa e a cópia continua sendo uma opção para preservar o progresso. Dados corrompidos e escolhas fora das opções aprovadas são tratados sem impedir a abertura do plano.
 
-`npm run nutrition:preview` cria exemplos **fictícios e explicitamente marcados como rascunho** em `tmp/nutrition/exemplo-plano.html` e `.pdf`. Não são prescrições. O exemplo verificado tem 10 páginas, HTML de aproximadamente 398 KiB e PDF de 228 KiB.
+O arquivo não transmite marcações, não faz conexões externas automáticas e respeita redução de movimento. Para usar a interatividade, abra o HTML em um navegador; alguns visualizadores de anexos não executam JavaScript. O diário offline não é enviado à nutricionista. O compartilhamento entre aparelhos é feito pela cópia exportada, sem sincronização em nuvem. As cópias contêm informações pessoais e precisam ser guardadas pela pessoa em local privado.
+
+O PDF é gerado no servidor com PDFKit, fontes incorporadas, fotografias, porções, trocas e compras. Alimentos que aparecem apenas nas alternativas também recebem fotos em uma galeria própria. Refeições extensas podem continuar em outra página. Ambos omitem o registro clínico, medicamentos, contato e anamnese; incluem o nome e as orientações destinadas à pessoa. Autoria, fonte e licença das fotos acompanham as duas entregas.
+
+`npm run nutrition:preview` cria exemplos **fictícios e explicitamente marcados como rascunho** em `tmp/nutrition/exemplo-plano.html` e `.pdf`. Não são prescrições. Tamanho e quantidade de páginas variam conforme alimentos, trocas e orientações; as prévias devem ser regeneradas após mudanças nas fotos ou nos modelos.
 
 ## Dados e configuração
 
-As tabelas `nutrition_settings`, `nutrition_requests`, `nutrition_events`, `nutrition_checkins` e `nutrition_templates` são criadas de modo idempotente sob transação e trava no primeiro acesso à funcionalidade. A aplicação cifra anamnese, plano, relatos e modelos com AES-256-GCM. Tokens de acesso são opacos e armazenados como hashes. Metadados comerciais não são cifrados pela aplicação. As rotas privadas são `noindex`, e APIs/downloads usam `no-store`.
+As tabelas `nutrition_settings`, `nutrition_requests`, `nutrition_events`, `nutrition_checkins`, `nutrition_templates` e `nutrition_plan_versions` são criadas de modo idempotente sob transação e trava no primeiro acesso à funcionalidade. A aplicação cifra anamnese, plano, relatos, modelos e versões com AES-256-GCM. Tokens de acesso são opacos e armazenados como hashes. Metadados comerciais não são cifrados pela aplicação. As rotas privadas são `noindex`, e APIs/downloads usam `no-store`.
+
+Cada snapshot em `nutrition_plan_versions` tem chave composta `(request_id, revision, stage)`, motivo (`reason`), data (`created_at`) e o plano completo cifrado (`plan_encrypted`). A inserção é idempotente e acontece na mesma transação da alteração relevante. Rascunho e aprovação podem coexistir para a mesma revisão, preservando o registro de revisão profissional. O histórico não sobrescreve uma versão antiga.
+
+O detalhe administrativo retorna apenas os metadados dos 40 snapshots mais recentes, além dos 30 eventos e 20 relatos mais recentes. `POST action=restore` recebe `id`, `revision` atual, `sourceRevision` e `sourceStage`; consulta o snapshot apenas dentro daquele atendimento, valida o plano para a pessoa e salva uma nova revisão em estado `draft`. O registro clínico continua privado, e a aprovação não é herdada. O desfazer local não substitui esse histórico persistente; ele é apagado ao salvar ou sair do atendimento.
 
 Variáveis exclusivamente do servidor:
 
@@ -61,7 +81,7 @@ Variáveis exclusivamente do servidor:
 | `RECIPES_ADMIN_*` | Autenticação administrativa existente. |
 | `PUBLIC_WHATSAPP` | Número público já configurado no site. |
 
-Nesta implementação, as três variáveis novas foram configuradas em `.env.local` e em **Production** no projeto Vercel vinculado. Os dois segredos foram salvos como Secret. Não houve deploy nem push; um novo deployment autorizado é necessário para executar o código e carregar as variáveis novas. Preview não recebeu as variáveis novas.
+As três variáveis novas foram configuradas em `.env.local` e em **Production** no projeto Vercel vinculado. Os dois segredos foram salvos como Secret. Preview não recebeu as variáveis novas. O fluxo de publicação é branch → PR → verificações verdes → merge em `main`; a integração Git da Vercel publica o commit integrado. As credenciais não fazem parte do repositório nem do código entregue ao navegador.
 
 A oferta inicia fechada. A nutricionista define preço, título, descrição, prazo e acompanhamento no próprio painel e decide quando abrir as solicitações. Alterações comerciais não exigem novo deploy. O desenvolvimento local lê `.env.local`; as chamadas da aplicação usam o banco indicado por `DATABASE_URL`. Os testes de fluxo usam exclusivamente um Postgres PGlite isolado em memória.
 
@@ -70,11 +90,16 @@ Rotas: `/api/nutrition?action=...`, `/api/admin/nutrition?action=...`; retorno d
 ## Verificações e fontes
 
 - Lint, build de produção, pré-renderização e auditoria estática de links/SEO.
-- Testes unitários existentes e testes específicos de cálculos, 36 bases, restrições, criptografia, IA, exportações e fluxo com banco isolado.
-- Fluxo cobre oferta, consentimento, mudanças de preço, repetição de checkout/webhook, valor divergente, pagamento pendente, aprovação, concorrência, links de uso único, acompanhamento e revogação de acesso/IA.
+- CI em `.github/workflows/quality.yml`: Node 22/Python 3.12, instalação reproduzível pelo lockfile npm, lint, testes unitários, build e auditoria estática. Não executa Playwright.
+- Testes unitários existentes e testes específicos de cálculos, 36 bases, variedade culinária, filtros combinados, equivalências e limites de porção, criptografia, IA, exportações e fluxo com banco isolado.
+- Fluxo cobre oferta, consentimento, mudanças de preço, repetição de checkout/webhook, valor divergente, pagamento pendente, aprovação, concorrência, links de uso único, acompanhamento, revogação de acesso/IA e restauração de snapshots cifrados vinculados à pessoa correta.
+- Testes do HTML em DOM isolado cobrem troca de alimentos e atualização de totais/compras, exportação e reabertura de progresso sem armazenamento local, dados corrompidos e escolha inválida. Não usam navegador ou Playwright.
+- Verificação SSR isolada do painel cobriu a renderização do editor, 36 cartões de modelos, os sete dias, comparação de IA, seletor de trocas e bloqueio de restauração enquanto aprovado. Lint do JSX e verificação de espaços do diff também passaram.
 - Chamadas reais à NVIDIA usaram apenas categorias fictícias; análise e variação estruturada válidas foram recebidas. Não foi realizado pagamento real na InfinitePay.
 - Todas as páginas do PDF fictício foram renderizadas e inspecionadas. A reutilização de imagens foi conferida sem alteração visual. Não foram executados Playwright nem inspeções automatizadas de navegador, conforme `AGENTS.md`.
 
+Limites atuais: a busca administrativa opera nos 40 atendimentos da página; eventos, relatos e snapshots exibem apenas os limites recentes descritos acima. Não há sincronização em nuvem do diário offline, prescrição de doses de medicamentos, importação de exames ou adaptação clínica automática de um modelo pessoal incompatível. O motor e a IA reduzem o trabalho de montagem, mas não substituem a revisão da nutricionista.
+
 Dados nutricionais: [TACO, 4ª edição, NEPA/UNICAMP](https://nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf). Equação de repouso: [Mifflin et al., 1990](https://pubmed.ncbi.nlm.nih.gov/2305711/). Integração financeira: [documentação InfinitePay](https://www.infinitepay.io/checkout-documentacao).
 
-Fontes tipográficas seguem as licenças OFL em `public/fonts`. `scripts/build-nutrition-fonts.py` gera os TTF estáticos utilizados no PDF, e `scripts/build-food-art.mjs` reproduz as ilustrações. O catálogo pode ser reproduzido com `scripts/import-nutrition-foods.py` a partir do PDF oficial.
+Fontes tipográficas seguem as licenças OFL em `public/fonts`. `scripts/build-nutrition-fonts.py` gera os TTF estáticos utilizados no PDF. O catálogo nutricional pode ser reproduzido com `scripts/import-nutrition-foods.py` a partir do PDF oficial; ele preserva os metadados das fotos já aprovadas. Consulte o manifesto fotográfico para origem e licença de cada imagem.

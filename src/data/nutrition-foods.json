@@ -1,7 +1,7 @@
 {
   "source": "https://nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf",
   "edition": "TACO, NEPA/UNICAMP, 4ª edição, 2011",
-  "notes": "Valores por 100 g da parte comestível. Traços (Tr) aproximados por zero. Medidas caseiras estimadas; priorize a pesagem. Ilustrações autorais, não representam a porção prescrita.",
+  "notes": "Valores por 100 g da parte comestível. Traços (Tr) aproximados por zero. Medidas caseiras estimadas; priorize a pesagem. Fotografias reais de referência: não representam a porção prescrita e podem mostrar o ingrediente antes do preparo. Créditos e licenças acompanham cada imagem.",
   "foods": [
     {
       "id": "brown-rice",
@@ -16,16 +16,23 @@
       "image": "/images/foods/brown-rice.jpg",
       "sourceName": "Arroz, integral, cozido",
       "sourcePage": 29,
-      "kcal": 124.0,
+      "kcal": 124,
       "protein": 2.6,
-      "fat": 1.0,
+      "fat": 1,
       "carbs": 25.8,
       "fiber": 2.7,
-      "calcium": 5.0,
-      "phosphorus": 106.0,
+      "calcium": 5,
+      "phosphorus": 106,
       "iron": 0.3,
-      "sodium": 1.0,
-      "potassium": 75.0
+      "sodium": 1,
+      "potassium": 75,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Par_cooked_brown_rice_-_stonesoup_cropped.jpg",
+        "author": "jules / stonesoup",
+        "license": "CC BY 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "caption": "Arroz integral cozido em uma tigela. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "rice",
@@ -40,16 +47,23 @@
       "image": "/images/foods/rice.jpg",
       "sourceName": "Arroz, tipo 1, cozido",
       "sourcePage": 29,
-      "kcal": 128.0,
+      "kcal": 128,
       "protein": 2.5,
       "fat": 0.2,
       "carbs": 28.1,
       "fiber": 1.6,
-      "calcium": 4.0,
-      "phosphorus": 18.0,
+      "calcium": 4,
+      "phosphorus": 18,
       "iron": 0.1,
-      "sodium": 1.0,
-      "potassium": 15.0
+      "sodium": 1,
+      "potassium": 15,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_bowl_of_rice.jpg",
+        "author": "Douglas Perkins",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "caption": "Arroz branco cozido em uma tigela. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "oats",
@@ -66,16 +80,23 @@
       "image": "/images/foods/oats.jpg",
       "sourceName": "Aveia, flocos, crua",
       "sourcePage": 29,
-      "kcal": 394.0,
+      "kcal": 394,
       "protein": 13.9,
       "fat": 8.5,
       "carbs": 66.6,
       "fiber": 9.1,
-      "calcium": 48.0,
-      "phosphorus": 153.0,
+      "calcium": 48,
+      "phosphorus": 153,
       "iron": 4.4,
-      "sodium": 5.0,
-      "potassium": 336.0
+      "sodium": 5,
+      "potassium": 336,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Havregryn2.JPG",
+        "author": "Sten Porse",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "caption": "Aveia em flocos em uma tigela. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "bread",
@@ -92,16 +113,23 @@
       "image": "/images/foods/bread.jpg",
       "sourceName": "Pão, trigo, forma, integral",
       "sourcePage": 31,
-      "kcal": 253.0,
+      "kcal": 253,
       "protein": 9.4,
       "fat": 3.7,
       "carbs": 49.9,
       "fiber": 6.9,
-      "calcium": 132.0,
-      "phosphorus": 193.0,
-      "iron": 3.0,
-      "sodium": 506.0,
-      "potassium": 163.0
+      "calcium": 132,
+      "phosphorus": 193,
+      "iron": 3,
+      "sodium": 506,
+      "potassium": 163,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vegan_no-knead_whole_wheat_bread_loaf,_sliced,_September_2010.jpg",
+        "author": "Veganbaking.net",
+        "license": "CC BY-SA 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+        "caption": "Pão integral cortado em fatias. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "french-bread",
@@ -118,16 +146,23 @@
       "image": "/images/foods/french-bread.jpg",
       "sourceName": "Pão, trigo, francês",
       "sourcePage": 31,
-      "kcal": 300.0,
-      "protein": 8.0,
+      "kcal": 300,
+      "protein": 8,
       "fat": 3.1,
       "carbs": 58.6,
       "fiber": 2.3,
-      "calcium": 16.0,
-      "phosphorus": 95.0,
-      "iron": 1.0,
-      "sodium": 648.0,
-      "potassium": 142.0
+      "calcium": 16,
+      "phosphorus": 95,
+      "iron": 1,
+      "sodium": 648,
+      "potassium": 142,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pao_frances.jpg",
+        "author": "Roosewelt Pinheiro/ABr",
+        "license": "CC BY 3.0 br",
+        "licenseUrl": "https://creativecommons.org/licenses/by/3.0/br/deed.en",
+        "caption": "Pães franceses. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "polenta",
@@ -142,16 +177,23 @@
       "image": "/images/foods/polenta.jpg",
       "sourceName": "Polenta, pré-cozida",
       "sourcePage": 31,
-      "kcal": 103.0,
+      "kcal": 103,
       "protein": 2.3,
       "fat": 0.3,
       "carbs": 23.3,
       "fiber": 2.4,
-      "calcium": 1.0,
-      "phosphorus": 17.0,
+      "calcium": 1,
+      "phosphorus": 17,
       "iron": 0,
-      "sodium": 442.0,
-      "potassium": 100.0
+      "sodium": 442,
+      "potassium": 100,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Polenta.jpg",
+        "author": "it:User:Dorothy61n1",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "caption": "Polenta de milho; o preparo do plano pode ter consistência diferente. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "pumpkin",
@@ -166,16 +208,23 @@
       "image": "/images/foods/pumpkin.jpg",
       "sourceName": "Abóbora, cabotian, cozida",
       "sourcePage": 33,
-      "kcal": 48.0,
+      "kcal": 48,
       "protein": 1.4,
       "fat": 0.7,
       "carbs": 10.8,
       "fiber": 2.5,
-      "calcium": 8.0,
-      "phosphorus": 33.0,
+      "calcium": 8,
+      "phosphorus": 33,
       "iron": 0.3,
-      "sodium": 1.0,
-      "potassium": 199.0
+      "sodium": 1,
+      "potassium": 199,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cucurbita_kabocha_o_kabuti%C3%A1_o_tipo_Tetsukabuto_3_un_cultivar.jpg",
+        "author": "RoRo",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "caption": "Abóbora cabotiá inteira e cortada, antes do preparo. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "zucchini",
@@ -190,16 +239,23 @@
       "image": "/images/foods/zucchini.jpg",
       "sourceName": "Abobrinha, italiana, cozida",
       "sourcePage": 33,
-      "kcal": 15.0,
+      "kcal": 15,
       "protein": 1.1,
       "fat": 0.2,
-      "carbs": 3.0,
+      "carbs": 3,
       "fiber": 1.6,
-      "calcium": 17.0,
-      "phosphorus": 22.0,
+      "calcium": 17,
+      "phosphorus": 22,
       "iron": 0.2,
-      "sodium": 1.0,
-      "potassium": 126.0
+      "sodium": 1,
+      "potassium": 126,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:CSA-Striped-Zucchini.jpg",
+        "author": "Evan-Amos",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "caption": "Abobrinha crua; prepare conforme a orientação da refeição. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "lettuce",
@@ -214,16 +270,23 @@
       "image": "/images/foods/lettuce.jpg",
       "sourceName": "Alface, crespa, crua",
       "sourcePage": 33,
-      "kcal": 11.0,
+      "kcal": 11,
       "protein": 1.3,
       "fat": 0.2,
       "carbs": 1.7,
       "fiber": 1.8,
-      "calcium": 38.0,
-      "phosphorus": 26.0,
+      "calcium": 38,
+      "phosphorus": 26,
       "iron": 0.4,
-      "sodium": 3.0,
-      "potassium": 267.0
+      "sodium": 3,
+      "potassium": 267,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:My_First_Lettuce_Pick!_(9012960719).jpg",
+        "author": "cogdogblog",
+        "license": "CC BY 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "caption": "Folhas de alface em uma tigela. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "arracacha",
@@ -238,16 +301,23 @@
       "image": "/images/foods/arracacha.jpg",
       "sourceName": "Batata, baroa, cozida",
       "sourcePage": 33,
-      "kcal": 80.0,
+      "kcal": 80,
       "protein": 0.9,
       "fat": 0.2,
       "carbs": 18.9,
       "fiber": 1.8,
-      "calcium": 12.0,
-      "phosphorus": 29.0,
+      "calcium": 12,
+      "phosphorus": 29,
       "iron": 0.4,
-      "sodium": 2.0,
-      "potassium": 258.0
+      "sodium": 2,
+      "potassium": 258,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Arracacia_xanthorrhiza_(boiled_and_peeled).JPG",
+        "author": "Dtarazona",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "caption": "Mandioquinha descascada e cozida. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "sweet-potato",
@@ -262,16 +332,23 @@
       "image": "/images/foods/sweet-potato.jpg",
       "sourceName": "Batata, doce, cozida",
       "sourcePage": 33,
-      "kcal": 77.0,
+      "kcal": 77,
       "protein": 0.6,
       "fat": 0.1,
       "carbs": 18.4,
       "fiber": 2.2,
-      "calcium": 17.0,
-      "phosphorus": 15.0,
+      "calcium": 17,
+      "phosphorus": 15,
       "iron": 0.2,
-      "sodium": 3.0,
-      "potassium": 148.0
+      "sodium": 3,
+      "potassium": 148,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ipomoea_batatas_006.JPG",
+        "author": "Llez",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "caption": "Batatas-doces cruas; a variedade e o preparo podem diferir do plano. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "potato",
@@ -286,16 +363,23 @@
       "image": "/images/foods/potato.jpg",
       "sourceName": "Batata, inglesa, cozida",
       "sourcePage": 33,
-      "kcal": 52.0,
+      "kcal": 52,
       "protein": 1.2,
       "fat": 0,
       "carbs": 11.9,
       "fiber": 1.3,
-      "calcium": 4.0,
-      "phosphorus": 24.0,
+      "calcium": 4,
+      "phosphorus": 24,
       "iron": 0.2,
-      "sodium": 2.0,
-      "potassium": 161.0
+      "sodium": 2,
+      "potassium": 161,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Patates.jpg",
+        "author": "Scott Bauer, USDA ARS",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "caption": "Batatas cruas; prepare conforme a orientação da refeição. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "eggplant",
@@ -310,16 +394,23 @@
       "image": "/images/foods/eggplant.jpg",
       "sourceName": "Berinjela, cozida",
       "sourcePage": 35,
-      "kcal": 19.0,
+      "kcal": 19,
       "protein": 0.7,
       "fat": 0.1,
       "carbs": 4.5,
       "fiber": 2.5,
-      "calcium": 11.0,
-      "phosphorus": 15.0,
+      "calcium": 11,
+      "phosphorus": 15,
       "iron": 0.2,
-      "sodium": 1.0,
-      "potassium": 105.0
+      "sodium": 1,
+      "potassium": 105,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lufa_Farms_Eggplant.jpg",
+        "author": "Lufa Farms",
+        "license": "CC BY-SA 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+        "caption": "Berinjela crua; prepare conforme a orientação da refeição. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "beet",
@@ -334,16 +425,23 @@
       "image": "/images/foods/beet.jpg",
       "sourceName": "Beterraba, cozida",
       "sourcePage": 35,
-      "kcal": 32.0,
+      "kcal": 32,
       "protein": 1.3,
       "fat": 0.1,
       "carbs": 7.2,
       "fiber": 1.9,
-      "calcium": 15.0,
-      "phosphorus": 30.0,
+      "calcium": 15,
+      "phosphorus": 30,
       "iron": 0.2,
-      "sodium": 23.0,
-      "potassium": 245.0
+      "sodium": 23,
+      "potassium": 245,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Detroitdarkredbeets.png",
+        "author": "BriannaWalther",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "caption": "Beterrabas frescas, antes do preparo. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "broccoli",
@@ -358,16 +456,23 @@
       "image": "/images/foods/broccoli.jpg",
       "sourceName": "Brócolis, cozido",
       "sourcePage": 35,
-      "kcal": 25.0,
+      "kcal": 25,
       "protein": 2.1,
       "fat": 0.5,
       "carbs": 4.4,
       "fiber": 3.4,
-      "calcium": 51.0,
-      "phosphorus": 33.0,
+      "calcium": 51,
+      "phosphorus": 33,
       "iron": 0.5,
-      "sodium": 2.0,
-      "potassium": 119.0
+      "sodium": 2,
+      "potassium": 119,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Broccoli.jpg",
+        "author": "USDA Lance Cheung",
+        "license": "CC BY 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "caption": "Fotografia de floretes de brócolis. Prepare e pese conforme as orientações do plano."
+      }
     },
     {
       "id": "carrot",
@@ -382,16 +487,23 @@
       "image": "/images/foods/carrot.jpg",
       "sourceName": "Cenoura, cozida",
       "sourcePage": 35,
-      "kcal": 30.0,
+      "kcal": 30,
       "protein": 0.8,
       "fat": 0.2,
       "carbs": 6.7,
       "fiber": 2.6,
-      "calcium": 26.0,
-      "phosphorus": 27.0,
+      "calcium": 26,
+      "phosphorus": 27,
       "iron": 0.1,
-      "sodium": 8.0,
-      "potassium": 176.0
+      "sodium": 8,
+      "potassium": 176,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vegetable-Carrot-Bundle-wStalks.jpg",
+        "author": "Evan-Amos",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "caption": "Cenouras frescas, antes do preparo. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "chayote",
@@ -406,16 +518,23 @@
       "image": "/images/foods/chayote.jpg",
       "sourceName": "Chuchu, cozido",
       "sourcePage": 35,
-      "kcal": 19.0,
+      "kcal": 19,
       "protein": 0.4,
       "fat": 0,
       "carbs": 4.8,
-      "fiber": 1.0,
-      "calcium": 8.0,
-      "phosphorus": 13.0,
+      "fiber": 1,
+      "calcium": 8,
+      "phosphorus": 13,
       "iron": 0.1,
-      "sodium": 2.0,
-      "potassium": 54.0
+      "sodium": 2,
+      "potassium": 54,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chayotes_frescos.jpg",
+        "author": "Xanyssel",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Fotografia de chuchus frescos inteiros. A foto mostra o ingrediente cru; preparo e porções seguem o plano."
+      }
     },
     {
       "id": "kale",
@@ -430,16 +549,23 @@
       "image": "/images/foods/kale.jpg",
       "sourceName": "Couve, manteiga, crua",
       "sourcePage": 35,
-      "kcal": 27.0,
+      "kcal": 27,
       "protein": 2.9,
       "fat": 0.5,
       "carbs": 4.3,
       "fiber": 3.1,
-      "calcium": 131.0,
-      "phosphorus": 49.0,
+      "calcium": 131,
+      "phosphorus": 49,
       "iron": 0.5,
-      "sodium": 6.0,
-      "potassium": 403.0
+      "sodium": 6,
+      "potassium": 403,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Collard-Greens-Bundle.jpg",
+        "author": "Evan-Amos",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "caption": "Folhas frescas de couve. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "cauliflower",
@@ -454,16 +580,23 @@
       "image": "/images/foods/cauliflower.jpg",
       "sourceName": "Couve-flor, cozida",
       "sourcePage": 35,
-      "kcal": 19.0,
+      "kcal": 19,
       "protein": 1.2,
       "fat": 0.3,
       "carbs": 3.9,
       "fiber": 2.1,
-      "calcium": 16.0,
-      "phosphorus": 25.0,
+      "calcium": 16,
+      "phosphorus": 25,
       "iron": 0.1,
-      "sodium": 2.0,
-      "potassium": 80.0
+      "sodium": 2,
+      "potassium": 80,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chou-fleur_02.jpg",
+        "author": "Coyau",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "caption": "Couve-flor fresca, antes do preparo. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "cassava",
@@ -478,16 +611,23 @@
       "image": "/images/foods/cassava.jpg",
       "sourceName": "Mandioca, cozida",
       "sourcePage": 37,
-      "kcal": 125.0,
+      "kcal": 125,
       "protein": 0.6,
       "fat": 0.3,
       "carbs": 30.1,
       "fiber": 1.6,
-      "calcium": 19.0,
-      "phosphorus": 22.0,
+      "calcium": 19,
+      "phosphorus": 22,
       "iron": 0.1,
-      "sodium": 1.0,
-      "potassium": 100.0
+      "sodium": 1,
+      "potassium": 100,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Manihot_esculenta_dsc07325.jpg",
+        "author": "David Monniaux",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "caption": "Raízes de mandioca crua. O plano indica mandioca descascada e cozida. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "cucumber",
@@ -502,16 +642,23 @@
       "image": "/images/foods/cucumber.jpg",
       "sourceName": "Pepino, cru",
       "sourcePage": 37,
-      "kcal": 10.0,
+      "kcal": 10,
       "protein": 0.9,
       "fat": 0,
-      "carbs": 2.0,
+      "carbs": 2,
       "fiber": 1.1,
-      "calcium": 10.0,
-      "phosphorus": 12.0,
+      "calcium": 10,
+      "phosphorus": 12,
       "iron": 0.1,
       "sodium": 0,
-      "potassium": 154.0
+      "potassium": 154,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sliced_Cucumber.jpg",
+        "author": "Jyoti Khadka",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Pepino fresco fatiado. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "cabbage",
@@ -526,16 +673,23 @@
       "image": "/images/foods/cabbage.jpg",
       "sourceName": "Repolho, branco, cru",
       "sourcePage": 37,
-      "kcal": 17.0,
+      "kcal": 17,
       "protein": 0.9,
       "fat": 0.1,
       "carbs": 3.9,
       "fiber": 1.9,
-      "calcium": 35.0,
-      "phosphorus": 14.0,
+      "calcium": 35,
+      "phosphorus": 14,
       "iron": 0.2,
-      "sodium": 4.0,
-      "potassium": 150.0
+      "sodium": 4,
+      "potassium": 150,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:White_cabbage.jpg",
+        "author": "Selimee",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Fotografia de repolhos frescos inteiros. Higienização, preparo e porções seguem as orientações do plano."
+      }
     },
     {
       "id": "arugula",
@@ -550,16 +704,23 @@
       "image": "/images/foods/arugula.jpg",
       "sourceName": "Rúcula, crua",
       "sourcePage": 37,
-      "kcal": 13.0,
+      "kcal": 13,
       "protein": 1.8,
       "fat": 0.1,
       "carbs": 2.2,
       "fiber": 1.7,
-      "calcium": 117.0,
-      "phosphorus": 25.0,
+      "calcium": 117,
+      "phosphorus": 25,
       "iron": 0.9,
-      "sodium": 9.0,
-      "potassium": 233.0
+      "sodium": 9,
+      "potassium": 233,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Arugula_for_sale.jpg",
+        "author": "Jeffery Martin",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "caption": "Fotografia de folhas frescas de rúcula. Higienização e porções seguem as orientações do plano."
+      }
     },
     {
       "id": "tomato",
@@ -574,16 +735,23 @@
       "image": "/images/foods/tomato.jpg",
       "sourceName": "Tomate, com semente, cru",
       "sourcePage": 37,
-      "kcal": 15.0,
+      "kcal": 15,
       "protein": 1.1,
       "fat": 0.2,
       "carbs": 3.1,
       "fiber": 1.2,
-      "calcium": 7.0,
-      "phosphorus": 20.0,
+      "calcium": 7,
+      "phosphorus": 20,
       "iron": 0.2,
-      "sodium": 1.0,
-      "potassium": 222.0
+      "sodium": 1,
+      "potassium": 222,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tomato_je.jpg",
+        "author": "Softeis",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "caption": "Tomates frescos. Fotografia de referência, sem correspondência com a porção prescrita."
+      }
     },
     {
       "id": "avocado",
@@ -598,16 +766,23 @@
       "image": "/images/foods/avocado.jpg",
       "sourceName": "Abacate, cru",
       "sourcePage": 39,
-      "kcal": 96.0,
+      "kcal": 96,
       "protein": 1.2,
       "fat": 8.4,
-      "carbs": 6.0,
+      "carbs": 6,
       "fiber": 6.3,
-      "calcium": 8.0,
-      "phosphorus": 22.0,
+      "calcium": 8,
+      "phosphorus": 22,
       "iron": 0.2,
       "sodium": 0,
-      "potassium": 206.0
+      "potassium": 206,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Avocado_Hass_-_single_and_halved.jpg",
+        "author": "Ivar Leidus",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Abacate inteiro e cortado; a fotografia mostra a variedade Hass."
+      }
     },
     {
       "id": "pineapple",
@@ -622,16 +797,23 @@
       "image": "/images/foods/pineapple.jpg",
       "sourceName": "Abacaxi, cru",
       "sourcePage": 39,
-      "kcal": 48.0,
+      "kcal": 48,
       "protein": 0.9,
       "fat": 0.1,
       "carbs": 12.3,
-      "fiber": 1.0,
-      "calcium": 22.0,
-      "phosphorus": 13.0,
+      "fiber": 1,
+      "calcium": 22,
+      "phosphorus": 13,
       "iron": 0.3,
       "sodium": 0,
-      "potassium": 131.0
+      "potassium": 131,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ananas_comosus_Victoria_P1190459.jpg",
+        "author": "David Monniaux",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "caption": "Abacaxis inteiros, antes de descascar e porcionar."
+      }
     },
     {
       "id": "plum",
@@ -646,16 +828,23 @@
       "image": "/images/foods/plum.jpg",
       "sourceName": "Ameixa, crua",
       "sourcePage": 39,
-      "kcal": 53.0,
+      "kcal": 53,
       "protein": 0.8,
       "fat": 0,
       "carbs": 13.9,
       "fiber": 2.4,
-      "calcium": 6.0,
-      "phosphorus": 14.0,
+      "calcium": 6,
+      "phosphorus": 14,
       "iron": 0.1,
       "sodium": 0,
-      "potassium": 134.0
+      "potassium": 134,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Plums_African_Rose_-_whole,_halved_and_slice.jpg",
+        "author": "Ivar Leidus",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Ameixas frescas inteiras e cortadas."
+      }
     },
     {
       "id": "banana",
@@ -670,16 +859,23 @@
       "image": "/images/foods/banana.jpg",
       "sourceName": "Banana, nanica, crua",
       "sourcePage": 39,
-      "kcal": 92.0,
+      "kcal": 92,
       "protein": 1.4,
       "fat": 0.1,
       "carbs": 23.8,
       "fiber": 1.9,
-      "calcium": 3.0,
-      "phosphorus": 27.0,
+      "calcium": 3,
+      "phosphorus": 27,
       "iron": 0.3,
       "sodium": 0,
-      "potassium": 376.0
+      "potassium": 376,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cavendish_Banana_DS.jpg",
+        "author": "Augustus Binu : flickr",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "caption": "Bananas do grupo Cavendish, que inclui a banana-nanica."
+      }
     },
     {
       "id": "silver-banana",
@@ -694,16 +890,23 @@
       "image": "/images/foods/silver-banana.jpg",
       "sourceName": "Banana, prata, crua",
       "sourcePage": 39,
-      "kcal": 98.0,
+      "kcal": 98,
       "protein": 1.3,
       "fat": 0.1,
-      "carbs": 26.0,
-      "fiber": 2.0,
-      "calcium": 8.0,
-      "phosphorus": 22.0,
+      "carbs": 26,
+      "fiber": 2,
+      "calcium": 8,
+      "phosphorus": 22,
       "iron": 0.4,
       "sodium": 0,
-      "potassium": 358.0
+      "potassium": 358,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Banana_Prata.jpg",
+        "author": "Gouvêa Martins",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "caption": "Bananas-prata expostas em feira livre."
+      }
     },
     {
       "id": "guava",
@@ -718,16 +921,23 @@
       "image": "/images/foods/guava.jpg",
       "sourceName": "Goiaba, vermelha, com casca, crua",
       "sourcePage": 41,
-      "kcal": 54.0,
+      "kcal": 54,
       "protein": 1.1,
       "fat": 0.4,
-      "carbs": 13.0,
+      "carbs": 13,
       "fiber": 6.2,
-      "calcium": 4.0,
-      "phosphorus": 15.0,
+      "calcium": 4,
+      "phosphorus": 15,
       "iron": 0.2,
       "sodium": 0,
-      "potassium": 198.0
+      "potassium": 198,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Guava_pink_fruit.jpg",
+        "author": "Ivar Leidus",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Goiaba de polpa vermelha, inteira e cortada."
+      }
     },
     {
       "id": "kiwi",
@@ -742,16 +952,23 @@
       "image": "/images/foods/kiwi.jpg",
       "sourceName": "Kiwi, cru",
       "sourcePage": 41,
-      "kcal": 51.0,
+      "kcal": 51,
       "protein": 1.3,
       "fat": 0.6,
       "carbs": 11.5,
       "fiber": 2.7,
-      "calcium": 24.0,
-      "phosphorus": 33.0,
+      "calcium": 24,
+      "phosphorus": 33,
       "iron": 0.3,
       "sodium": 0,
-      "potassium": 269.0
+      "potassium": 269,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kiwi_(Actinidia_chinensis)_1_Luc_Viatour.jpg",
+        "author": "Luc Viatour",
+        "license": "CC BY-SA 2.5",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+        "caption": "Kiwis inteiros e cortados."
+      }
     },
     {
       "id": "orange",
@@ -766,16 +983,23 @@
       "image": "/images/foods/orange.jpg",
       "sourceName": "Laranja, pêra, crua",
       "sourcePage": 41,
-      "kcal": 37.0,
-      "protein": 1.0,
+      "kcal": 37,
+      "protein": 1,
       "fat": 0.1,
       "carbs": 8.9,
       "fiber": 0.8,
-      "calcium": 22.0,
-      "phosphorus": 23.0,
+      "calcium": 22,
+      "phosphorus": 23,
       "iron": 0.1,
       "sodium": 0,
-      "potassium": 163.0
+      "potassium": 163,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Oranges_-_whole-halved-segment.jpg",
+        "author": "Ivar Leidus",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Laranjas inteiras e cortadas; foto representativa, sem identificação da variedade pera."
+      }
     },
     {
       "id": "apple",
@@ -790,16 +1014,23 @@
       "image": "/images/foods/apple.jpg",
       "sourceName": "Maçã, Fuji, com casca, crua",
       "sourcePage": 43,
-      "kcal": 56.0,
+      "kcal": 56,
       "protein": 0.3,
       "fat": 0,
       "carbs": 15.2,
       "fiber": 1.3,
-      "calcium": 2.0,
-      "phosphorus": 9.0,
+      "calcium": 2,
+      "phosphorus": 9,
       "iron": 0.1,
       "sodium": 0,
-      "potassium": 75.0
+      "potassium": 75,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Apfel-Fuji.jpg",
+        "author": "Superbass",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Maçã Fuji com casca."
+      }
     },
     {
       "id": "papaya",
@@ -814,16 +1045,23 @@
       "image": "/images/foods/papaya.jpg",
       "sourceName": "Mamão, Formosa, cru",
       "sourcePage": 43,
-      "kcal": 45.0,
+      "kcal": 45,
       "protein": 0.8,
       "fat": 0.1,
       "carbs": 11.6,
       "fiber": 1.8,
-      "calcium": 25.0,
-      "phosphorus": 11.0,
+      "calcium": 25,
+      "phosphorus": 11,
       "iron": 0.2,
-      "sodium": 3.0,
-      "potassium": 222.0
+      "sodium": 3,
+      "potassium": 222,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Papaya_-_longitudinal_section.jpg",
+        "author": "Ivar Leidus",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Mamão cortado; foto representativa, sem identificação da variedade Formosa."
+      }
     },
     {
       "id": "mango",
@@ -838,16 +1076,23 @@
       "image": "/images/foods/mango.jpg",
       "sourceName": "Manga, Palmer, crua",
       "sourcePage": 43,
-      "kcal": 72.0,
+      "kcal": 72,
       "protein": 0.4,
       "fat": 0.2,
       "carbs": 19.4,
       "fiber": 1.6,
-      "calcium": 12.0,
-      "phosphorus": 14.0,
+      "calcium": 12,
+      "phosphorus": 14,
       "iron": 0.1,
-      "sodium": 2.0,
-      "potassium": 157.0
+      "sodium": 2,
+      "potassium": 157,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mangos_-_single_and_halved.jpg",
+        "author": "Ivar Leidus",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Manga inteira e cortada; foto representativa, sem identificação da variedade Palmer."
+      }
     },
     {
       "id": "watermelon",
@@ -862,16 +1107,23 @@
       "image": "/images/foods/watermelon.jpg",
       "sourceName": "Melancia, crua",
       "sourcePage": 43,
-      "kcal": 33.0,
+      "kcal": 33,
       "protein": 0.9,
       "fat": 0,
       "carbs": 8.1,
       "fiber": 0.1,
-      "calcium": 8.0,
-      "phosphorus": 12.0,
+      "calcium": 8,
+      "phosphorus": 12,
       "iron": 0.2,
       "sodium": 0,
-      "potassium": 104.0
+      "potassium": 104,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Watermelon_seedless.jpg",
+        "author": "Scott Ehardt",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "caption": "Melancia cortada ao meio."
+      }
     },
     {
       "id": "melon",
@@ -886,16 +1138,23 @@
       "image": "/images/foods/melon.jpg",
       "sourceName": "Melão, cru",
       "sourcePage": 43,
-      "kcal": 29.0,
+      "kcal": 29,
       "protein": 0.7,
       "fat": 0,
       "carbs": 7.5,
       "fiber": 0.3,
-      "calcium": 3.0,
-      "phosphorus": 10.0,
+      "calcium": 3,
+      "phosphorus": 10,
       "iron": 0.2,
-      "sodium": 11.0,
-      "potassium": 216.0
+      "sodium": 11,
+      "potassium": 216,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Honeydew.jpg",
+        "author": "Yotoen",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "caption": "Melão inteiro e cortado."
+      }
     },
     {
       "id": "strawberry",
@@ -910,16 +1169,23 @@
       "image": "/images/foods/strawberry.jpg",
       "sourceName": "Morango, cru",
       "sourcePage": 43,
-      "kcal": 30.0,
+      "kcal": 30,
       "protein": 0.9,
       "fat": 0.3,
       "carbs": 6.8,
       "fiber": 1.7,
-      "calcium": 11.0,
-      "phosphorus": 22.0,
+      "calcium": 11,
+      "phosphorus": 22,
       "iron": 0.3,
       "sodium": 0,
-      "potassium": 184.0
+      "potassium": 184,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Garden_strawberry_(Fragaria_%C3%97_ananassa)_single2.jpg",
+        "author": "Ivar Leidus",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Morango fresco."
+      }
     },
     {
       "id": "pear",
@@ -934,16 +1200,23 @@
       "image": "/images/foods/pear.jpg",
       "sourceName": "Pêra, Williams, crua",
       "sourcePage": 43,
-      "kcal": 53.0,
+      "kcal": 53,
       "protein": 0.6,
       "fat": 0.1,
-      "carbs": 14.0,
-      "fiber": 3.0,
-      "calcium": 8.0,
-      "phosphorus": 12.0,
+      "carbs": 14,
+      "fiber": 3,
+      "calcium": 8,
+      "phosphorus": 12,
       "iron": 0.1,
       "sodium": 0,
-      "potassium": 116.0
+      "potassium": 116,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pears.jpg",
+        "author": "Keith Weller",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "caption": "Peras na árvore; foto representativa, sem identificação da variedade Williams."
+      }
     },
     {
       "id": "tangerine",
@@ -958,16 +1231,23 @@
       "image": "/images/foods/tangerine.jpg",
       "sourceName": "Tangerina, Poncã, crua",
       "sourcePage": 43,
-      "kcal": 38.0,
+      "kcal": 38,
       "protein": 0.8,
       "fat": 0.1,
       "carbs": 9.6,
       "fiber": 0.9,
-      "calcium": 13.0,
-      "phosphorus": 12.0,
+      "calcium": 13,
+      "phosphorus": 12,
       "iron": 0.1,
       "sodium": 0,
-      "potassium": 131.0
+      "potassium": 131,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mandarins_-_whole_and_halved.jpg",
+        "author": "Ivar Leidus",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Tangerinas inteiras e cortadas; foto representativa, sem identificação da variedade poncã."
+      }
     },
     {
       "id": "grapes",
@@ -982,16 +1262,23 @@
       "image": "/images/foods/grapes.jpg",
       "sourceName": "Uva, Itália, crua",
       "sourcePage": 45,
-      "kcal": 53.0,
+      "kcal": 53,
       "protein": 0.7,
       "fat": 0.2,
       "carbs": 13.6,
       "fiber": 0.9,
-      "calcium": 7.0,
-      "phosphorus": 12.0,
+      "calcium": 7,
+      "phosphorus": 12,
       "iron": 0.1,
       "sodium": 0,
-      "potassium": 162.0
+      "potassium": 162,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Green_grapes_19_35_27_149000.jpeg",
+        "author": "Shisma",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "caption": "Uvas verdes frescas; foto representativa, sem identificação da variedade Itália."
+      }
     },
     {
       "id": "olive-oil",
@@ -1015,7 +1302,14 @@
       "phosphorus": null,
       "iron": null,
       "sodium": null,
-      "potassium": null
+      "potassium": null,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Oliven_V1.jpg",
+        "author": "Poyraz 72",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Azeite em garrafa, com azeitonas ao lado. A classificação extravirgem deve ser conferida no rótulo do produto utilizado."
+      }
     },
     {
       "id": "white-fish",
@@ -1032,16 +1326,23 @@
       "image": "/images/foods/white-fish.jpg",
       "sourceName": "Abadejo, filé, congelado,cozido",
       "sourcePage": 45,
-      "kcal": 91.0,
+      "kcal": 91,
       "protein": 19.3,
       "fat": 0.9,
-      "carbs": 0.0,
+      "carbs": 0,
       "fiber": null,
-      "calcium": 17.0,
-      "phosphorus": 351.0,
+      "calcium": 17,
+      "phosphorus": 351,
       "iron": 0.3,
-      "sodium": 189.0,
-      "potassium": 146.0
+      "sodium": 189,
+      "potassium": 146,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:100_gram_fish_fillet_(115_grams_raw_weight).JPG",
+        "author": "Hannahdownes",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Filé de peixe branco preparado, em foto representativa. Os valores do catálogo correspondem ao abadejo cozido."
+      }
     },
     {
       "id": "salmon",
@@ -1058,16 +1359,23 @@
       "image": "/images/foods/salmon.jpg",
       "sourceName": "Salmão, sem pele, fresco, grelhado",
       "sourcePage": 49,
-      "kcal": 243.0,
+      "kcal": 243,
       "protein": 26.1,
       "fat": 14.5,
-      "carbs": 0.0,
+      "carbs": 0,
       "fiber": null,
-      "calcium": 15.0,
-      "phosphorus": 352.0,
+      "calcium": 15,
+      "phosphorus": 352,
       "iron": 0.4,
-      "sodium": 96.0,
-      "potassium": 518.0
+      "sodium": 96,
+      "potassium": 518,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Salmon_Fish.JPG",
+        "author": "Marlith",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "caption": "Filés de salmão crus, antes do preparo. Os valores do catálogo correspondem ao salmão sem pele grelhado."
+      }
     },
     {
       "id": "ground-beef",
@@ -1082,16 +1390,23 @@
       "image": "/images/foods/ground-beef.jpg",
       "sourceName": "Carne, bovina, acém, moído, cozido",
       "sourcePage": 49,
-      "kcal": 212.0,
+      "kcal": 212,
       "protein": 26.7,
       "fat": 10.9,
-      "carbs": 0.0,
+      "carbs": 0,
       "fiber": null,
-      "calcium": 4.0,
-      "phosphorus": 164.0,
+      "calcium": 4,
+      "phosphorus": 164,
       "iron": 2.7,
-      "sodium": 52.0,
-      "potassium": 256.0
+      "sodium": 52,
+      "potassium": 256,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hackfleisch-1.jpg",
+        "author": "No machine-readable author provided. Rainer Zenz assumed (based on copyright claims).",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "caption": "Carne bovina moída crua, antes do preparo. Os valores do catálogo correspondem ao acém moído cozido."
+      }
     },
     {
       "id": "beef",
@@ -1106,16 +1421,23 @@
       "image": "/images/foods/beef.jpg",
       "sourceName": "Carne, bovina, patinho, sem gordura, grelhado",
       "sourcePage": 53,
-      "kcal": 219.0,
+      "kcal": 219,
       "protein": 35.9,
       "fat": 7.3,
-      "carbs": 0.0,
+      "carbs": 0,
       "fiber": null,
-      "calcium": 5.0,
-      "phosphorus": 289.0,
-      "iron": 3.0,
-      "sodium": 60.0,
-      "potassium": 421.0
+      "calcium": 5,
+      "phosphorus": 289,
+      "iron": 3,
+      "sodium": 60,
+      "potassium": 421,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Raw_beef_steaks.jpg",
+        "author": "Иван",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Bifes bovinos crus, em foto representativa do ingrediente. Os valores do catálogo correspondem ao patinho sem gordura grelhado."
+      }
     },
     {
       "id": "chicken",
@@ -1130,16 +1452,23 @@
       "image": "/images/foods/chicken.jpg",
       "sourceName": "Frango, peito, sem pele, cozido",
       "sourcePage": 55,
-      "kcal": 163.0,
+      "kcal": 163,
       "protein": 31.5,
       "fat": 3.2,
-      "carbs": 0.0,
+      "carbs": 0,
       "fiber": null,
-      "calcium": 6.0,
-      "phosphorus": 224.0,
+      "calcium": 6,
+      "phosphorus": 224,
       "iron": 0.3,
-      "sodium": 36.0,
-      "potassium": 231.0
+      "sodium": 36,
+      "potassium": 231,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Close-up_of_the_chicken_breast_on_a_cutting_board.jpg",
+        "author": "Shixart1985",
+        "license": "CC BY 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "caption": "Peito de frango cru sobre uma tábua, antes do preparo. Os valores do catálogo correspondem ao peito de frango cozido."
+      }
     },
     {
       "id": "grilled-chicken",
@@ -1154,16 +1483,23 @@
       "image": "/images/foods/grilled-chicken.jpg",
       "sourceName": "Frango, peito, sem pele, grelhado",
       "sourcePage": 55,
-      "kcal": 159.0,
-      "protein": 32.0,
+      "kcal": 159,
+      "protein": 32,
       "fat": 2.5,
-      "carbs": 0.0,
+      "carbs": 0,
       "fiber": null,
-      "calcium": 5.0,
-      "phosphorus": 295.0,
+      "calcium": 5,
+      "phosphorus": 295,
       "iron": 0.3,
-      "sodium": 50.0,
-      "potassium": 387.0
+      "sodium": 50,
+      "potassium": 387,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Grilled_Chicken_Breasts_(28905381261).jpg",
+        "author": "Sharon Chen from Austin, United States",
+        "license": "CC BY 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "caption": "Peito de frango grelhado e fatiado; temperos da apresentação são ilustrativos."
+      }
     },
     {
       "id": "yogurt",
@@ -1181,16 +1517,23 @@
       "image": "/images/foods/yogurt.jpg",
       "sourceName": "Iogurte, natural",
       "sourcePage": 57,
-      "kcal": 51.0,
+      "kcal": 51,
       "protein": 4.1,
-      "fat": 3.0,
+      "fat": 3,
       "carbs": 1.9,
       "fiber": null,
-      "calcium": 143.0,
-      "phosphorus": 119.0,
+      "calcium": 143,
+      "phosphorus": 119,
       "iron": 0,
-      "sodium": 52.0,
-      "potassium": 71.0
+      "sodium": 52,
+      "potassium": 71,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Joghurt.jpg",
+        "author": "No machine-readable author provided. Rainer Zenz assumed (based on copyright claims).",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "caption": "Iogurte natural em uma tigela; a foto não identifica o teor de gordura."
+      }
     },
     {
       "id": "skim-yogurt",
@@ -1208,16 +1551,23 @@
       "image": "/images/foods/skim-yogurt.jpg",
       "sourceName": "Iogurte, natural, desnatado",
       "sourcePage": 57,
-      "kcal": 41.0,
+      "kcal": 41,
       "protein": 3.8,
       "fat": 0.3,
       "carbs": 5.8,
       "fiber": null,
-      "calcium": 157.0,
-      "phosphorus": 110.0,
+      "calcium": 157,
+      "phosphorus": 110,
       "iron": 0,
-      "sodium": 60.0,
-      "potassium": 182.0
+      "sodium": 60,
+      "potassium": 182,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Joghurt.jpg",
+        "author": "No machine-readable author provided. Rainer Zenz assumed (based on copyright claims).",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "caption": "Foto representativa de iogurte natural. O teor desnatado deve ser conferido no rótulo do produto utilizado."
+      }
     },
     {
       "id": "egg-white",
@@ -1234,16 +1584,23 @@
       "image": "/images/foods/egg-white.jpg",
       "sourceName": "Ovo, de galinha, clara, cozida/10minutos",
       "sourcePage": 59,
-      "kcal": 59.0,
+      "kcal": 59,
       "protein": 13.4,
       "fat": 0.1,
-      "carbs": 0.0,
+      "carbs": 0,
       "fiber": null,
-      "calcium": 6.0,
-      "phosphorus": 15.0,
+      "calcium": 6,
+      "phosphorus": 15,
       "iron": 0.1,
-      "sodium": 181.0,
-      "potassium": 146.0
+      "sodium": 181,
+      "potassium": 146,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bowl_of_egg_whites.jpg",
+        "author": "Douglas P Perkins",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "caption": "Claras de ovo cruas, antes do preparo. Os valores do catálogo correspondem à clara cozida."
+      }
     },
     {
       "id": "egg",
@@ -1260,16 +1617,23 @@
       "image": "/images/foods/egg.jpg",
       "sourceName": "Ovo, de galinha, inteiro, cozido/10minutos",
       "sourcePage": 59,
-      "kcal": 146.0,
+      "kcal": 146,
       "protein": 13.3,
       "fat": 9.5,
       "carbs": 0.6,
       "fiber": null,
-      "calcium": 49.0,
-      "phosphorus": 184.0,
+      "calcium": 49,
+      "phosphorus": 184,
       "iron": 1.5,
-      "sodium": 146.0,
-      "potassium": 139.0
+      "sodium": 146,
+      "potassium": 139,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Boiled_Eggs_(Alabama_Extension).jpg",
+        "author": "Alabama Extension",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "caption": "Ovos inteiros cozidos e descascados."
+      }
     },
     {
       "id": "couscous",
@@ -1284,16 +1648,23 @@
       "image": "/images/foods/couscous.jpg",
       "sourceName": "Cuscuz, de milho, cozido com sal",
       "sourcePage": 63,
-      "kcal": 113.0,
+      "kcal": 113,
       "protein": 2.2,
       "fat": 0.7,
       "carbs": 25.3,
       "fiber": 2.1,
-      "calcium": 2.0,
-      "phosphorus": 23.0,
+      "calcium": 2,
+      "phosphorus": 23,
       "iron": 0.2,
-      "sodium": 248.0,
-      "potassium": 11.0
+      "sodium": 248,
+      "potassium": 11,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cuscuz_nordestino.jpg",
+        "author": "André Koehne",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "caption": "Cuscuz de milho nordestino cozido na cuscuzeira."
+      }
     },
     {
       "id": "beans",
@@ -1308,16 +1679,23 @@
       "image": "/images/foods/beans.jpg",
       "sourceName": "Feijão, carioca, cozido",
       "sourcePage": 65,
-      "kcal": 76.0,
+      "kcal": 76,
       "protein": 4.8,
       "fat": 0.5,
       "carbs": 13.6,
       "fiber": 8.5,
-      "calcium": 27.0,
-      "phosphorus": 87.0,
+      "calcium": 27,
+      "phosphorus": 87,
       "iron": 1.3,
-      "sodium": 2.0,
-      "potassium": 255.0
+      "sodium": 2,
+      "potassium": 255,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pinto_Beans_Seeds.jpg",
+        "author": "Sanjay Acharya",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Grãos de feijão antes do cozimento; foto representativa. Os valores do catálogo correspondem ao feijão carioca cozido."
+      }
     },
     {
       "id": "cowpea",
@@ -1332,16 +1710,23 @@
       "image": "/images/foods/cowpea.jpg",
       "sourceName": "Feijão, fradinho, cozido",
       "sourcePage": 65,
-      "kcal": 78.0,
+      "kcal": 78,
       "protein": 5.1,
       "fat": 0.6,
       "carbs": 13.5,
       "fiber": 7.5,
-      "calcium": 17.0,
-      "phosphorus": 85.0,
+      "calcium": 17,
+      "phosphorus": 85,
       "iron": 1.1,
-      "sodium": 1.0,
-      "potassium": 253.0
+      "sodium": 1,
+      "potassium": 253,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Black-eyed_peas_close_up.jpg",
+        "author": "Jud McCranie",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Feijão-fradinho preparado; os temperos da foto são ilustrativos."
+      }
     },
     {
       "id": "black-beans",
@@ -1356,16 +1741,23 @@
       "image": "/images/foods/black-beans.jpg",
       "sourceName": "Feijão, preto, cozido",
       "sourcePage": 65,
-      "kcal": 77.0,
+      "kcal": 77,
       "protein": 4.5,
       "fat": 0.5,
-      "carbs": 14.0,
+      "carbs": 14,
       "fiber": 8.4,
-      "calcium": 29.0,
-      "phosphorus": 88.0,
+      "calcium": 29,
+      "phosphorus": 88,
       "iron": 1.5,
-      "sodium": 2.0,
-      "potassium": 256.0
+      "sodium": 2,
+      "potassium": 256,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Black_Beans_in_Thailand_Photographed_by_Trisorn_Triboon.jpg",
+        "author": "Tris T7",
+        "license": "CC BY 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "caption": "Grãos de feijão preto secos, antes do cozimento. Os valores do catálogo correspondem ao feijão preto cozido."
+      }
     },
     {
       "id": "lentils",
@@ -1380,16 +1772,23 @@
       "image": "/images/foods/lentils.jpg",
       "sourceName": "Lentilha, cozida",
       "sourcePage": 65,
-      "kcal": 93.0,
+      "kcal": 93,
       "protein": 6.3,
       "fat": 0.5,
       "carbs": 16.3,
       "fiber": 7.9,
-      "calcium": 16.0,
-      "phosphorus": 104.0,
+      "calcium": 16,
+      "phosphorus": 104,
       "iron": 1.5,
-      "sodium": 1.0,
-      "potassium": 220.0
+      "sodium": 1,
+      "potassium": 220,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Cooked_Lentils_with_Caramelized_Onions.jpg",
+        "author": "HaJunkiyada",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Lentilhas cozidas apresentadas com cebola; a cebola da foto não faz parte dos valores do alimento cadastrado."
+      }
     },
     {
       "id": "soy-milk",
@@ -1406,16 +1805,23 @@
       "image": "/images/foods/soy-milk.jpg",
       "sourceName": "Soja, extrato solúvel, natural, fluido",
       "sourcePage": 67,
-      "kcal": 39.0,
+      "kcal": 39,
       "protein": 2.4,
       "fat": 1.6,
       "carbs": 4.3,
       "fiber": 0.4,
-      "calcium": 17.0,
-      "phosphorus": 53.0,
+      "calcium": 17,
+      "phosphorus": 53,
       "iron": 0.4,
-      "sodium": 57.0,
-      "potassium": 121.0
+      "sodium": 57,
+      "potassium": 121,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:004-soymilk.jpg",
+        "author": "Kjokkenutstyr",
+        "license": "CC BY-SA 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+        "caption": "Bebida de soja em copo e garrafa, com grãos de soja ao lado."
+      }
     },
     {
       "id": "brazil-nut",
@@ -1432,16 +1838,23 @@
       "image": "/images/foods/brazil-nut.jpg",
       "sourceName": "Castanha-do-Brasil, crua",
       "sourcePage": 67,
-      "kcal": 643.0,
+      "kcal": 643,
       "protein": 14.5,
       "fat": 63.5,
       "carbs": 15.1,
       "fiber": 7.9,
-      "calcium": 146.0,
-      "phosphorus": 853.0,
+      "calcium": 146,
+      "phosphorus": 853,
       "iron": 2.3,
-      "sodium": 1.0,
-      "potassium": 651.0
+      "sodium": 1,
+      "potassium": 651,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Brazil_nuts.jpg",
+        "author": "Quadell",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "caption": "Castanhas-do-Brasil sem a casca externa."
+      }
     },
     {
       "id": "walnut",
@@ -1458,16 +1871,23 @@
       "image": "/images/foods/walnut.jpg",
       "sourceName": "Noz, crua",
       "sourcePage": 67,
-      "kcal": 620.0,
-      "protein": 14.0,
+      "kcal": 620,
+      "protein": 14,
       "fat": 59.4,
       "carbs": 18.4,
       "fiber": 7.2,
-      "calcium": 105.0,
-      "phosphorus": 396.0,
-      "iron": 2.0,
-      "sodium": 5.0,
-      "potassium": 533.0
+      "calcium": 105,
+      "phosphorus": 396,
+      "iron": 2,
+      "sodium": 5,
+      "potassium": 533,
+      "photo": {
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Walnuts_-_whole_and_open_with_halved_kernel.jpg",
+        "author": "Ivar Leidus",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "caption": "Nozes inteiras e sem casca."
+      }
     }
   ]
 }

@@ -144,5 +144,45 @@ test('nutrition flow: isolated PostgreSQL intake → checkout → confirmation �
       assert.ok(response.headers.get('set-cookie').includes('Max-Age=0'));
       assert.equal((await request('status')).status, 401);
     });
+    await t.test('encrypted version history restores only this patient and requires a fresh review', async () => {
+      const detail = await (await request('detail', null, { adminRequest: true, query: `&id=${rowId}` })).json();
+      assert.ok(detail.versions.some(version => version.revision === 1 && version.stage === 'draft'));
+      assert.ok(detail.versions.some(version => version.revision === 2 && version.stage === 'approved'));
+      assert.ok(detail.versions.every(version => !('plan_encrypted' in version)));
+      const encrypted = await store.query('SELECT plan_encrypted FROM nutrition_plan_versions WHERE request_id=$1', [rowId]);
+      assert.ok(encrypted.rows.every(version => !version.plan_encrypted.includes('Avaliação fictícia')));
+      const restore = { id: rowId, revision: 3, sourceRevision: 2, sourceStage: 'approved' };
+      assert.equal((await request('restore', restore, { adminRequest: true })).status, 409);
+      assert.equal((await request('reopen', { id: rowId, revision: 3 }, { adminRequest: true })).status, 200);
+      assert.equal((await request('restore', restore, { adminRequest: true })).status, 409);
+      assert.equal((await request('restore', { ...restore, revision: 4, sourceRevision: 999 }, { adminRequest: true })).status, 404);
+      const restored = await request('restore', { ...restore, revision: 4 }, { adminRequest: true });
+      assert.equal(restored.status, 200);
+      const result = await restored.json();
+      assert.equal(result.revision, 5); assert.equal(result.stage, 'draft'); assert.deepEqual(result.plan.review, {});
+      assert.equal((await request('download', null, { adminRequest: true, query: `&id=${rowId}` })).status, 403);
+      const finalDetail = await (await request('detail', null, { adminRequest: true, query: `&id=${rowId}` })).json();
+      assert.ok(finalDetail.versions.some(version => version.reason === 'plan_restored' && version.revision === 5));
+    });
+    await t.test('new culinary rotation preserves professional assessment only for the same base', async () => {
+      const before = await (await request('detail', null, { adminRequest: true, query: `&id=${rowId}` })).json();
+      const response = await request('generate', { id: rowId, revision: before.revision, templateId: before.plan.templateId, variation: 12, preserveAssessment: true }, { adminRequest: true });
+      assert.equal(response.status, 200); const result = await response.json();
+      assert.deepEqual(result.plan.targets, before.plan.targets); assert.equal(result.plan.clinicalNotes, before.plan.clinicalNotes);
+      assert.equal(result.plan.guidance, before.plan.guidance); assert.deepEqual(result.plan.review, {}); assert.equal(result.stage, 'draft');
+      const changedBase = await request('generate', { id: rowId, revision: result.revision, templateId: 'balanced-variada', variation: 0, preserveAssessment: true }, { adminRequest: true });
+      assert.equal(changedBase.status, 200); const changed = await changedBase.json();
+      assert.equal(changed.plan.targets.energy, null); assert.equal(changed.plan.clinicalNotes, '');
+    });
+    await t.test('saved template category determines its clinical review context', async () => {
+      const detail = await (await request('detail', null, { adminRequest: true, query: `&id=${rowId}` })).json();
+      assert.equal((await request('template', { id: rowId, revision: detail.revision, title: 'Modelo renal de teste', profile: 'renal' }, { adminRequest: true })).status, 200);
+      const list = await (await request('list', null, { adminRequest: true })).json();
+      const template = list.templates.find(template => template.title === 'Modelo renal de teste');
+      const response = await request('generate', { id: rowId, revision: detail.revision, templateId: template.id }, { adminRequest: true });
+      assert.equal(response.status, 200); const result = await response.json();
+      assert.equal(result.plan.templateId, 'renal-pratica');
+      assert.ok(clinicalAlerts(detail.intake, result.plan).some(alert => alert.id === 'renal'));
+    });
   } finally { await pg.close(); }
 });
