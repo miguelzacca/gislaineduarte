@@ -11,8 +11,18 @@ test('intake UI keeps critical information visible and optional health choices a
   const server = await createServer({ configFile: false, plugins: [react()], optimizeDeps: { noDiscovery: true, include: [], entries: [] }, server: { middlewareMode: true, hmr: false, ws: false, watch: null }, logLevel: 'error' });
   try {
     const { BristolScale, FoodPreferencePicker, IntakeRestrictionSummary, IntakePhotos, draftSafeIntake, nextFoodPreferences } = await server.ssrLoadModule('/src/components/NutritionIntakeExtras.jsx');
-    const { IntakeForm } = await server.ssrLoadModule('/src/components/NutritionPublic.jsx');
+    const { IntakeForm, nutritionApi } = await server.ssrLoadModule('/src/components/NutritionPublic.jsx');
     const render = (component, props) => load(renderToStaticMarkup(createElement(component, props)));
+    await t.test('API client explains a non-JSON size rejection and preserves structured field errors', async t => {
+      t.mock.method(globalThis, 'fetch', async () => new Response('Payload Too Large', { status: 413 }));
+      await assert.rejects(nutritionApi('intake', { intake: {} }), error => error.status === 413 && /fotos opcionais/.test(error.message));
+      const fields = { photosConsent: 'Autorize as fotos ou remova os anexos.' };
+      globalThis.fetch.mock.mockImplementation(async () => Response.json({ error: 'Confira os campos indicados.', fields }, { status: 422 }));
+      await assert.rejects(nutritionApi('intake', { intake: {} }), error => {
+        assert.equal(error.message, 'Confira os campos indicados.');
+        assert.equal(error.status, 422); assert.deepEqual(error.fields, fields); return true;
+      });
+    });
     await t.test('Bristol has seven illustrated and labelled radio choices plus an explicit skip', () => {
       const $ = render(BristolScale, { value: 3, onChange() {} });
       assert.equal($('input[type=radio]').length, 8);

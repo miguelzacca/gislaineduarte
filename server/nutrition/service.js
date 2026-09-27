@@ -9,6 +9,8 @@ import { generatePlan, intakeErrors, sanitizeIntake, validatePlan } from '../../
 import { dataKey, event, seal, unseal } from './store.js';
 
 export const nutritionCookie = 'gd_nutrition';
+// Includes two optional JPEGs encoded as base64 and the intake fields.
+export const nutritionIntakeBodyLimit = 650 * 1024;
 export class NutritionError extends Error {
   constructor(message, status = 400, fields) { super(message); this.status = status; this.fields = fields; }
 }

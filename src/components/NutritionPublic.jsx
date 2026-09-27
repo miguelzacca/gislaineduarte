@@ -12,7 +12,12 @@ export async function nutritionApi(action, body, admin = false, query = '') {
     credentials: 'same-origin', cache: 'no-store', ...(body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) { const error = new Error(data.error || 'Não foi possível concluir. Tente novamente.'); error.fields = data.fields; error.status = response.status; error.offer = data.offer; throw error; }
+  if (!response.ok) {
+    const fallback = response.status === 413
+      ? (action === 'intake' && !admin ? 'O envio ultrapassou o limite de tamanho. Reduza ou remova as fotos opcionais e tente novamente.' : 'O envio ultrapassou o limite de tamanho. Reduza o conteúdo e tente novamente.')
+      : 'Não foi possível concluir. Tente novamente.';
+    const error = new Error(data.error || fallback); error.fields = data.fields; error.status = response.status; error.offer = data.offer; throw error;
+  }
   return data;
 }
 

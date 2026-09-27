@@ -3,7 +3,7 @@ import { isAllowedCheckoutRequest, productAccessHeaders, randomToken, tokenHash 
 import { transaction } from '../../server/recipes/store.js';
 import { readCommerceConfig } from '../../server/recipes/config.js';
 import { site } from '../../src/data/site.js';
-import { accessCookie, checkout, commerceReady, confirmNutritionPayment, createIntake, followupStatus, NutritionError, publicOffer, readBody, readOffer, readPatient } from '../../server/nutrition/service.js';
+import { accessCookie, checkout, commerceReady, confirmNutritionPayment, createIntake, followupStatus, nutritionIntakeBodyLimit, NutritionError, publicOffer, readBody, readOffer, readPatient } from '../../server/nutrition/service.js';
 import { event, getNutritionStore, seal, unseal } from '../../server/nutrition/store.js';
 import { buildPlanHtml, buildPlanPdf } from '../../server/nutrition/export.js';
 
@@ -19,7 +19,7 @@ export async function handleNutritionRequest(request, { env = process.env, store
     const db = store || await getNutritionStore(env);
     if (action === 'offer') { const offer = await readOffer(db); return json({ available: offer.published && commerceReady(env), offer: offer.published ? publicOffer(offer) : null }); }
     if (action === 'intake') {
-      const result = await createIntake(await readBody(request, 650 * 1024), request, { db, env });
+      const result = await createIntake(await readBody(request, nutritionIntakeBodyLimit), request, { db, env });
       return json({ id: result.id }, 201, result.cookie ? { 'Set-Cookie': result.cookie } : {});
     }
     if (action === 'webhook') {

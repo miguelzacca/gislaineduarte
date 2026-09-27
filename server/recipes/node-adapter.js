@@ -17,6 +17,8 @@ import { handleAdminOrdersRequest } from '../../api/admin/orders.js';
 import { handleNutritionRequest } from '../../api/nutrition/index.js';
 import { handleAdminNutritionRequest } from '../../api/admin/nutrition.js';
 import { handleNutritionReturnRequest } from '../../api/nutrition/return.js';
+import { nutritionIntakeBodyLimit } from '../nutrition/service.js';
+import { productAccessHeaders } from './access.js';
 
 const routes = {
   '/api/nutrition': { method: ['GET', 'POST'], handle: handleNutritionRequest },
@@ -51,7 +53,8 @@ export async function sendWebResponse(webResponse, response) {
 
 export async function handleProductApiRequest(request, response, { env } = {}) {
   const url = new URL(request.url, `http://${request.headers.host || '127.0.0.1'}`);
-  const route = routes[url.pathname.replace(/\/+$/, '')];
+  const pathname = url.pathname.replace(/\/+$/, '');
+  const route = routes[pathname];
   if (!route) return false;
 
   const allowed = Array.isArray(route.method) ? route.method : [route.method];
@@ -69,12 +72,14 @@ export async function handleProductApiRequest(request, response, { env } = {}) {
   }
   let body;
   if (!['GET', 'HEAD'].includes(request.method)) {
+    const isIntake = pathname === '/api/nutrition' && url.searchParams.get('action') === 'intake';
+    const bodyLimit = isIntake ? nutritionIntakeBodyLimit : pathname === '/api/admin/nutrition' ? 180_000 : pathname === '/api/nutrition' ? 32_000 : 16_384;
     const chunks = [];
     let size = 0;
     for await (const chunk of request) {
       size += chunk.length;
-      if (size > (url.pathname === '/api/admin/nutrition' ? 180_000 : url.pathname === '/api/nutrition' ? 32_000 : 16_384)) {
-        await sendWebResponse(new Response('Payload Too Large', { status: 413 }), response);
+      if (size > bodyLimit) {
+        await sendWebResponse(Response.json({ error: isIntake ? 'O envio ultrapassou o limite de tamanho. Reduza ou remova as fotos opcionais e tente novamente.' : 'O envio ultrapassou o limite de tamanho. Reduza o conteúdo e tente novamente.' }, { status: 413, headers: productAccessHeaders() }), response);
         return true;
       }
       chunks.push(chunk);
