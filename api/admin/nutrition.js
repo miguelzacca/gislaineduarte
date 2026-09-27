@@ -6,7 +6,7 @@ import { transaction } from '../../server/recipes/store.js';
 import { clinicalProfiles } from '../../src/data/nutrition.js';
 import { clinicalAlerts, generatePlan, validatePlan } from '../../src/lib/nutrition.js';
 import { commerceReady, followupStatus, NutritionError, readBody, readOffer, validOffer } from '../../server/nutrition/service.js';
-import { event, getNutritionStore, seal, unseal } from '../../server/nutrition/store.js';
+import { archivePlan, event, getNutritionStore, seal, unseal } from '../../server/nutrition/store.js';
 import { analyzeWithNim, suggestWithNim } from '../../server/nutrition/ai.js';
 import { buildPlanHtml, buildPlanPdf } from '../../server/nutrition/export.js';
 
@@ -24,6 +24,8 @@ async function savePlan(db, row, plan, env, expectedRevision, type) {
     const updated = await client.query(`UPDATE nutrition_requests SET plan_encrypted=$1, revision=revision+1, stage='draft', approved_at=NULL, approved_by=NULL, updated_at=now()
       WHERE id=$2 AND revision=$3 AND stage <> 'approved' RETURNING revision`, [seal(clean, env), row.id, expectedRevision]);
     if (!updated.rowCount) throw new NutritionError('Este atendimento mudou em outra aba. Recarregue antes de salvar.', 409);
+    await archivePlan(client, row, 'plan_saved');
+    await archivePlan(client, { id: row.id, revision: updated.rows[0].revision, stage: 'draft', plan_encrypted: seal(clean, env) }, type);
     await event(client, row.id, type);
     return { plan: clean, revision: updated.rows[0].revision, stage: 'draft' };
   });
@@ -57,7 +59,8 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
       if (action === 'detail') {
         const events = await db.query('SELECT type,actor,created_at AS "createdAt" FROM nutrition_events WHERE request_id=$1 ORDER BY created_at DESC LIMIT 30', [id]);
         const checkins = await db.query('SELECT body_encrypted, created_at AS "createdAt" FROM nutrition_checkins WHERE request_id=$1 ORDER BY created_at DESC LIMIT 20', [id]);
-        return json({ id, intake, plan, revision: row.revision, stage: row.stage, payment: row.payment_status, offer: row.offer_snapshot, createdAt: row.created_at, approvedAt: row.approved_at, ...followupStatus(row), events: events.rows, checkins: checkins.rows.map(item => ({ ...unseal(item.body_encrypted, env), createdAt: item.createdAt })) });
+        const versions = await db.query('SELECT revision,stage,reason,created_at AS "createdAt" FROM nutrition_plan_versions WHERE request_id=$1 ORDER BY revision DESC,created_at DESC LIMIT 40', [id]);
+        return json({ id, intake, plan, revision: row.revision, stage: row.stage, payment: row.payment_status, offer: row.offer_snapshot, createdAt: row.created_at, approvedAt: row.approved_at, ...followupStatus(row), events: events.rows, versions: versions.rows, checkins: checkins.rows.map(item => ({ ...unseal(item.body_encrypted, env), createdAt: item.createdAt })) });
       }
       if (action === 'download' || action === 'preview') {
         if (!plan) throw new NutritionError('Monte e salve o plano primeiro.');
@@ -82,14 +85,25 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
     if (!row) throw new NutritionError('Atendimento não encontrado.', 404);
     const intake = unseal(row.intake_encrypted, env); const plan = unseal(row.plan_encrypted, env);
     if (!Number.isInteger(body.revision) || body.revision !== row.revision) throw new NutritionError('O atendimento mudou. Recarregue para usar a versão atual.', 409);
-    if (['generate', 'save', 'ai', 'analyze'].includes(action) && row.stage === 'approved') throw new NutritionError('Reabra o plano para iniciar uma nova revisão.', 409);
+    if (['generate', 'save', 'ai', 'analyze', 'restore'].includes(action) && row.stage === 'approved') throw new NutritionError('Reabra o plano para iniciar uma nova revisão.', 409);
+    if (action === 'restore') {
+      if (!Number.isInteger(body.sourceRevision) || !['draft', 'approved'].includes(body.sourceStage)) throw new NutritionError('Escolha uma versão salva deste atendimento.');
+      const previous = (await db.query('SELECT plan_encrypted FROM nutrition_plan_versions WHERE request_id=$1 AND revision=$2 AND stage=$3', [row.id, body.sourceRevision, body.sourceStage])).rows[0];
+      if (!previous) throw new NutritionError('Versão não encontrada neste atendimento.', 404);
+      return json(await savePlan(db, row, unseal(previous.plan_encrypted, env), env, body.revision, 'plan_restored'));
+    }
     if (action === 'generate') {
       let candidate;
       if (isId(body.templateId)) {
         const saved = (await db.query('SELECT plan_encrypted FROM nutrition_templates WHERE id=$1', [body.templateId])).rows[0];
         if (!saved) throw new NutritionError('Modelo não encontrado.', 404);
         candidate = { ...unseal(saved.plan_encrypted, env), review: {}, clinicalNotes: '' };
-      } else candidate = generatePlan(intake, body.templateId, Number.isInteger(body.variation) ? Math.abs(body.variation % 2) : 0);
+      } else candidate = generatePlan(intake, body.templateId, Number.isInteger(body.variation) ? Math.abs(body.variation % 97) : 0);
+      if (body.preserveAssessment === true && plan && candidate.templateId === plan.templateId) {
+        candidate.targets = structuredClone(plan.targets);
+        candidate.clinicalNotes = plan.clinicalNotes;
+        candidate.guidance = plan.guidance;
+      }
       return json(await savePlan(db, row, candidate, env, body.revision, 'plan_generated'));
     }
     if (action === 'save') return json(await savePlan(db, row, body.plan, env, body.revision, 'plan_saved'));
@@ -119,6 +133,8 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
         const updated = await client.query(`UPDATE nutrition_requests SET stage='approved', approved_at=now(), first_delivered_at=COALESCE(first_delivered_at,now()), approved_by=$1, plan_encrypted=$2, updated_at=now()
           WHERE id=$3 AND revision=$4 AND stage='draft' RETURNING id`, [env.RECIPES_ADMIN_USERNAME, seal({ ...plan, review: { ids: alerts.map(alert => alert.id), at: new Date().toISOString() } }, env), row.id, body.revision]);
         if (!updated.rowCount) throw new NutritionError('O plano mudou ou já foi aprovado. Recarregue o atendimento.', 409);
+        await archivePlan(client, row, 'plan_saved');
+        await archivePlan(client, { ...row, stage: 'approved', plan_encrypted: seal({ ...plan, review: { ids: alerts.map(alert => alert.id), at: new Date().toISOString() } }, env) }, 'plan_approved');
         await event(client, row.id, 'plan_approved');
       });
       return json({ ok: true });
@@ -128,6 +144,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
       await transaction(db, async client => {
         const updated = await client.query(`UPDATE nutrition_requests SET stage='draft', revision=revision+1, approved_at=NULL, approved_by=NULL, share_hash=NULL, updated_at=now() WHERE id=$1 AND revision=$2 AND stage='approved' RETURNING id`, [row.id, body.revision]);
         if (!updated.rowCount) throw new NutritionError('O plano mudou. Recarregue o atendimento.', 409);
+        await archivePlan(client, row, 'plan_approved');
         await event(client, row.id, 'plan_reopened');
       });
       return json({ ok: true });
@@ -141,7 +158,9 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
     }
     if (action === 'template') {
       if (!plan || typeof body.title !== 'string' || body.title.trim().length < 3 || body.title.length > 120 || !clinicalProfiles.some(profile => profile.id === body.profile)) throw new NutritionError('Informe nome e categoria para o modelo.');
-      const template = { ...plan, clinicalNotes: '', review: {}, title: 'Seu plano alimentar', targets: { ...plan.targets, energy: null, protein: null, carbs: null, fat: null, water: null, sodium: null, potassium: null, phosphorus: null } };
+      const template = { ...plan, templateId: `${body.profile}-pratica`, clinicalNotes: '', review: {}, title: 'Seu plano alimentar', targets: { ...plan.targets, energy: null, protein: null, carbs: null, fat: null, water: null, sodium: null, potassium: null, phosphorus: null } };
+      const templateErrors = validatePlan(template, intake);
+      if (templateErrors.length) throw new NutritionError(`Revise o modelo para a categoria escolhida: ${templateErrors[0]}`, 422);
       await db.query('INSERT INTO nutrition_templates (id,title,profile,plan_encrypted) VALUES ($1,$2,$3,$4)', [randomUUID(), body.title.trim(), body.profile, seal(template, env)]);
       await event(db, row.id, 'template_created'); return json({ ok: true });
     }

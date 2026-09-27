@@ -1,4 +1,4 @@
-import { activityLevels, allergies, conditions, foodById, foods, nutrients, planTemplates, symptoms } from '../data/nutrition.js';
+import { activityLevels, allergies, conditions, foodById, foods, mealModules, nutrients, planTemplates, symptoms } from '../data/nutrition.js';
 
 export const round = (value, digits = 1) => Math.round(value * 10 ** digits) / 10 ** digits;
 export const normalizeText = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -89,6 +89,48 @@ export function substituteFood(item, replacementId, basis = 'kcal') {
   return grams >= 1 && grams <= 1500 ? { foodId: replacementId, grams, alternatives: [] } : null;
 }
 
+// Keep the culinary role as well as the nutrient basis: oil is not a snack of
+// nuts, avocado is not interchangeable with a low-fat fruit, and a drink is not
+// a serving of beans. Equivalence still requires a professional's review.
+const exchangeFamilies = [
+  ['fruit', ['papaya', 'banana', 'silver-banana', 'apple', 'pear', 'melon', 'strawberry', 'orange', 'tangerine', 'kiwi', 'plum', 'guava', 'pineapple', 'mango', 'watermelon', 'grapes'], 'carbs', 250],
+  ['avocado', ['avocado'], 'kcal', 150],
+  ['cooked-vegetable', ['zucchini', 'broccoli', 'carrot', 'chayote', 'cauliflower', 'eggplant', 'beet'], 'kcal', 180],
+  ['raw-vegetable', ['lettuce', 'cucumber', 'kale', 'cabbage', 'arugula', 'tomato'], 'kcal', 150],
+  ['pumpkin', ['pumpkin'], 'carbs', 200],
+  ['starch', ['rice', 'brown-rice', 'couscous', 'polenta', 'potato', 'sweet-potato', 'cassava', 'arracacha'], 'carbs', 300],
+  ['bread', ['bread', 'french-bread'], 'carbs', 120],
+  ['oats', ['oats'], 'carbs', 80],
+  ['meat', ['chicken', 'grilled-chicken', 'white-fish', 'salmon', 'beef', 'ground-beef'], 'protein', 200],
+  ['egg', ['egg', 'egg-white'], 'protein', 200],
+  ['yogurt', ['yogurt', 'skim-yogurt'], 'protein', 250],
+  ['soy-drink', ['soy-milk'], 'protein', 300],
+  ['legume', ['lentils', 'beans', 'black-beans', 'cowpea'], 'protein', 300],
+  ['nuts', ['walnut', 'brazil-nut'], 'kcal', 30],
+  ['oil', ['olive-oil'], 'kcal', 25],
+];
+const exchangeFamily = foodId => exchangeFamilies.find(([, ids]) => ids.includes(foodId));
+export const foodExchangeRole = foodId => exchangeFamily(foodId)?.[0] || null;
+export function canSubstituteFood(item, replacementId, basis = 'kcal') {
+  const family = exchangeFamily(item?.foodId);
+  if (!family || !family[1].includes(replacementId) || replacementId === item.foodId) return false;
+  const replacement = substituteFood(item, replacementId, basis);
+  return Boolean(replacement && replacement.grams <= family[3]);
+}
+
+export function suggestSubstitutions(item, intake = {}, { basis, excludeFoodIds = [], limit = 3 } = {}) {
+  const family = exchangeFamily(item?.foodId);
+  if (!family) return [];
+  const [, ids, defaultBasis, maxGrams] = family;
+  const result = [];
+  for (const id of ids) {
+    if (id === item.foodId || excludeFoodIds.includes(id) || !foodAllowed(foodById[id], intake)) continue;
+    const replacement = substituteFood(item, id, basis || defaultBasis);
+    if (replacement && replacement.grams <= maxGrams) result.push(replacement);
+  }
+  return result.sort((a, b) => Math.abs(Math.log(a.grams / item.grams)) - Math.abs(Math.log(b.grams / item.grams))).slice(0, Math.max(0, Math.min(3, limit)));
+}
+
 export function scalePlanEnergy(plan, energy) {
   if (!Number.isFinite(energy) || energy < 500 || energy > 6000) throw new Error('Defina uma meta energética entre 500 e 6.000 kcal para ajustar as porções.');
   const next = structuredClone(plan);
@@ -106,50 +148,99 @@ export function scalePlanEnergy(plan, energy) {
   return next;
 }
 
-const patterns = [
-  [['Café da manhã', '07:30', ['bread', 50], ['egg', 50], ['papaya', 150]], ['Lanche da manhã', '10:00', ['banana', 80], ['walnut', 10]], ['Almoço', '12:30', ['brown-rice', 120], ['beans', 80], ['chicken', 100], ['broccoli', 80], ['olive-oil', 8]], ['Lanche da tarde', '16:00', ['yogurt', 170], ['oats', 20], ['strawberry', 80]], ['Jantar', '19:30', ['potato', 150], ['white-fish', 100], ['carrot', 80], ['olive-oil', 8]]],
-  [['Café da manhã', '07:30', ['couscous', 100], ['egg', 50], ['melon', 100]], ['Lanche da manhã', '10:00', ['apple', 130], ['brazil-nut', 10]], ['Almoço', '12:30', ['rice', 120], ['lentils', 100], ['beef', 90], ['zucchini', 100], ['olive-oil', 8]], ['Lanche da tarde', '16:00', ['skim-yogurt', 170], ['mango', 100]], ['Jantar', '19:30', ['sweet-potato', 150], ['grilled-chicken', 100], ['pumpkin', 100], ['olive-oil', 8]]],
-  [['Café da manhã', '07:30', ['couscous', 70], ['egg', 50]], ['Lanche da manhã', '10:00', ['papaya', 120], ['yogurt', 100]], ['Almoço', '12:30', ['rice', 90], ['chicken', 90], ['carrot', 60], ['olive-oil', 5]], ['Lanche da tarde', '15:30', ['banana', 65], ['oats', 15]], ['Jantar', '18:30', ['potato', 100], ['white-fish', 90], ['zucchini', 70], ['olive-oil', 5]], ['Ceia', '21:00', ['yogurt', 100], ['pear', 80]]],
-];
-
 export function recommendedTemplate(intake = {}) {
   const profile = ['renal', 'oncology', 'glp1', 'celiac', 'diabetes', 'hypertension', 'cardiovascular', 'lactose', 'ibs', 'hpylori', 'gastric'].find(id => intake.conditions?.includes(id)) || 'balanced';
-  return `${profile}-${intake.symptoms?.includes('early-satiety') || profile === 'glp1' ? 'fracionada' : 'pratica'}`;
+  return `${profile}-${intake.symptoms?.some(id => ['early-satiety', 'nausea'].includes(id)) || profile === 'glp1' ? 'fracionada' : 'pratica'}`;
 }
 
 export function generatePlan(intake, templateId = recommendedTemplate(intake), variation = 0) {
   const template = planTemplates.find(item => item.id === templateId);
   if (!template) throw new Error('Selecione uma base válida.');
   const profileIntake = { ...intake, conditions: [...new Set([...(intake.conditions || []), template.profile])] };
-  const allowed = foods.filter(food => foodAllowed(food, profileIntake));
+  const divided = template.pattern === 2;
+  const seed = Number.isInteger(variation) ? Math.abs(variation % 97) : 0;
+  const preferredTags = {
+    balanced: [], diabetes: ['wholegrain'], cardiovascular: ['wholegrain', 'fish', 'plant'],
+    hypertension: ['wholegrain', 'plant'], renal: [], oncology: ['soft', 'cooked'],
+    ibs: ['cooked'], gastric: ['soft', 'cooked'], hpylori: ['soft', 'cooked'],
+    lactose: ['plant'], celiac: ['cooked'], glp1: ['soft', 'cooked'],
+  }[template.profile] || [];
+  const slots = [
+    ['breakfast', 'Café da manhã', '07:30'], ['snack', 'Lanche da manhã', '10:00'],
+    ['lunch', 'Almoço', '12:30'], ['snack', 'Lanche da tarde', divided ? '15:30' : '16:00'],
+    ['dinner', 'Jantar', divided ? '18:30' : '19:30'],
+    ...(divided ? [['supper', 'Ceia', '21:00']] : []),
+  ];
+  const pools = Object.fromEntries([...new Set(slots.map(([type]) => type))].map(type => [type,
+    mealModules.filter(module => module.type === type && module.items.every(([id]) => foodAllowed(foodById[id], profileIntake)))
+      .map((module, index) => ({ module, index, score: module.tags.filter(tag => preferredTags.includes(tag)).length * 3 + (template.pattern === 0 && module.tags.includes('practical') ? 1 : 0) }))
+      .sort((a, b) => b.score - a.score || a.index - b.index).map(entry => entry.module),
+  ]));
+  const usedModules = new Map();
+  const selectModule = (type, index, slotIndex) => {
+    const pool = pools[type];
+    if (!pool.length) return null;
+    // A practical week reuses a compact set of preparations; the varied week
+    // deliberately opens the repertoire. Both still rotate compatible produce.
+    const eligible = pool.slice(0, template.pattern !== 1 ? 4 : Math.max(7, pool.filter(module => module.tags.some(tag => preferredTags.includes(tag))).length));
+    const offset = seed + (template.pattern === 1 ? 2 : 0);
+    const start = (index + offset + (slotIndex === 3 ? 3 : 0)) % eligible.length;
+    const rotated = eligible.slice(start).concat(eligible.slice(0, start));
+    const result = rotated.reduce((best, module) => (usedModules.get(module.id) || 0) < (usedModules.get(best.id) || 0) ? module : best);
+    usedModules.set(result.id, (usedModules.get(result.id) || 0) + 1);
+    return result;
+  };
+  const prepareItems = (module, dayIndex, slotIndex) => {
+    if (!module) return [];
+    const ratio = divided ? (['lunch', 'dinner'].includes(module.type) ? .8 : module.type === 'breakfast' ? .85 : 1) : 1;
+    const items = module.items.map(([foodId, grams]) => ({ foodId, grams: Math.round(grams * ratio), alternatives: [] }));
+    // Rotate fruit and vegetable choices within the same preparation family.
+    // This is independent of sex/body type; no clinical target is inferred.
+    if (dayIndex + seed > 0) for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+      const item = items[itemIndex]; const family = exchangeFamily(item.foodId);
+      if (!['fruit', 'cooked-vegetable', 'raw-vegetable'].includes(family?.[0])) continue;
+      const basket = template.pattern !== 1 ? {
+        fruit: ['papaya', 'banana', 'apple', 'orange'],
+        'cooked-vegetable': ['broccoli', 'carrot', 'zucchini'],
+        'raw-vegetable': ['lettuce', 'tomato', 'cucumber'],
+      }[family[0]] : family[1];
+      const excluded = [...items.map(entry => entry.foodId), ...family[1].filter(id => !basket.includes(id))];
+      const choices = suggestSubstitutions(item, profileIntake, { excludeFoodIds: excluded });
+      if (choices.length) items[itemIndex] = choices[(dayIndex + seed + slotIndex + itemIndex) % choices.length];
+    }
+    for (const item of items) item.alternatives = suggestSubstitutions(item, profileIntake, { excludeFoodIds: items.map(entry => entry.foodId), limit: 2 }).map(({ foodId, grams }) => ({ foodId, grams }));
+    return items;
+  };
   const days = Array.from({ length: 7 }, (_, index) => ({
     label: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'][index],
-    meals: patterns[template.pattern === 2 ? 2 : (index + template.pattern + variation) % 2].map(([name, time, ...items]) => ({
-      name, time, note: '', items: items.flatMap(([foodId, grams]) => {
-        if (foodAllowed(foodById[foodId], profileIntake)) {
-          // Rotate everyday foods, retaining the chosen restriction filters and nutrient basis.
-          const rotation = foodById[foodId].group === 'Frutas' ? ['papaya','banana','apple','pear','melon','strawberry','orange'] :
-            ['chicken','grilled-chicken','white-fish','beef'].includes(foodId) ? ['chicken','white-fish','beef','grilled-chicken'] : null;
-          const choices = rotation?.filter(id => foodAllowed(foodById[id], profileIntake));
-          if (index > 1 && choices?.length) {
-            const replacement = substituteFood({ foodId, grams }, choices[(index + variation) % choices.length], foodById[foodId].group === 'Proteínas' ? 'protein' : 'kcal');
-            if (replacement) return [replacement];
-          }
-          return [{ foodId, grams, alternatives: [] }];
-        }
-        const original = foodById[foodId];
-        const replacement = allowed.find(food => food.group === original.group) ||
-          (['Proteínas', 'Laticínios'].includes(original.group) ? allowed.find(food => food.group === 'Leguminosas' && food.id !== 'soy-milk') : null);
-        return replacement ? [{ foodId: replacement.id, grams, alternatives: [] }] : [];
-      }),
-    })),
+    meals: slots.map(([type, name, time], slotIndex) => {
+      const module = selectModule(type, index, slotIndex);
+      // With unusually broad exclusions a slot stays empty for the dietitian;
+      // validation prevents approval, without inventing an incompatible meal.
+      return { name, time, note: module?.note || '', items: prepareItems(module, index, slotIndex) };
+    }),
   }));
   return { title: 'Seu plano alimentar', templateId, days, targets: { energy: null, protein: null, carbs: null, fat: null, water: null, sodium: null, potassium: null, phosphorus: null },
     guidance: 'Siga as porções e os preparos combinados em atendimento. Conte como tem sido sua rotina para ajustarmos o plano juntos.',
-    clinicalNotes: '', review: {}, version: 1 };
+    clinicalNotes: '', review: {}, version: 1,
+  };
+}
+
+export function assessPlan(plan) {
+  const totalsByDay = (plan?.days || []).map(dayTotals);
+  const signatures = (plan?.days || []).map(day => JSON.stringify(day.meals.map(meal => meal.items.map(({ foodId, grams }) => [foodId, grams]))));
+  const meals = (plan?.days || []).flatMap(day => day.meals);
+  return {
+    uniqueFoods: new Set(meals.flatMap(meal => meal.items.map(item => item.foodId))).size,
+    uniqueMeals: new Set(meals.map(meal => meal.items.map(item => item.foodId).sort().join('|'))).size,
+    repeatedDays: signatures.map((signature, index) => signatures.indexOf(signature) === index ? null : index).filter(index => index !== null),
+    totalsByDay,
+  };
 }
 
 export function clinicalAlerts(intake = {}, plan) {
+  const templateProfile = planTemplates.find(template => template.id === plan?.templateId)?.profile;
+  intake = { ...intake, conditions: [...new Set([...(intake.conditions || []), ...(templateProfile ? [templateProfile] : [])])] };
   const alerts = [{ id: 'individual', text: 'Conferir anamnese, adequação energética, porções, preparo e preferências antes da entrega.' }];
   if (intake.symptoms?.some(id => ['persistent-vomiting', 'severe-pain', 'dehydration', 'swallowing'].includes(id))) alerts.push({ id: 'symptoms', text: 'Sinais que exigem avaliação da equipe de saúde: revisar relato e encaminhamento antes da prescrição.' });
   if (intake.pregnant) alerts.push({ id: 'pregnant', text: 'Gestação/amamentação: estimativas gerais não contemplam necessidades específicas. Definir metas individualizadas.' });
@@ -157,11 +248,17 @@ export function clinicalAlerts(intake = {}, plan) {
   if (intake.conditions?.includes('oncology')) alerts.push({ id: 'oncology', text: 'Avaliar tratamento oncológico, perda de peso, ingestão, textura e segurança alimentar; sem déficit automático.' });
   if (intake.conditions?.includes('glp1')) alerts.push({ id: 'glp1', text: 'Conferir prescrição de GLP-1, saciedade precoce, tolerância, ingestão e acompanhamento médico.' });
   if (intake.conditions?.includes('diabetes')) alerts.push({ id: 'diabetes', text: 'Conferir distribuição de carboidratos, medicamentos, hipoglicemias e compatibilidade com a rotina.' });
+  if (intake.conditions?.some(id => ['cardiovascular', 'hypertension'].includes(id))) alerts.push({ id: 'cardiovascular', text: 'Revisar qualidade das gorduras, fibras, pressão arterial e medicamentos. O sódio da tabela não inclui sal acrescentado; não recomendar sal de potássio automaticamente.' });
+  if (intake.conditions?.includes('ibs')) alerts.push({ id: 'ibs', text: 'Conferir padrão intestinal, fibras e tolerância. O modelo não é low-FODMAP; restrições e reintroduções precisam de avaliação individual.' });
+  if (intake.conditions?.some(id => ['gastric', 'hpylori'].includes(id)) || intake.symptoms?.includes('reflux')) alerts.push({ id: 'gastric', text: 'Revisar gatilhos relatados, volume e horários. Em refluxo noturno, conferir intervalo entre a última refeição e deitar; a ceia sugerida não conhece o horário de sono.' });
+  if (intake.conditions?.includes('lactose')) alerts.push({ id: 'lactose', text: 'Conferir tolerância, rótulos e fontes de cálcio/proteína após as trocas. Bebida de soja não equivale nutricionalmente ao leite, e zero lactose não significa ausência de proteína do leite.' });
   if (intake.conditions?.includes('celiac')) alerts.push({ id: 'celiac', text: 'Verificar rótulos, certificação e contaminação cruzada; a seleção de ingredientes não garante preparo sem glúten.' });
   if (intake.conditions?.includes('hpylori')) alerts.push({ id: 'hpylori', text: 'Confirmar acompanhamento médico. Nenhum alimento ou plano erradica H. pylori.' });
   if (intake.allergies?.length || intake.allergyNotes || intake.dislikes) alerts.push({ id: 'restrictions', text: 'Revisar também as restrições escritas em texto livre e rótulos: o filtro automático usa apenas os alimentos e alérgenos selecionados.' });
   if (plan?.targets?.water && intake.conditions?.some(id => ['renal', 'cardiovascular'].includes(id))) alerts.push({ id: 'fluid', text: 'Confirmar meta hídrica individual e eventual restrição de líquidos com a equipe.' });
   if (plan?.targets?.energy && plan.days.some(day => Math.abs(dayTotals(day).kcal - plan.targets.energy) / plan.targets.energy > .15)) alerts.push({ id: 'energy', text: 'Há dias com energia mais de 15% distante da meta. Ajustar porções ou justificar a diferença na avaliação.' });
+  if (plan?.targets?.protein && plan.days.some(day => Math.abs(dayTotals(day).protein - plan.targets.protein) / plan.targets.protein > .2)) alerts.push({ id: 'protein', text: 'Há dias com proteína mais de 20% distante da meta que você definiu. Conferir distribuição, porções e substituições antes de entregar.' });
+  if (intake.diet === 'vegan' || intake.diet === 'vegetarian') alerts.push({ id: 'plant-based', text: 'Conferir adequação de proteínas, vitamina B12, ferro e cálcio no padrão alimentar escolhido. A seleção automática não prescreve suplementos nem garante adequação de micronutrientes.' });
   if (plan?.targets && ['sodium', 'potassium', 'phosphorus'].some(key => plan.targets[key])) alerts.push({ id: 'minerals', text: 'Conferir metas de minerais com rótulos, exames e sal acrescentado. Totais com dados ausentes são parciais.' });
   return alerts;
 }

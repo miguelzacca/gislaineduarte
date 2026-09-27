@@ -143,8 +143,13 @@ def main():
                            vegan=not animal, vegetarian=not animal or group == 'Laticínios' or food_id in ('egg', 'egg-white'),
                            image=f'/images/foods/{food_id}.jpg', **row))
     destination = Path('src/data/nutrition-foods.json')
+    # Nutrient imports must retain the approved photography and its attribution.
+    existing_photos = {food['id']: food.get('photo') for food in json.loads(destination.read_text(encoding='utf8')).get('foods', [])} if destination.exists() else {}
+    for food in output:
+        if existing_photos.get(food['id']):
+            food['photo'] = existing_photos[food['id']]
     destination.write_text(json.dumps({'source': SOURCE, 'edition': 'TACO, NEPA/UNICAMP, 4ª edição, 2011',
-                                      'notes': 'Valores por 100 g da parte comestível. Traços (Tr) aproximados por zero. Medidas caseiras estimadas; priorize a pesagem. Ilustrações autorais, não representam a porção prescrita.', 'foods': output}, ensure_ascii=False, indent=2), encoding='utf8')
+                                      'notes': 'Valores por 100 g da parte comestível. Traços (Tr) aproximados por zero. Medidas caseiras estimadas; priorize a pesagem. Fotografias reais de referência: não representam a porção prescrita e podem mostrar o ingrediente antes do preparo. Créditos e licenças acompanham cada imagem.', 'foods': output}, ensure_ascii=False, indent=2), encoding='utf8')
     print(f'{len(output)} foods imported with source row and page.')
 
 

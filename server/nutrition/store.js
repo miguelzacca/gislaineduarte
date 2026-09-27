@@ -55,6 +55,12 @@ export async function getNutritionStore(env = process.env, injectedStore) {
         id uuid PRIMARY KEY, title text NOT NULL, profile text NOT NULL, plan_encrypted text NOT NULL,
         created_at timestamptz NOT NULL DEFAULT now()
       )`);
+      await client.query(`CREATE TABLE IF NOT EXISTS nutrition_plan_versions (
+        request_id uuid NOT NULL REFERENCES nutrition_requests(id) ON DELETE CASCADE,
+        revision integer NOT NULL, stage text NOT NULL, reason text NOT NULL,
+        plan_encrypted text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(),
+        PRIMARY KEY (request_id, revision, stage)
+      )`);
       await client.query('CREATE INDEX IF NOT EXISTS nutrition_requests_created_idx ON nutrition_requests(created_at DESC)');
       await client.query('CREATE INDEX IF NOT EXISTS nutrition_requests_ip_idx ON nutrition_requests(ip_hash, created_at)');
       await client.query('CREATE INDEX IF NOT EXISTS nutrition_events_request_idx ON nutrition_events(request_id, created_at DESC)');
@@ -68,4 +74,11 @@ export async function getNutritionStore(env = process.env, injectedStore) {
 
 export async function event(db, id, type, actor = 'professional') {
   await db.query('INSERT INTO nutrition_events (request_id, type, actor) VALUES ($1, $2, $3)', [id, type, actor]);
+}
+
+export async function archivePlan(db, row, reason) {
+  if (!row.plan_encrypted || !row.revision) return;
+  await db.query(`INSERT INTO nutrition_plan_versions (request_id,revision,stage,reason,plan_encrypted)
+    VALUES ($1,$2,$3,$4,$5) ON CONFLICT (request_id,revision,stage) DO NOTHING`,
+  [row.id, row.revision, row.stage, reason, row.plan_encrypted]);
 }

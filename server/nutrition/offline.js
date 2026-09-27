@@ -1,0 +1,187 @@
+// This function is embedded verbatim in the self-contained patient HTML.
+// It deliberately has no imports, network calls, or access to clinical records.
+export function initializeOfflinePlan(config) {
+  'use strict';
+  const { key, days, foods } = config;
+  const byId = id => document.getElementById(id);
+  const each = (selector, visit) => document.querySelectorAll(selector).forEach(visit);
+  const number = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
+  const object = value => value && !Array.isArray(value) && typeof value === 'object' ? value : {};
+  const cleanState = raw => {
+    const input = object(raw);
+    return { day: Number.isInteger(input.day) && input.day >= 0 && input.day < days.length ? input.day : 0,
+      checks: object(input.checks), shopping: object(input.shopping), choices: object(input.choices),
+      notes: String(input.notes || '').slice(0, 6000), water: object(input.water), updatedAt: Number(input.updatedAt) || 0 };
+  };
+  let embedded = {};
+  let stored = {};
+  let persistent = true;
+  try { embedded = JSON.parse(document.body.dataset.progress || '{}'); } catch { /* New file. */ }
+  try { stored = JSON.parse(localStorage.getItem(key) || '{}'); } catch { persistent = false; }
+  let state = cleanState(Number(embedded?.updatedAt || 0) > Number(stored?.updatedAt || 0) ? embedded : stored);
+  const date = byId('checkdate');
+  const now = new Date();
+  date.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  const save = () => {
+    state.updatedAt = Date.now();
+    try { localStorage.setItem(key, JSON.stringify(state)); } catch { persistent = false; }
+    byId('storage').textContent = persistent
+      ? 'Salvo neste navegador. Para levar suas marcações a outro aparelho, use “Salvar cópia com meu progresso”.'
+      : 'Este navegador não salva marcações ao fechar. Use “Salvar cópia com meu progresso” para guardar o que fez.';
+  };
+  const choiceKey = (d, m, i) => `${d}-${m}-${i}`;
+  const selected = (item, itemKey) => {
+    const value = Number(state.choices[itemKey]);
+    return item.options[Number.isInteger(value) && value >= 0 && value < item.options.length ? value : 0];
+  };
+  const mealKey = element => date.value + '-' + element.dataset.meal;
+  const progress = () => {
+    const boxes = [...document.querySelectorAll('#day-' + state.day + ' [data-meal]')];
+    const done = boxes.filter(element => element.checked).length;
+    byId('progress').style.width = (boxes.length ? done / boxes.length * 100 : 0) + '%';
+    byId('progress-label').textContent = done + ' de ' + boxes.length + ' refeições marcadas · ' + days[state.day].label;
+    const water = Math.min(10000, Math.max(0, Number(state.water[date.value]) || 0));
+    byId('water-value').textContent = number(water) + ' ml';
+    const target = Number(config.waterTarget);
+    const meter = byId('water-progress');
+    if (meter && target > 0) { meter.value = water; meter.max = target; }
+    byId('water-note').textContent = target > 0 && water > target ? 'Registro acima da meta combinada. Siga a orientação individual recebida; o contador não recomenda aumentar líquidos.' : '';
+  };
+  const refresh = () => { each('[data-meal]', element => { element.checked = state.checks[mealKey(element)] === true; }); progress(); };
+  const selectDay = day => {
+    state.day = day;
+    each('.day', (element, index) => { element.hidden = index !== day; });
+    each('[data-day]', (element, index) => { element.setAttribute('aria-pressed', String(index === day)); });
+    byId('previous-day').disabled = day === 0;
+    byId('next-day').disabled = day === days.length - 1;
+    byId('day-position').textContent = `Dia ${day + 1} de ${days.length}`;
+    refresh(); save();
+  };
+  const shoppingRows = () => {
+    const totals = new Map();
+    const scope = byId('shopping-scope').value;
+    days.forEach((day, d) => {
+      if (scope !== 'week' && Number(scope) !== d) return;
+      day.meals.forEach((meal, m) => meal.items.forEach((item, i) => {
+        const option = selected(item, choiceKey(d, m, i));
+        totals.set(option.foodId, (totals.get(option.foodId) || 0) + option.grams);
+      }));
+    });
+    return [...totals].map(([foodId, grams]) => ({ foodId, grams, ...foods[foodId] }))
+      .sort((a, b) => a.group.localeCompare(b.group, 'pt-BR') || a.name.localeCompare(b.name, 'pt-BR'));
+  };
+  const renderShopping = () => {
+    const list = byId('shopping-list');
+    list.replaceChildren();
+    let group = '';
+    shoppingRows().forEach(item => {
+      if (group !== item.group) {
+        group = item.group;
+        const heading = document.createElement('li'); heading.className = 'shopping-group'; heading.textContent = group; list.append(heading);
+      }
+      const row = document.createElement('li');
+      const label = document.createElement('label');
+      const check = document.createElement('input'); check.type = 'checkbox'; check.dataset.shop = item.foodId; check.checked = state.shopping[item.foodId] === true;
+      check.addEventListener('change', () => { state.shopping[item.foodId] = check.checked; save(); });
+      const name = document.createElement('span'); name.textContent = item.name;
+      const quantity = document.createElement('small'); quantity.textContent = number(item.grams) + ' g';
+      name.append(quantity); label.append(check, name); row.append(label); list.append(row);
+    });
+  };
+  const renderChoices = () => {
+    days.forEach((day, d) => {
+      const total = { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+      day.meals.forEach((meal, m) => {
+        let mealEnergy = 0;
+        meal.items.forEach((item, i) => {
+          const itemKey = choiceKey(d, m, i);
+          const option = selected(item, itemKey);
+          const food = foods[option.foodId];
+          const card = byId('food-' + itemKey);
+          card.querySelector('use').setAttribute('href', '#photo-' + option.foodId);
+          card.querySelector('svg').setAttribute('aria-label', 'Fotografia de ' + food.name);
+          card.querySelector('[data-food-name]').textContent = food.name;
+          card.querySelector('[data-food-grams]').textContent = number(option.grams) + ' g';
+          card.querySelector('[data-food-portion]').textContent = '≈ ' + number(option.grams / food.portionGrams) + ' × ' + food.portionLabel;
+          const values = Object.fromEntries(Object.keys(total).map(nutrient => [nutrient, (Number(food[nutrient]) || 0) * option.grams / 100]));
+          card.querySelector('[data-food-nutrients]').textContent = number(values.kcal) + ' kcal · P ' + number(values.protein) + ' g · C ' + number(values.carbs) + ' g · G ' + number(values.fat) + ' g';
+          for (const nutrient of Object.keys(total)) total[nutrient] += values[nutrient];
+          mealEnergy += values.kcal;
+          card.querySelectorAll('[data-choice]').forEach(radio => { radio.checked = Number(radio.value) === item.options.indexOf(option); });
+          card.classList.toggle('has-swap', item.options.indexOf(option) !== 0);
+        });
+        byId('meal-energy-' + d + '-' + m).textContent = number(mealEnergy) + ' kcal';
+      });
+      for (const [nutrient, value] of Object.entries(total)) byId('total-' + d + '-' + nutrient).textContent = number(value) + (nutrient === 'kcal' ? '' : ' g');
+    });
+    renderShopping();
+  };
+  // Build repeated choice controls from the compact approved data. Photographs
+  // remain embedded once; even very large plans stay below the download limit.
+  each('[data-choices]', container => {
+    const itemKey = container.dataset.choices;
+    const [d, m, i] = itemKey.split('-').map(Number);
+    const fieldset = document.createElement('fieldset'); fieldset.className = 'food-options';
+    const legend = document.createElement('legend'); legend.textContent = 'Escolha uma opção.'; fieldset.append(legend);
+    days[d].meals[m].items[i].options.forEach((option, index) => {
+      const label = document.createElement('label');
+      const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'choice-' + itemKey; radio.value = String(index); radio.dataset.choice = itemKey;
+      const photo = byId('food-' + itemKey).querySelector('svg').cloneNode(true); photo.setAttribute('class', 'swap-image'); photo.setAttribute('aria-hidden', 'true'); photo.removeAttribute('aria-label'); photo.removeAttribute('role'); photo.querySelector('use').setAttribute('href', '#photo-' + option.foodId);
+      const name = document.createElement('span'); name.textContent = foods[option.foodId].name;
+      const quantity = document.createElement('small'); quantity.textContent = number(option.grams) + ' g' + (index === 0 ? ' · principal' : ''); name.append(quantity);
+      label.append(radio, photo, name); fieldset.append(label);
+    });
+    container.replaceChildren(fieldset);
+  });
+  each('[data-day]', element => element.addEventListener('click', () => selectDay(Number(element.dataset.day))));
+  each('[data-meal]', element => element.addEventListener('change', () => { state.checks[mealKey(element)] = element.checked; progress(); save(); }));
+  each('[data-choice]', element => element.addEventListener('change', () => {
+    state.choices[element.dataset.choice] = Number(element.value); renderChoices(); save();
+    byId('choice-status').textContent = 'Opção atualizada. Os totais do dia e a lista de compras já refletem a sua escolha.';
+  }));
+  date.addEventListener('change', () => { if (date.value) refresh(); });
+  byId('previous-day').addEventListener('click', () => selectDay(Math.max(0, state.day - 1)));
+  byId('next-day').addEventListener('click', () => selectDay(Math.min(days.length - 1, state.day + 1)));
+  byId('shopping-scope').addEventListener('change', renderShopping);
+  const notes = byId('notes'); notes.value = state.notes;
+  notes.addEventListener('input', () => { state.notes = notes.value; save(); });
+  byId('water-add').addEventListener('click', () => { state.water[date.value] = Math.min(10000, (Number(state.water[date.value]) || 0) + 200); progress(); save(); });
+  byId('water-subtract').addEventListener('click', () => { state.water[date.value] = Math.max(0, (Number(state.water[date.value]) || 0) - 200); progress(); save(); });
+  const download = (contents, type, filename) => {
+    const url = URL.createObjectURL(new Blob([contents], { type }));
+    const link = document.createElement('a'); link.href = url; link.download = filename; document.body.append(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+  byId('download-progress').addEventListener('click', () => {
+    save();
+    const copy = document.documentElement.cloneNode(true);
+    copy.querySelector('body').dataset.progress = JSON.stringify(state);
+    copy.querySelectorAll('.day').forEach(element => element.removeAttribute('hidden'));
+    const originalInputs = [...document.querySelectorAll('input')];
+    copy.querySelectorAll('input').forEach((element, index) => { element.toggleAttribute('checked', originalInputs[index].checked === true); });
+    copy.querySelector('#notes').textContent = state.notes;
+    copy.querySelectorAll('[data-choices]').forEach(element => element.replaceChildren());
+    copy.querySelector('#storage').textContent = 'Cópia com progresso salva. Abra em um navegador para continuar.';
+    download('<!doctype html>\n' + copy.outerHTML, 'text/html;charset=utf-8', 'meu-plano-com-progresso.html');
+    byId('backup-status').textContent = 'Cópia preparada com suas escolhas e anotações. Guarde em local privado; ela contém suas informações pessoais.';
+  });
+  byId('download-shopping').addEventListener('click', () => {
+    const scope = byId('shopping-scope');
+    let group = '';
+    const lines = ['MINHA LISTA DE COMPRAS', scope.options[scope.selectedIndex].textContent, ''];
+    shoppingRows().forEach(item => { if (group !== item.group) { group = item.group; lines.push('', group.toUpperCase()); } lines.push((state.shopping[item.foodId] ? '[x] ' : '[ ] ') + item.name + ' - ' + number(item.grams) + ' g'); });
+    lines.push('', 'Quantidades conforme o alimento descrito no plano, sem ajuste de rendimento. Incluem as trocas selecionadas.');
+    download(lines.join('\n'), 'text/plain;charset=utf-8', 'minha-lista-de-compras.txt');
+  });
+  byId('print').addEventListener('click', () => {
+    const details = [...document.querySelectorAll('details')];
+    const previous = details.map(element => element.open); details.forEach(element => { element.open = true; });
+    window.print(); details.forEach((element, index) => { element.open = previous[index]; });
+  });
+  byId('clear').addEventListener('click', () => {
+    if (!window.confirm('Apagar escolhas, marcações, compras e anotações deste plano neste navegador? Cópias já baixadas permanecem com seus dados.')) return;
+    state = cleanState({}); document.body.removeAttribute('data-progress'); notes.value = ''; renderChoices(); selectDay(0); save();
+    byId('backup-status').textContent = 'Marcações apagadas neste navegador. Para apagar outras cópias, remova os arquivos salvos nos seus dispositivos.';
+  });
+  renderChoices(); selectDay(state.day);
+}

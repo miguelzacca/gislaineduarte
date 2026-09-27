@@ -44,8 +44,57 @@ const variants = [
 ];
 export const planTemplates = clinicalProfiles.flatMap(profile => variants.map(variant => ({
   id: `${profile.id}-${variant.id}`, profile: profile.id, name: `${profile.name} · ${variant.name}`,
-  description: variant.description, pattern: variant.pattern, meals: variant.pattern === 2 ? 6 : 5,
+  description: `${variant.description} ${profile.focus}`, pattern: variant.pattern, meals: variant.pattern === 2 ? 6 : 5,
 })));
+
+// Culinary modules are draft assemblies, not disease prescriptions. All weights refer
+// to the preparation named in the TACO catalogue. Clinical goals stay unset.
+const module = (id, type, name, items, tags = [], note = '') => ({ id, type, name, items, tags, note });
+export const mealModules = [
+  module('breakfast-bread', 'breakfast', 'Pão, ovo e fruta', [['bread', 50], ['egg', 50], ['papaya', 150]], ['practical', 'wholegrain']),
+  module('breakfast-corn', 'breakfast', 'Cuscuz com ovo e melão', [['couscous', 100], ['egg', 50], ['melon', 120]], ['practical', 'cooked']),
+  module('breakfast-yogurt', 'breakfast', 'Bowl de iogurte, aveia e morango', [['yogurt', 170], ['oats', 30], ['strawberry', 100]], ['wholegrain', 'soft'], 'Misture a aveia ao iogurte e finalize com a fruta higienizada.'),
+  module('breakfast-sweet-potato', 'breakfast', 'Batata-doce, ovo e mamão', [['sweet-potato', 130], ['egg', 50], ['papaya', 120]], ['practical', 'cooked']),
+  module('breakfast-porridge', 'breakfast', 'Aveia com bebida de soja e banana', [['oats', 35], ['soy-milk', 200], ['banana', 80]], ['plant', 'wholegrain', 'soft'], 'Aqueça a aveia com a bebida de soja até a consistência combinada; acrescente a fruta.'),
+  module('breakfast-cassava', 'breakfast', 'Mandioca, abacate e fruta', [['cassava', 100], ['avocado', 70], ['pear', 100]], ['plant', 'cooked']),
+  module('breakfast-corn-lentils', 'breakfast', 'Cuscuz com lentilha e fruta', [['couscous', 90], ['lentils', 100], ['melon', 100]], ['plant', 'practical', 'cooked'], 'Sirva a lentilha cozida junto do cuscuz; a fruta pode ser consumida separadamente.'),
+  module('breakfast-sandwich', 'breakfast', 'Pão com frango e tomate', [['bread', 60], ['chicken', 60], ['tomato', 50], ['orange', 100]], ['wholegrain']),
+  module('breakfast-fruit-bowl', 'breakfast', 'Aveia, frutas e nozes', [['oats', 35], ['papaya', 160], ['walnut', 15]], ['plant', 'wholegrain'], 'Sirva a fruta cortada com a aveia e as nozes.'),
+  module('snack-banana-nuts', 'snack', 'Banana e nozes', [['banana', 80], ['walnut', 10]], ['plant', 'practical']),
+  module('snack-apple-yogurt', 'snack', 'Maçã e iogurte', [['apple', 130], ['yogurt', 120]], ['practical']),
+  module('snack-pear-nuts', 'snack', 'Pera e castanha-do-Brasil', [['pear', 120], ['brazil-nut', 10]], ['plant', 'practical']),
+  module('snack-papaya-yogurt', 'snack', 'Mamão com iogurte', [['papaya', 120], ['skim-yogurt', 150]], ['soft', 'practical']),
+  module('snack-soy-mango', 'snack', 'Bebida de soja e manga', [['soy-milk', 180], ['mango', 90]], ['plant', 'soft']),
+  module('snack-corn-egg', 'snack', 'Cuscuz com ovo', [['couscous', 70], ['egg', 50]], ['cooked', 'soft']),
+  module('snack-avocado-fruit', 'snack', 'Abacate e morangos', [['avocado', 70], ['strawberry', 120]], ['plant', 'soft']),
+  module('snack-lentil-toast', 'snack', 'Pão com lentilha', [['bread', 40], ['lentils', 80], ['tomato', 40]], ['plant', 'wholegrain'], 'Amasse a lentilha cozida e monte o pão com o tomate higienizado.'),
+  module('snack-root-fruit', 'snack', 'Batata-doce e tangerina', [['sweet-potato', 80], ['tangerine', 100]], ['plant', 'practical']),
+  module('snack-egg-fruit', 'snack', 'Ovo e fruta', [['egg', 50], ['melon', 150]], ['practical']),
+  module('lunch-classic', 'lunch', 'Arroz integral, feijão e frango', [['brown-rice', 120], ['beans', 80], ['chicken', 100], ['broccoli', 80], ['olive-oil', 8]], ['practical', 'wholegrain', 'cooked']),
+  module('lunch-fish', 'lunch', 'Arroz, lentilha e peixe', [['rice', 120], ['lentils', 90], ['white-fish', 120], ['zucchini', 100], ['olive-oil', 8]], ['fish', 'cooked']),
+  module('lunch-beef', 'lunch', 'Arroz, feijão preto e patinho', [['rice', 120], ['black-beans', 80], ['beef', 90], ['carrot', 90], ['olive-oil', 8]], ['practical', 'cooked']),
+  module('lunch-salmon', 'lunch', 'Batata com salmão e brócolis', [['potato', 180], ['salmon', 100], ['broccoli', 100], ['olive-oil', 5]], ['fish', 'cooked']),
+  module('lunch-chicken-roots', 'lunch', 'Mandioca com frango e abóbora', [['cassava', 120], ['grilled-chicken', 100], ['pumpkin', 100], ['lettuce', 40], ['olive-oil', 8]], ['practical']),
+  module('lunch-polenta', 'lunch', 'Polenta com carne e legumes', [['polenta', 160], ['ground-beef', 100], ['zucchini', 80], ['carrot', 70], ['olive-oil', 5]], ['soft', 'cooked'], 'Sirva a carne moída e os legumes cozidos sobre a polenta.'),
+  module('lunch-lentil-bowl', 'lunch', 'Arroz integral com lentilha e legumes', [['brown-rice', 120], ['lentils', 200], ['carrot', 80], ['broccoli', 80], ['olive-oil', 8]], ['plant', 'wholegrain', 'cooked']),
+  module('lunch-bean-bowl', 'lunch', 'Arroz com feijão-fradinho e abóbora', [['rice', 120], ['cowpea', 190], ['pumpkin', 100], ['cucumber', 60], ['olive-oil', 8]], ['plant', 'practical']),
+  module('lunch-black-beans', 'lunch', 'Arroz integral com feijão preto e legumes', [['brown-rice', 120], ['black-beans', 200], ['chayote', 100], ['beet', 60], ['olive-oil', 8]], ['plant', 'practical', 'wholegrain', 'cooked']),
+  module('dinner-fish-potato', 'dinner', 'Batata com peixe e cenoura', [['potato', 160], ['white-fish', 120], ['carrot', 90], ['olive-oil', 8]], ['fish', 'soft', 'cooked']),
+  module('dinner-chicken-sweet-potato', 'dinner', 'Batata-doce com frango e abobrinha', [['sweet-potato', 150], ['grilled-chicken', 100], ['zucchini', 100], ['olive-oil', 8]], ['practical', 'cooked']),
+  module('dinner-rice-beef', 'dinner', 'Arroz com patinho e berinjela', [['rice', 120], ['beef', 90], ['eggplant', 100], ['tomato', 60], ['olive-oil', 8]], ['practical']),
+  module('dinner-arracacha', 'dinner', 'Mandioquinha com frango e legumes', [['arracacha', 180], ['chicken', 100], ['zucchini', 80], ['carrot', 60], ['olive-oil', 8]], ['soft', 'cooked'], 'Sirva a mandioquinha amassada com o frango desfiado e os legumes cozidos.'),
+  module('dinner-salmon-rice', 'dinner', 'Arroz integral com salmão e couve-flor', [['brown-rice', 120], ['salmon', 100], ['cauliflower', 100], ['olive-oil', 5]], ['fish', 'wholegrain', 'cooked']),
+  module('dinner-eggs-corn', 'dinner', 'Cuscuz com ovos e legumes', [['couscous', 120], ['egg', 100], ['zucchini', 80], ['carrot', 80], ['olive-oil', 5]], ['practical', 'cooked']),
+  module('dinner-plant-lentils', 'dinner', 'Arroz com lentilha e abobrinha', [['rice', 120], ['lentils', 210], ['zucchini', 100], ['olive-oil', 8]], ['plant', 'soft', 'cooked']),
+  module('dinner-plant-beans', 'dinner', 'Arroz integral com feijão e legumes', [['brown-rice', 120], ['beans', 210], ['pumpkin', 100], ['carrot', 70], ['olive-oil', 8]], ['plant', 'practical', 'wholegrain', 'cooked']),
+  module('dinner-plant-cowpea', 'dinner', 'Cuscuz com feijão-fradinho e legumes', [['couscous', 120], ['cowpea', 200], ['zucchini', 80], ['beet', 60], ['olive-oil', 8]], ['plant', 'cooked']),
+  module('supper-yogurt', 'supper', 'Iogurte com pera', [['yogurt', 150], ['pear', 80]], ['soft', 'practical']),
+  module('supper-soy', 'supper', 'Bebida de soja com aveia', [['soy-milk', 180], ['oats', 20]], ['plant', 'wholegrain', 'soft']),
+  module('supper-papaya', 'supper', 'Mamão com nozes', [['papaya', 150], ['walnut', 15]], ['plant', 'practical']),
+  module('supper-banana', 'supper', 'Banana e iogurte', [['banana', 70], ['skim-yogurt', 120]], ['soft']),
+  module('supper-avocado', 'supper', 'Abacate e melão', [['avocado', 70], ['melon', 100]], ['plant', 'soft']),
+  module('supper-corn', 'supper', 'Cuscuz com lentilha', [['couscous', 60], ['lentils', 80]], ['plant', 'cooked']),
+];
 export const defaultOffer = {
   title: 'Seu plano, do seu jeito.', description: 'Plano alimentar personalizado com avaliação e acompanhamento de Gislaine Duarte.',
   priceCents: null, deliveryDays: null, followupDays: null, published: false,

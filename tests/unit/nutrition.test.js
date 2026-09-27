@@ -3,8 +3,8 @@ import test from 'node:test';
 import { readFile } from 'node:fs/promises';
 import { createHash, randomBytes } from 'node:crypto';
 import { load } from 'cheerio';
-import { foods, foodById, planTemplates } from '../../src/data/nutrition.js';
-import { calculateAnthropometry, clinicalAlerts, dayTotals, foodAllowed, generatePlan, intakeErrors, scalePlanEnergy, shoppingList, substituteFood, validatePlan } from '../../src/lib/nutrition.js';
+import { foods, foodById, mealModules, planTemplates } from '../../src/data/nutrition.js';
+import { assessPlan, calculateAnthropometry, canSubstituteFood, clinicalAlerts, dayTotals, foodAllowed, foodExchangeRole, generatePlan, intakeErrors, recommendedTemplate, scalePlanEnergy, shoppingList, substituteFood, suggestSubstitutions, validatePlan } from '../../src/lib/nutrition.js';
 import { seal, unseal } from '../../server/nutrition/store.js';
 import { analyzeWithNim, suggestWithNim } from '../../server/nutrition/ai.js';
 import { buildPlanHtml, buildPlanPdf } from '../../server/nutrition/export.js';
@@ -41,8 +41,56 @@ test('nutrition: all 36 bases and combinations of restrictions yield compatible 
     const plan = generatePlan(person, template.id);
     assert.deepEqual(validatePlan(plan, person), [], `${template.id}/${diet}`);
     assert.equal(plan.days.length, 7); assert.equal(plan.targets.energy, null);
-    for (const day of plan.days) for (const meal of day.meals) for (const item of meal.items) assert.equal(foodAllowed(foodById[item.foodId], person), true);
+    for (const day of plan.days) for (const meal of day.meals) for (const item of meal.items) {
+      assert.equal(foodAllowed(foodById[item.foodId], person), true);
+      for (const alternative of item.alternatives) assert.equal(foodAllowed(foodById[alternative.foodId], person), true);
+    }
+    assert.deepEqual(assessPlan(plan).repeatedDays, [], `${template.id}/${diet} should not repeat complete days`);
   }
+});
+test('nutrition: culinary library produces a practical shopping basket and genuinely different weekly assemblies', () => {
+  assert.equal(mealModules.length, 43);
+  assert.equal(new Set(mealModules.map(module => module.id)).size, mealModules.length);
+  for (const module of mealModules) for (const [id, grams] of module.items) {
+    assert.ok(foodById[id], `${module.id}: ${id}`); assert.ok(grams > 0 && grams <= 300);
+  }
+  const practical = generatePlan(intake, 'balanced-pratica');
+  const varied = generatePlan(intake, 'balanced-variada');
+  const divided = generatePlan(intake, 'balanced-fracionada');
+  const assessment = assessPlan(practical);
+  assert.ok(assessment.uniqueMeals >= 20);
+  assert.ok(assessment.uniqueFoods <= 35, 'A practical week should reuse a manageable set of ingredients');
+  assert.ok(assessPlan(varied).uniqueFoods > assessment.uniqueFoods);
+  assert.notDeepEqual(practical.days, varied.days);
+  assert.notDeepEqual(practical.days, generatePlan(intake, 'balanced-pratica', 1).days);
+  assert.equal(divided.days.every(day => day.meals.length === 6), true);
+  assert.equal(practical.days.every(day => day.meals.length === 5), true);
+  assert.equal(divided.targets.energy, null); assert.equal(divided.clinicalNotes, '');
+  assert.notDeepEqual(practical.days, generatePlan(intake, 'cardiovascular-pratica').days);
+  assert.equal(recommendedTemplate({ ...intake, conditions: ['oncology'], symptoms: ['nausea'] }), 'oncology-fracionada');
+});
+test('nutrition: automatic exchanges retain culinary role, preparation and nutrient equivalence', () => {
+  assert.equal(foodExchangeRole('avocado'), 'avocado');
+  assert.equal(canSubstituteFood({ foodId: 'olive-oil', grams: 8 }, 'walnut'), false);
+  assert.equal(canSubstituteFood({ foodId: 'papaya', grams: 100 }, 'avocado'), false);
+  assert.equal(canSubstituteFood({ foodId: 'soy-milk', grams: 200 }, 'beans'), false);
+  assert.equal(canSubstituteFood({ foodId: 'carrot', grams: 80 }, 'lettuce'), false);
+  assert.equal(canSubstituteFood({ foodId: 'chicken', grams: 400 }, 'white-fish', 'protein'), false);
+  const fruit = suggestSubstitutions({ foodId: 'papaya', grams: 150 }, { ...intake, excludedFoodIds: ['banana'] }, { limit: 3 });
+  assert.equal(fruit.length, 3);
+  for (const replacement of fruit) {
+    assert.notEqual(replacement.foodId, 'banana');
+    assert.ok(Math.abs(foodById[replacement.foodId].carbs * replacement.grams / 100 - foodById.papaya.carbs * 1.5) < .1);
+  }
+  const protein = suggestSubstitutions({ foodId: 'chicken', grams: 100 }, { ...intake, allergies: ['fish'] });
+  assert.equal(protein.some(item => foodById[item.foodId].allergens.includes('fish')), false);
+  for (const replacement of protein) assert.ok(Math.abs(foodById[replacement.foodId].protein * replacement.grams / 100 - 31.5) < .1);
+});
+test('nutrition: broad exclusions leave an invalid draft for review instead of inventing an incompatible replacement', () => {
+  const person = { ...intake, excludedFoodIds: foods.map(food => food.id) };
+  const plan = generatePlan(person);
+  assert.equal(plan.days.every(day => day.meals.every(meal => meal.items.length === 0)), true);
+  assert.ok(validatePlan(plan, person).some(error => error.includes('alimentos')));
 });
 test('nutrition: validation catches prohibited alternatives, invalid weights, meals and target injection', () => {
   const person = { ...intake, conditions: ['celiac'] }; const plan = generatePlan(person);
@@ -62,14 +110,25 @@ test('nutrition: substitution, daily scaling and shopping reflect actual weights
   const sub = substituteFood({ foodId: 'chicken', grams: 100 }, 'white-fish', 'protein');
   assert.ok(Math.abs(sub.grams * foodById['white-fish'].protein / 100 - 31.5) < .1);
   assert.equal(substituteFood({ foodId: 'chicken', grams: 100 }, 'olive-oil', 'protein'), null);
-  const shopping = shoppingList(plan); const egg = shopping.find(item => item.food.id === 'egg');
-  assert.equal(egg.grams, 350);
+  const shopping = shoppingList({ days: [{ meals: [{ items: [{ foodId: 'egg', grams: 50, alternatives: [{ foodId: 'egg-white', grams: 99 }] }, { foodId: 'rice', grams: 100 }] }] }, { meals: [{ items: [{ foodId: 'egg', grams: 100 }] }] }] });
+  assert.equal(shopping.find(item => item.food.id === 'egg').grams, 150);
+  assert.equal(shopping.find(item => item.food.id === 'rice').grams, 100);
+  assert.equal(shopping.some(item => item.food.id === 'egg-white'), false);
   assert.ok(dayTotals(plan.days[0]).missing.includes('sodium'));
 });
 test('nutrition: clinical review catches renal/oncology/GLP-1, severe symptoms and target discrepancies', () => {
   const plan = generatePlan(intake); plan.targets.energy = 3000; plan.targets.water = 2000;
   const ids = clinicalAlerts({ ...intake, conditions: ['renal', 'oncology', 'glp1'], symptoms: ['severe-pain'] }, plan).map(alert => alert.id);
   for (const id of ['individual', 'renal', 'oncology', 'glp1', 'fluid', 'symptoms', 'energy']) assert.ok(ids.includes(id));
+});
+test('nutrition: the selected template cannot bypass its own clinical review and defined protein target', () => {
+  const renal = generatePlan(intake, 'renal-pratica');
+  assert.ok(clinicalAlerts(intake, renal).some(alert => alert.id === 'renal'));
+  const gastric = generatePlan(intake, 'gastric-fracionada');
+  assert.ok(clinicalAlerts(intake, gastric).some(alert => alert.id === 'gastric' && alert.text.includes('ceia')));
+  const plant = generatePlan({ ...intake, diet: 'vegan' }); plant.targets.protein = 200;
+  const ids = clinicalAlerts({ ...intake, diet: 'vegan' }, plant).map(alert => alert.id);
+  assert.ok(ids.includes('plant-based')); assert.ok(ids.includes('protein'));
 });
 test('nutrition: health data encrypted with authenticated encryption, wrong key/tampering fails', () => {
   const env = { NUTRITION_DATA_KEY: randomBytes(32).toString('base64') };
@@ -90,7 +149,7 @@ test('nutrition: NIM minimizes patient data, honors consent and rejects unsafe/i
   assert.equal(sent.chat_template_kwargs.enable_thinking, false);
   await assert.rejects(suggestWithNim({ ...person, aiConsent: false }, plan, { env, fetcher }), /não autorizou/);
   await assert.rejects(suggestWithNim(person, plan, { env, fetcher: async () => new Response('limited', { status: 429 }) }), /limite/);
-  for (const foodId of ['hallucinated-food', 'chicken', 'papaya']) {
+  for (const foodId of ['hallucinated-food', 'chicken', 'papaya', 'avocado']) {
     await assert.rejects(suggestWithNim(person, plan, { env, fetcher: async () => Response.json({ choices: [{ message: { content: JSON.stringify({ swaps: [{ day: 0, meal: 0, item: 2, foodId }] }) } }] }) }), /descartada/);
   }
   await assert.rejects(analyzeWithNim(person, { env, fetcher: async () => Response.json({ choices: [{ message: { content: '{"summary":"ok","templateIds":["fake"],"questions":[],"actions":[]}' } }] }) }), /validação/);
