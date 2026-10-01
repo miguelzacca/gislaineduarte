@@ -49,8 +49,8 @@ test('journey restrictions: milk allergy, lactose intolerance, dislikes and expl
 });
 
 test('journey library: search combines objective, context and accent-independent words for base and custom models', () => {
-  assert.equal(searchPlanTemplates(planTemplates, { query: 'hipertrofia diabetes', goal: 'muscle', profile: 'diabetes' }).length, 3);
-  assert.equal(searchPlanTemplates(planTemplates, { query: 'GLP-1', goal: 'weight-management', profile: 'glp1' }).length, 3);
+  assert.equal(searchPlanTemplates(planTemplates, { query: 'hipertrofia diabetes', goal: 'muscle', profile: 'diabetes' }).length, 5);
+  assert.equal(searchPlanTemplates(planTemplates, { query: 'GLP-1', goal: 'weight-management', profile: 'glp1' }).length, 5);
   assert.equal(searchPlanTemplates(planTemplates, { goal: 'muscle', profile: 'renal' }).length, 0);
   assert.equal(searchPlanTemplates([{ id: 'custom', title: 'Rotina pós-consulta', profile: 'diabetes', goals: ['muscle'], tags: ['hipertrofia'] }], { query: 'pos consulta hipertrofia', goal: 'muscle' }).length, 1);
 });

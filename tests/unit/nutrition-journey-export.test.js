@@ -18,7 +18,8 @@ test('delivery summary and portion quantities retain calculation provenance with
   for (const secret of ['PRIVATE_RECORD', 'PRIVATE_MEDICATION', 'PRIVATE_PHOTO']) assert.ok(!html.includes(secret));
   assert.ok(sections.some(section => section.lines.some(line => line.includes('120 g/dia') && line.includes('peso (kg) × fator'))));
   assert.ok(html.includes(formatFoodPortion('egg', 50)));
-  assert.ok(html.includes('Diagrama proporcional à massa'));
+  assert.ok(html.includes('Montagem ilustrativa com fotografias reais'));
+  assert.ok(!html.includes('data-mass-chart'));
   assert.ok(html.includes('Mesma escala: 0 a'));
   const visual = mealVisualData([{ foodId: 'egg', grams: 100 }, { foodId: 'rice', grams: 200 }]);
   assert.equal(visual.grams, 300);

@@ -15,14 +15,13 @@ Abra `http://127.0.0.1:4321`. No PowerShell com scripts bloqueados, use `npm.cmd
 
 ```sh
 npm run check          # lint + build + auditoria HTML/SEO/links
-npm run test:unit      # configuração, progresso, continuidade e qualidade adaptativa
-npx playwright install chromium
-npm test               # E2E, axe, responsividade, hidratação e fallbacks
+npm run test:unit      # regras, APIs, autorização, persistência e fluxos isolados
 npm run preview        # revisar o build de produção
-node tests/run-lighthouse.mjs  # com preview ativo; relatório mobile/desktop
 ```
 
 O desenvolvimento usa a porta 4321; preview de produção e testes usam 4323. Isso evita auditar acidentalmente o bundle de desenvolvimento.
+
+Playwright, E2E e os scripts de inspeção de navegador são legados. Siga `AGENTS.md`: só execute Playwright mediante pedido explícito na solicitação atual. A publicação e o push também exigem autorização explícita para cada execução.
 
 ## Arquitetura
 
@@ -80,9 +79,11 @@ Celulares capazes mantêm 3D com DPR até 1,25; desktop até 1,5. Economia de da
 
 A identificação profissional confirmada é **Gislaine Muller Duarte · Nutricionista · CRN-2 nº 22562**, centralizada em `src/data/site.js` e usada no rodapé, Sobre, Contato, privacidade e JSON-LD. “Gislaine Duarte” continua como marca. CPF e data de nascimento não integram o projeto público. O link do CRN leva à consulta oficial, sem alegar certificação ou situação cadastral verificada pelo site.
 
-Antes do lançamento, a cliente precisa aprovar os textos finais. Duração dos ciclos (divergência 3/5 versus 3/6 meses), encontros, inclusões, suporte, modalidades, preços e localização continuam omitidos. Materiais e artigos permanecem fora da interface até haver arquivos, destinos e revisão profissional aprovados. Detalhes em [docs/content-audit.md](docs/content-audit.md).
+As referências fornecidas em 01/10/2026 configuram acompanhamentos de 3 meses (R$ 299/mês), 6 meses (R$ 239,90/mês) e dupla familiar (R$ 197/pessoa). A periodicidade da dupla não foi inferida: a apresentação orienta confirmar as condições. Títulos, valores, visibilidade e condições são editáveis no painel e persistidos com controle de revisão. Encontros, suporte e localização não especificados continuam sujeitos à confirmação no atendimento.
 
-Não há formulário cenográfico, coleta de dados de saúde, analytics ou cookies de publicidade. A compra das receitas usa a InfinitePay, com confirmação no servidor; o conteúdo e os downloads são protegidos por sessão ligada a um pagamento confirmado. A política de privacidade descreve o tratamento do e-mail, pedidos, sessões e links externos.
+O formulário de anamnese coleta informações autorizadas para o atendimento; o registro e os planos são criptografados no banco. Não há analytics ou cookies de publicidade. A compra das receitas usa a InfinitePay, com confirmação no servidor; o conteúdo e os downloads são protegidos por sessão ligada a um pagamento confirmado. Planos alimentares exigem revisão profissional antes da liberação. A política de privacidade descreve o tratamento do cadastro, informações de saúde, pedidos, sessões e links externos.
+
+As melhorias clínicas e editoriais de outubro estão descritas em [docs/nutrition-editorial-upgrade.md](docs/nutrition-editorial-upgrade.md).
 
 ## Verificação
 

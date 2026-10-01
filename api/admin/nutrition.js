@@ -10,9 +10,10 @@ import { commerceReady, followupStatus, NutritionError, readBody, readOffer, val
 import { archivePlan, event, getNutritionStore, seal, unseal } from '../../server/nutrition/store.js';
 import { analyzeWithNim, suggestWithNim } from '../../server/nutrition/ai.js';
 import { buildPlanHtml, buildPlanPdf } from '../../server/nutrition/export.js';
+import { readContentLibrary, readTemplates, saveContentLibrary, saveTemplate, templateDetail } from '../../server/nutrition/library.js';
 
 const json = (value, status = 200, headers = {}) => Response.json(value, { status, headers: productAccessHeaders(headers) });
-const isId = value => /^[a-f0-9-]{36}$/i.test(value || '');
+const isId = value => /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value || '');
 
 async function savePlan(db, row, plan, env, expectedRevision, type) {
   const intake = unseal(row.intake_encrypted, env);
@@ -20,7 +21,7 @@ async function savePlan(db, row, plan, env, expectedRevision, type) {
   if (errors.length) throw new NutritionError(errors.join(' '), 422);
   if (row.stage === 'approved') throw new NutritionError('Reabra o plano antes de editar a versão aprovada.', 409);
   // Only allow known fields; metadata from either AI or the browser is never trusted.
-  const clean = { title: plan.title, templateId: String(plan.templateId || ''), days: plan.days.map(day => ({ label: day.label, meals: day.meals.map(meal => ({ name: meal.name, time: meal.time, note: meal.note, items: meal.items.map(item => ({ foodId: item.foodId, grams: item.grams, alternatives: item.alternatives.map(alt => ({ foodId: alt.foodId, grams: alt.grams })) })) })) })), targets: plan.targets, guidance: plan.guidance, clinicalNotes: plan.clinicalNotes, assessment: buildAssessment(intake, plan, new Date().toISOString()), curatedModules: (plan.curatedModules || []).map(({ id, type, title, content, foodIds, allergens, requiresIngredientReview, reviewed }) => ({ id, type, title, content, foodIds: [...foodIds], allergens: [...(allergens || [])], requiresIngredientReview: requiresIngredientReview === true, reviewed: reviewed === true })), review: {}, version: 2 };
+  const clean = { title: plan.title, templateId: String(plan.templateId || ''), days: plan.days.map(day => ({ label: day.label, meals: day.meals.map(meal => ({ name: meal.name, time: meal.time, note: meal.note, items: meal.items.map(item => ({ foodId: item.foodId, grams: item.grams, alternatives: item.alternatives.map(alt => ({ foodId: alt.foodId, grams: alt.grams })) })) })) })), targets: plan.targets, guidance: plan.guidance, clinicalNotes: plan.clinicalNotes, assessment: buildAssessment(intake, plan, new Date().toISOString()), ...(plan.plateGuide ? { plateGuide: { protein: plan.plateGuide.protein, carbs: plan.plateGuide.carbs, vegetables: plan.plateGuide.vegetables } } : {}), curatedModules: (plan.curatedModules || []).map(({ id, type, title, content, image, foodIds, allergens, requiresIngredientReview, reviewed }) => ({ id, type, title, content, image: image || '', foodIds: [...foodIds], allergens: [...(allergens || [])], requiresIngredientReview: requiresIngredientReview === true, reviewed: reviewed === true })), review: {}, version: 2 };
   return transaction(db, async client => {
     const updated = await client.query(`UPDATE nutrition_requests SET plan_encrypted=$1, revision=revision+1, stage='draft', approved_at=NULL, approved_by=NULL, updated_at=now()
       WHERE id=$2 AND revision=$3 AND stage <> 'approved' RETURNING revision`, [seal(clean, env), row.id, expectedRevision]);
@@ -40,6 +41,12 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
   try {
     const db = store || await getNutritionStore(env);
     if (request.method === 'GET') {
+      if (action === 'library') return json(await readContentLibrary(db));
+      if (action === 'template-detail') {
+        const id = url.searchParams.get('templateId');
+        if (!id || id.length > 80 || !/^[a-z0-9-]+$/.test(id)) throw new NutritionError('Modelo inválido.');
+        return json(await templateDetail(db, id, env));
+      }
       if (action === 'list') {
         const page = Math.max(0, Math.min(10000, Number.parseInt(url.searchParams.get('page') || '0', 10) || 0));
         const result = await db.query(`SELECT id, intake_encrypted, payment_status, stage, amount_cents, revision, created_at, updated_at,
@@ -49,8 +56,8 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
           count(*) FILTER (WHERE payment_status='paid' AND stage<>'approved')::integer AS waiting,
           count(*) FILTER (WHERE stage='approved')::integer AS approved,
           COALESCE(sum(amount_cents) FILTER (WHERE payment_status='paid'),0)::bigint AS revenue FROM nutrition_requests`);
-        const templates = await db.query('SELECT id,title,profile,goals,tags FROM nutrition_templates ORDER BY created_at DESC LIMIT 100');
-        return json({ patients: result.rows.map(row => { const intake = unseal(row.intake_encrypted, env); return { id: row.id, name: intake.name, conditions: intake.conditions, payment: row.payment_status, stage: row.stage, amountCents: row.amount_cents, createdAt: row.created_at, revision: row.revision, checkins: row.checkins }; }), stats: stats.rows[0], offer: await readOffer(db), templates: templates.rows, page,
+        const templates = await readTemplates(db, env);
+        return json({ patients: result.rows.map(row => { const intake = unseal(row.intake_encrypted, env); return { id: row.id, name: intake.name, conditions: intake.conditions, payment: row.payment_status, stage: row.stage, amountCents: row.amount_cents, createdAt: row.created_at, revision: row.revision, checkins: row.checkins }; }), stats: stats.rows[0], offer: await readOffer(db), templates, page,
           integrations: { checkout: commerceReady(env), ai: Boolean(env.NVIDIA_NIM_API_KEY), model: env.NVIDIA_NIM_MODEL || 'nvidia/nemotron-3-super-120b-a12b' } });
       }
       const id = url.searchParams.get('id'); if (!isId(id)) throw new NutritionError('Atendimento inválido.');
@@ -61,7 +68,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
         const events = await db.query('SELECT type,actor,created_at AS "createdAt" FROM nutrition_events WHERE request_id=$1 ORDER BY created_at DESC LIMIT 30', [id]);
         const checkins = await db.query('SELECT body_encrypted, created_at AS "createdAt" FROM nutrition_checkins WHERE request_id=$1 ORDER BY created_at DESC LIMIT 20', [id]);
         const versions = await db.query('SELECT revision,stage,reason,created_at AS "createdAt" FROM nutrition_plan_versions WHERE request_id=$1 ORDER BY revision DESC,created_at DESC LIMIT 40', [id]);
-        return json({ id, intake, plan, revision: row.revision, stage: row.stage, payment: row.payment_status, offer: row.offer_snapshot, createdAt: row.created_at, approvedAt: row.approved_at, ...followupStatus(row), events: events.rows, versions: versions.rows, checkins: checkins.rows.map(item => ({ ...unseal(item.body_encrypted, env), createdAt: item.createdAt })) });
+        return json({ id, intake, plan, analysis: intake.aiConsent ? unseal(row.analysis_encrypted, env) : null, revision: row.revision, stage: row.stage, payment: row.payment_status, offer: row.offer_snapshot, createdAt: row.created_at, approvedAt: row.approved_at, ...followupStatus(row), events: events.rows, versions: versions.rows, checkins: checkins.rows.map(item => ({ ...unseal(item.body_encrypted, env), createdAt: item.createdAt })) });
       }
       if (action === 'download' || action === 'preview') {
         if (!plan) throw new NutritionError('Monte e salve o plano primeiro.');
@@ -73,7 +80,18 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
       }
       throw new NutritionError('Ação não encontrada.', 404);
     }
-    const body = await readBody(request);
+    const body = await readBody(request, action === 'library-save' ? 800000 : 180000);
+    if (action === 'library-save') return json(await saveContentLibrary(db, body));
+    if (action === 'template-save') {
+      if (body.id !== undefined && !isId(body.id)) throw new NutritionError('Modelo inválido.');
+      return json(await saveTemplate(db, body, env));
+    }
+    if (action === 'template-delete') {
+      if (!isId(body.templateId) || !Number.isInteger(body.revision)) throw new NutritionError('Modelo inválido.');
+      const removed = await db.query('DELETE FROM nutrition_templates WHERE id=$1 AND revision=$2 RETURNING id', [body.templateId, body.revision]);
+      if (!removed.rowCount) throw new NutritionError('O modelo mudou ou já foi removido. Atualize a biblioteca.', 409);
+      return json({ ok: true });
+    }
     if (action === 'settings') {
       if (!validOffer(body.offer)) throw new NutritionError('Confira título, preço, prazo e acompanhamento. Preencha todos antes de disponibilizar a oferta.');
       if (body.offer.published && !commerceReady(env)) throw new NutritionError('Configure a integração de pagamento e a chave de proteção de dados antes de disponibilizar a oferta.', 422);
@@ -124,7 +142,12 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
         if (recent.rows[0].count >= 4) throw new NutritionError('Aguarde um minuto entre as solicitações de IA.', 429);
         await event(client, row.id, 'ai_requested');
       });
-      if (action === 'analyze') return json({ analysis: await analyzeWithNim(intake, { env, fetcher }) });
+      if (action === 'analyze') {
+        const analysis = await analyzeWithNim(intake, { env, fetcher, customTemplates: await readTemplates(db, env) });
+        const cached = await db.query('UPDATE nutrition_requests SET analysis_encrypted=$1 WHERE id=$2 AND intake_encrypted=$3 RETURNING id', [seal(analysis, env), row.id, row.intake_encrypted]);
+        if (!cached.rowCount) throw new NutritionError('A anamnese ou a autorização mudou. Recarregue o atendimento.', 409);
+        return json({ analysis });
+      }
       const candidate = await suggestWithNim(intake, plan, { env, fetcher });
       // Suggestions are reviewable before replacing any saved draft.
       return json({ suggestion: candidate, revision: row.revision });
@@ -173,7 +196,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
       if (!plan || typeof body.title !== 'string' || body.title.trim().length < 3 || body.title.length > 120 || !clinicalProfiles.some(profile => profile.id === body.profile)) throw new NutritionError('Informe nome e categoria para o modelo.');
       const goals = body.goals || []; const tags = body.tags || [];
       if (!Array.isArray(goals) || goals.length > 4 || goals.some(goal => !['wellbeing', 'weight-management', 'muscle', 'clinical'].includes(goal)) || !Array.isArray(tags) || tags.length > 12 || tags.some(tag => typeof tag !== 'string' || tag.length > 60)) throw new NutritionError('Confira objetivos e palavras-chave do modelo.');
-      const template = { ...plan, templateId: `${body.profile}-pratica`, clinicalNotes: '', assessment: undefined, curatedModules: [], review: {}, title: 'Seu plano alimentar', guidance: 'Siga as porções e os preparos combinados em atendimento. Revise as opções com sua nutricionista.', days: plan.days.map((day, dayIndex) => ({ ...day, label: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'][dayIndex], meals: day.meals.map((meal, mealIndex) => ({ ...meal, name: `Refeição ${mealIndex + 1}`, note: '' })) })), targets: { ...plan.targets, energy: null, protein: null, carbs: null, fat: null, water: null, sodium: null, potassium: null, phosphorus: null } };
+      const template = { ...plan, templateId: `${body.profile}-pratica`, plateGuide: undefined, clinicalNotes: '', assessment: undefined, curatedModules: [], review: {}, title: 'Seu plano alimentar', guidance: 'Siga as porções e os preparos combinados em atendimento. Revise as opções com sua nutricionista.', days: plan.days.map((day, dayIndex) => ({ ...day, label: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'][dayIndex], meals: day.meals.map((meal, mealIndex) => ({ ...meal, name: `Refeição ${mealIndex + 1}`, note: '' })) })), targets: { ...plan.targets, energy: null, protein: null, carbs: null, fat: null, water: null, sodium: null, potassium: null, phosphorus: null } };
       const templateErrors = validatePlan(template, intake);
       if (templateErrors.length) throw new NutritionError(`Revise o modelo para a categoria escolhida: ${templateErrors[0]}`, 422);
       await db.query('INSERT INTO nutrition_templates (id,title,profile,plan_encrypted,goals,tags) VALUES ($1,$2,$3,$4,$5,$6)', [randomUUID(), body.title.trim(), body.profile, seal(template, env), JSON.stringify([...new Set(goals)]), JSON.stringify([...new Set(tags.map(tag => tag.trim()).filter(Boolean))])]);

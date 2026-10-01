@@ -14,6 +14,9 @@ import { handleAdminLoginRequest } from '../../api/admin/login.js';
 import { handleAdminLogoutRequest } from '../../api/admin/logout.js';
 import { handleAdminProductsRequest } from '../../api/admin/products.js';
 import { handleAdminOrdersRequest } from '../../api/admin/orders.js';
+import { handleAdminRecipesRequest } from '../../api/admin/recipes.js';
+import { handleServiceOffersRequest } from '../../api/service-offers.js';
+import { handleAdminServiceOffersRequest } from '../../api/admin/service-offers.js';
 import { handleNutritionRequest } from '../../api/nutrition/index.js';
 import { handleAdminNutritionRequest } from '../../api/admin/nutrition.js';
 import { handleNutritionReturnRequest } from '../../api/nutrition/return.js';
@@ -21,6 +24,9 @@ import { nutritionIntakeBodyLimit } from '../nutrition/service.js';
 import { productAccessHeaders } from './access.js';
 
 const routes = {
+  '/api/service-offers': { method: 'GET', handle: handleServiceOffersRequest },
+  '/api/admin/service-offers': { method: ['GET', 'PATCH'], handle: handleAdminServiceOffersRequest },
+  '/api/admin/recipes': { method: ['GET', 'POST', 'PATCH'], handle: handleAdminRecipesRequest },
   '/api/nutrition': { method: ['GET', 'POST'], handle: handleNutritionRequest },
   '/api/nutrition/return': { method: 'GET', handle: handleNutritionReturnRequest },
   '/api/admin/nutrition': { method: ['GET', 'POST', 'PATCH'], handle: handleAdminNutritionRequest },
@@ -73,7 +79,7 @@ export async function handleProductApiRequest(request, response, { env } = {}) {
   let body;
   if (!['GET', 'HEAD'].includes(request.method)) {
     const isIntake = pathname === '/api/nutrition' && url.searchParams.get('action') === 'intake';
-    const bodyLimit = isIntake ? nutritionIntakeBodyLimit : pathname === '/api/admin/nutrition' ? 180_000 : pathname === '/api/nutrition' ? 32_000 : 16_384;
+    const bodyLimit = isIntake ? nutritionIntakeBodyLimit : pathname === '/api/admin/nutrition' ? 180_000 : pathname === '/api/nutrition' ? 32_000 : pathname === '/api/admin/recipes' ? 50_000 : pathname === '/api/admin/service-offers' ? 24_576 : 16_384;
     const chunks = [];
     let size = 0;
     for await (const chunk of request) {

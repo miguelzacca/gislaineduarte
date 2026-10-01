@@ -1,4 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { AdminRecipes } from './AdminRecipes.jsx';
+import { ServiceOffersEditor } from './ServiceOffers.jsx';
 import { BrandMark } from './Brand.jsx';
 const NutritionWorkspace = lazy(() => import('./NutritionWorkspace.jsx').then(module => ({ default: module.NutritionWorkspace })));
 
@@ -20,33 +22,43 @@ function parsePrice(value) {
   return cents >= 100 && cents <= 10_000_000 ? cents : null;
 }
 
-function ProductEditor({ product, onSaved }) {
+function ProductEditor({ product, onSaved, onEditingStateChange }) {
   const [title, setTitle] = useState(product.title);
   const [description, setDescription] = useState(product.description);
   const [price, setPrice] = useState(product.priceCents ? (product.priceCents / 100).toFixed(2).replace('.', ',') : '');
   const [published, setPublished] = useState(product.published);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const dirty = title !== product.title || description !== product.description || published !== product.published || (price.trim() ? parsePrice(price) : null) !== (product.priceCents || null);
+  useEffect(() => { onEditingStateChange?.(product.id, { dirty, busy }); }, [dirty, busy, product.id, onEditingStateChange]);
+  useEffect(() => () => { onEditingStateChange?.(product.id, { dirty: false, busy: false }); }, [product.id, onEditingStateChange]);
+  useEffect(() => { if (!dirty) return; const handler = event => { event.preventDefault(); event.returnValue = ''; }; window.addEventListener('beforeunload', handler); return () => window.removeEventListener('beforeunload', handler); }, [dirty]);
   const deliverable = product.kind === 'recipes';
+  const reloadProduct = async () => {
+    if (dirty && !window.confirm('Descartar as alterações deste produto e carregar a versão salva?')) return;
+    setBusy(true); setMessage('');
+    try { const current = (await onSaved()).find(item => item.id === product.id); if (current) { setTitle(current.title); setDescription(current.description); setPrice(current.priceCents ? (current.priceCents / 100).toFixed(2).replace('.', ',') : ''); setPublished(current.published); } }
+    catch (error) { setMessage(error.message); } finally { setBusy(false); }
+  };
   const save = async (event) => {
     event.preventDefault();
     const priceCents = price.trim() ? parsePrice(price) : null;
     if (price.trim() && !priceCents) { setMessage('Informe um valor válido em reais.'); return; }
     setBusy(true); setMessage('');
     try {
-      await api('/api/admin/products', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: product.id, title, description, priceCents, published }) });
+      await api('/api/admin/products', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: product.id, title, description, priceCents, published, updatedAt: product.updatedAt }) });
       setMessage('Alterações salvas. O checkout já usa este valor.');
-      onSaved();
+      await onSaved();
     } catch (error) { setMessage(error.message); }
     finally { setBusy(false); }
   };
   return <form className="admin-product" onSubmit={save}>
     <div className="admin-product__top"><div><span className="admin-label">{deliverable ? 'Coleção digital' : 'Rascunho'}</span><h3>{product.title}</h3></div><span className={`admin-pill ${product.published ? 'admin-pill--live' : ''}`}>{product.published ? 'Publicado' : 'Não publicado'}</span></div>
-    <div className="admin-product__fields"><label>Nome do produto<input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} disabled={deliverable} required /></label><label>Preço em reais<input value={price} onChange={(event) => setPrice(event.target.value)} inputMode="decimal" placeholder="Defina o valor" /></label></div>
-    <label>Descrição<textarea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={1000} rows={3} disabled={deliverable} /></label>
+    <div className="admin-product__fields"><label>Nome do produto<input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} required /></label><label>Preço em reais<input value={price} onChange={(event) => setPrice(event.target.value)} inputMode="decimal" placeholder="Defina o valor" /></label></div>
+    <label>Descrição<textarea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={1000} rows={3} /></label>
     <div className="admin-product__bottom"><label className="admin-switch"><input type="checkbox" checked={published} onChange={(event) => setPublished(event.target.checked)} disabled={!deliverable || !price.trim()} /><span>Disponível para compra</span></label><button disabled={busy} type="submit">{busy ? 'Salvando…' : 'Salvar produto'}</button></div>
     {!deliverable && <p className="admin-hint">Este cadastro é um rascunho. Para vender outro arquivo digital, é preciso configurar sua entrega protegida antes da publicação.</p>}
-    {message && <p className="admin-feedback" role="status">{message}</p>}
+    {message && <p className="admin-feedback" role="status">{message}</p>}<button type="button" className="nw-button nw-button--quiet" disabled={busy} onClick={reloadProduct}>Recarregar produto salvo</button>
   </form>;
 }
 
@@ -70,7 +82,13 @@ function Login({ onSuccess }) {
 export function AdminPage() {
   const [section, setSection] = useState('nutrition');
   const [editing, setEditing] = useState({ dirty: false, busy: false });
-  const canLeave = () => !editing.busy && (!editing.dirty || window.confirm('Há alterações no plano que ainda não foram salvas. Deseja sair sem salvar?'));
+  const [commerceEditing, setCommerceEditing] = useState({});
+  const recipesEditing = useCallback(value => setCommerceEditing(current => ({ ...current, recipes: value })), []);
+  const offersEditing = useCallback(value => setCommerceEditing(current => ({ ...current, offers: value })), []);
+  const productEditing = useCallback((id, value) => setCommerceEditing(current => ({ ...current, [id]: value })), []);
+  const commerceDirty = Object.values(commerceEditing).some(value => value.dirty);
+  const commerceBusy = Object.values(commerceEditing).some(value => value.busy);
+  const canLeave = () => !(editing.busy || commerceBusy) && (!(editing.dirty || commerceDirty) || window.confirm('Há alterações que ainda não foram salvas. Deseja sair sem salvar?'));
   const [state, setState] = useState('loading');
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -80,6 +98,7 @@ export function AdminPage() {
   const loadData = useCallback(async () => {
     const [catalog, sales] = await Promise.all([api('/api/admin/products'), api('/api/admin/orders')]);
     setProducts(catalog.products); setOrders(sales.orders); setStats(sales.stats);
+    return catalog.products;
   }, []);
   const afterLogin = async () => { setState('loading'); try { await loadData(); setState('ready'); } catch (error) { setMessage(error.message); setState('error'); } };
   useEffect(() => {
@@ -101,5 +120,5 @@ export function AdminPage() {
   if (state === 'login') return <Login onSuccess={afterLogin} />;
   if (state === 'error') return <div className="admin-loading"><p>{message || 'Painel indisponível.'}</p><button onClick={() => window.location.reload()}>Tentar novamente</button></div>;
   if (section === 'nutrition') return <div className="admin-shell admin-shell--nutrition"><aside className="admin-sidebar"><div className="admin-sidebar__brand"><BrandMark /><span>GISLAINE DUARTE<br /><small>SEU ESPAÇO DE CUIDADO</small></span></div><nav aria-label="Painel"><button type="button" aria-current="page">Consultório</button><button type="button" disabled={editing.busy} onClick={() => { if (canLeave()) setSection('commerce'); }}>Produtos e vendas</button><a href="/plano-alimentar" target="_blank" rel="noreferrer">Página de planos ↗</a></nav><div className="nw-sidebar-note">Mais tempo para escutar.<br /><em>Mais espaço para cuidar.</em></div><button type="button" onClick={logout}>Sair do painel</button></aside><div className="admin-main admin-main--nutrition"><Suspense fallback={<p role="status">Preparando seu consultório…</p>}><NutritionWorkspace onEditingStateChange={setEditing} /></Suspense></div></div>;
-  return <div className="admin-shell"><aside className="admin-sidebar"><div className="admin-sidebar__brand"><BrandMark /><span>GISLAINE DUARTE<br /><small>PAINEL DE GESTÃO</small></span></div><nav aria-label="Painel"><button type="button" onClick={() => setSection('nutrition')}>Consultório</button><a href="#visao-geral">Visão geral</a><a href="#produtos">Produtos</a><a href="#pedidos">Pedidos</a></nav><button type="button" onClick={logout}>Sair do painel</button></aside><div className="admin-main"><header className="admin-header"><div><p className="admin-label">Painel privado</p><h1>Seu negócio,<br /><em>em boas mãos.</em></h1></div><span className="admin-header__date">{date(new Date())}</span></header><section id="visao-geral" className="admin-stats" aria-label="Visão geral"><article><span>Vendas confirmadas</span><strong>{stats.paid}</strong></article><article><span>Pedidos aguardando</span><strong>{stats.pending}</strong></article><article><span>Valor bruto confirmado</span><strong>{money(stats.grossCents)}</strong></article></section><section id="produtos" className="admin-section"><div className="admin-section__heading"><div><p className="admin-label">Catálogo</p><h2>Produtos</h2></div><span>{products.length} cadastrado{products.length === 1 ? '' : 's'}</span></div><div className="admin-products">{products.map((product) => <ProductEditor key={product.id} product={product} onSaved={loadData} />)}</div><form className="admin-new" onSubmit={createDraft}><div><strong>Novo produto</strong><p>Cadastre uma ideia como rascunho para organizar o catálogo.</p></div><input aria-label="Nome do novo produto" value={newTitle} onChange={(event) => setNewTitle(event.target.value)} placeholder="Nome do produto" maxLength={120} required /><button type="submit">Criar rascunho</button></form>{message && <p className="admin-feedback" role="status">{message}</p>}</section><section id="pedidos" className="admin-section"><div className="admin-section__heading"><div><p className="admin-label">Acompanhamento</p><h2>Pedidos recentes</h2></div></div><div className="admin-table-wrap"><table><thead><tr><th>Data</th><th>Comprador</th><th>Valor</th><th>Situação</th></tr></thead><tbody>{orders.length ? orders.map((order) => <tr key={order.id}><td>{date(order.createdAt)}</td><td>{order.email}</td><td>{money(order.amountCents)}</td><td><span className={`admin-pill ${order.status === 'paid' ? 'admin-pill--live' : ''}`}>{order.status === 'paid' ? 'Pago' : 'Aguardando'}</span></td></tr>) : <tr><td colSpan="4">Nenhum pedido ainda.</td></tr>}</tbody></table></div></section></div></div>;
+  return <div className="admin-shell"><aside className="admin-sidebar"><div className="admin-sidebar__brand"><BrandMark /><span>GISLAINE DUARTE<br /><small>PAINEL DE GESTÃO</small></span></div><nav aria-label="Painel"><button type="button" disabled={commerceBusy} onClick={() => { if (canLeave()) setSection('nutrition'); }}>Consultório</button><a href="#visao-geral">Visão geral</a><a href="#produtos">Produtos</a><a href="#receitas">Receitas</a><a href="#acompanhamentos">Acompanhamentos</a><a href="#pedidos">Pedidos</a></nav><button type="button" onClick={logout}>Sair do painel</button></aside><div className="admin-main"><header className="admin-header"><div><p className="admin-label">Painel privado</p><h1>Seu negócio,<br /><em>em boas mãos.</em></h1></div><span className="admin-header__date">{date(new Date())}</span></header><section id="visao-geral" className="admin-stats" aria-label="Visão geral"><article><span>Vendas confirmadas</span><strong>{stats.paid}</strong></article><article><span>Pedidos aguardando</span><strong>{stats.pending}</strong></article><article><span>Valor bruto confirmado</span><strong>{money(stats.grossCents)}</strong></article></section><section id="produtos" className="admin-section"><div className="admin-section__heading"><div><p className="admin-label">Catálogo</p><h2>Produtos</h2></div><span>{products.length} cadastrado{products.length === 1 ? '' : 's'}</span></div><div className="admin-products">{products.map((product) => <ProductEditor key={product.id} product={product} onSaved={loadData} onEditingStateChange={productEditing} />)}</div><form className="admin-new" onSubmit={createDraft}><div><strong>Novo produto</strong><p>Cadastre uma ideia como rascunho para organizar o catálogo.</p></div><input aria-label="Nome do novo produto" value={newTitle} onChange={(event) => setNewTitle(event.target.value)} placeholder="Nome do produto" maxLength={120} required /><button type="submit">Criar rascunho</button></form>{message && <p className="admin-feedback" role="status">{message}</p>}</section><AdminRecipes onEditingStateChange={recipesEditing} /><section id="acompanhamentos" className="admin-section"><ServiceOffersEditor onEditingStateChange={offersEditing} /></section><section id="pedidos" className="admin-section"><div className="admin-section__heading"><div><p className="admin-label">Acompanhamento</p><h2>Pedidos recentes</h2></div></div><div className="admin-table-wrap"><table><thead><tr><th>Data</th><th>Comprador</th><th>Valor</th><th>Situação</th></tr></thead><tbody>{orders.length ? orders.map((order) => <tr key={order.id}><td>{date(order.createdAt)}</td><td>{order.email}</td><td>{money(order.amountCents)}</td><td><span className={`admin-pill ${order.status === 'paid' ? 'admin-pill--live' : ''}`}>{order.status === 'paid' ? 'Pago' : 'Aguardando'}</span></td></tr>) : <tr><td colSpan="4">Nenhum pedido ainda.</td></tr>}</tbody></table></div></section></div></div>;
 }

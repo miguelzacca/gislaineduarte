@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { RECIPES_PRODUCT_ID, recipesProduct } from '../../src/data/recipes-product.js';
+import { RECIPES_PRODUCT_ID, requestedRecipeProduct, recipeProductById } from '../../src/data/recipes-product.js';
 import { CLAIM_COOKIE, cookie, createSession, getClaim, isSecureRequest, randomToken, safeEqual, tokenHash, verifyProductEntitlement } from './access.js';
 import { requireAccessConfig, requireCommerceConfig } from './config.js';
 import { getStore, transaction } from './store.js';
@@ -22,33 +22,36 @@ export function claimCookie(claim, request, env = process.env) {
 }
 
 export async function startCheckout(email, request, { env = process.env, fetcher = fetch, store, mailer = sendAccessEmail } = {}) {
+  const selectedProduct = requestedRecipeProduct(request);
+  if (!selectedProduct) return { error: 'Produto não encontrado.', status: 404 };
+  const productId = selectedProduct.id;
   const entitlement = await verifyProductEntitlement(request, { env, store });
-  if (entitlement.granted) return { accessUrl: recipesProduct.experiencePath };
+  if (entitlement.granted) return { accessUrl: selectedProduct.experiencePath };
   const config = requireCommerceConfig(env);
   const normalized = normalizeEmail(email);
   if (!normalized) return { error: 'Informe um e-mail válido.', status: 400 };
   const previousClaim = await getClaim(request, { env, store });
-  if (previousClaim?.order_id) {
+  if (previousClaim?.order_id && (previousClaim.product_id || RECIPES_PRODUCT_ID) === productId) {
     if (normalized !== previousClaim.email) return { error: 'O e-mail deste pedido não pode ser alterado. Use o endereço informado na compra.', status: 409 };
-    return { accessUrl: recipesProduct.experiencePath };
+    return { accessUrl: recipeProductById(previousClaim.product_id)?.experiencePath || selectedProduct.experiencePath };
   }
   const db = store || await getStore(env);
-  const owned = await db.query('SELECT 1 FROM recipe_entitlements WHERE email = $1 AND product_id = $2', [normalized, RECIPES_PRODUCT_ID]);
+  const owned = await db.query('SELECT 1 FROM recipe_entitlements WHERE email = $1 AND product_id = $2', [normalized, productId]);
   if (owned.rowCount) {
     const login = await requestLogin(normalized, request, { env, store: db, mailer });
     if (login.throttled) return { error: 'Já enviamos links de acesso recentemente. Use o último e-mail recebido ou tente novamente mais tarde.', status: 429 };
     if (login.error) return login;
-    return { accessUrl: recipesProduct.experiencePath, cookie: login.cookie };
+    return { accessUrl: selectedProduct.experiencePath, cookie: login.cookie };
   }
-  const productResult = await db.query('SELECT id, title, price_cents, published FROM recipe_products WHERE id = $1', [RECIPES_PRODUCT_ID]);
+  const productResult = await db.query('SELECT id, title, price_cents, published FROM recipe_products WHERE id = $1', [productId]);
   const product = productResult.rows[0];
   if (!product?.published || !product.price_cents) return { error: 'A coleção ainda não está disponível para compra.', status: 423 };
   const orderId = randomUUID();
   const claim = claimValues(normalized);
   const webhookToken = randomToken();
   await transaction(db, async (client) => {
-    await client.query(`INSERT INTO recipe_login_challenges (id, secret_hash, email, order_id, expires_at)
-      VALUES ($1, $2, $3, $4, now() + interval '24 hours')`, [claim.id, claim.secretHash, normalized, orderId]);
+    await client.query(`INSERT INTO recipe_login_challenges (id, secret_hash, email, order_id, expires_at, product_id)
+      VALUES ($1, $2, $3, $4, now() + interval '24 hours', $5)`, [claim.id, claim.secretHash, normalized, orderId, productId]);
     await client.query(`INSERT INTO recipe_orders (id, email, product_id, amount_cents, merchant_handle, webhook_token_hash, challenge_id)
       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
     [orderId, normalized, product.id, product.price_cents, config.handle, tokenHash(webhookToken), claim.id]);
@@ -63,10 +66,10 @@ export async function startCheckout(email, request, { env = process.env, fetcher
   return { url, orderId, claim };
 }
 
-async function sendMagicLink({ email, challengeId, title, origin, env, store, mailer }) {
+async function sendMagicLink({ email, challengeId, title, origin, env, store, mailer, productId = RECIPES_PRODUCT_ID }) {
   const token = randomToken();
-  await store.query(`INSERT INTO recipe_magic_links (token_hash, email, challenge_id, expires_at)
-    VALUES ($1, $2, $3, now() + interval '15 minutes')`, [tokenHash(token), email, challengeId]);
+  await store.query(`INSERT INTO recipe_magic_links (token_hash, email, challenge_id, expires_at, product_id)
+    VALUES ($1, $2, $3, now() + interval '15 minutes', $4)`, [tokenHash(token), email, challengeId, productId]);
   const url = `${origin}/api/recipes/verify?token=${encodeURIComponent(token)}`;
   await mailer({ email, url, productTitle: title, env });
 }
@@ -103,35 +106,39 @@ export async function confirmPayment({ orderId, transactionNsu, slug, webhookKey
       // O webhook e o retorno do navegador podem chegar ao mesmo tempo.
       const delivery = await client.query('SELECT email_sent_at FROM recipe_orders WHERE id = $1 FOR UPDATE', [orderId]);
       if (delivery.rows[0].email_sent_at) return;
-      await sendMagicLink({ email: order.email, challengeId: order.challenge_id, title: order.title, origin, env, store: client, mailer });
+      await sendMagicLink({ email: order.email, challengeId: order.challenge_id, title: order.title, origin, env, store: client, mailer, productId: order.product_id });
       await client.query('UPDATE recipe_orders SET email_sent_at = now() WHERE id = $1', [orderId]);
     });
   }
-  return { confirmed: true, status: 200 };
+  return { confirmed: true, status: 200, productId: order.product_id };
 }
 
 export async function requestLogin(email, request, { env = process.env, store, mailer = sendAccessEmail } = {}) {
+  const selectedProduct = requestedRecipeProduct(request);
+  if (!selectedProduct) return { error: 'Produto não encontrado.', status: 404 };
+  const productId = selectedProduct.id;
   const entitlement = await verifyProductEntitlement(request, { env, store });
   if (entitlement.granted) return { ready: true };
-  const previousClaim = await getClaim(request, { env, store });
+  const candidateClaim = await getClaim(request, { env, store });
+  const previousClaim = candidateClaim && (candidateClaim.product_id || RECIPES_PRODUCT_ID) === productId ? candidateClaim : null;
   const normalized = normalizeEmail(String(email || '').trim() || previousClaim?.email);
   if (!normalized) return { error: 'Informe um e-mail válido.', status: 400 };
   if (previousClaim?.order_id && normalized !== previousClaim.email) return { error: 'O e-mail deste pedido não pode ser alterado. Reenvie o link para o endereço informado na compra.', status: 409 };
   const config = requireAccessConfig(env);
   const db = store || await getStore(env);
-  const entitled = await db.query('SELECT 1 FROM recipe_entitlements WHERE email = $1 AND product_id = $2', [normalized, RECIPES_PRODUCT_ID]);
+  const entitled = await db.query('SELECT 1 FROM recipe_entitlements WHERE email = $1 AND product_id = $2', [normalized, productId]);
   if (!entitled.rowCount) return { sent: true };
   const recent = await db.query(`SELECT count(*)::integer AS count FROM recipe_magic_links
     WHERE email = $1 AND created_at > now() - interval '15 minutes'`, [normalized]);
   if (recent.rows[0].count >= 3) return { sent: true, throttled: true };
-  if (previousClaim?.email === normalized && !previousClaim.confirmed_at && !previousClaim.redeemed_at) {
-    await sendMagicLink({ email: normalized, challengeId: previousClaim.id, title: '7 receitas para ajudar você a desinflamar!', origin: config.origin, env, store: db, mailer });
+  if (previousClaim?.email === normalized && (previousClaim.product_id || RECIPES_PRODUCT_ID) === productId && !previousClaim.confirmed_at && !previousClaim.redeemed_at) {
+    await sendMagicLink({ email: normalized, challengeId: previousClaim.id, title: selectedProduct.title, origin: config.origin, env, store: db, mailer, productId });
     return { sent: true };
   }
   const claim = claimValues(normalized);
-  await db.query(`INSERT INTO recipe_login_challenges (id, secret_hash, email, expires_at)
-    VALUES ($1, $2, $3, now() + interval '24 hours')`, [claim.id, claim.secretHash, normalized]);
-  await sendMagicLink({ email: normalized, challengeId: claim.id, title: '7 receitas para ajudar você a desinflamar!', origin: config.origin, env, store: db, mailer });
+  await db.query(`INSERT INTO recipe_login_challenges (id, secret_hash, email, expires_at, product_id)
+    VALUES ($1, $2, $3, now() + interval '24 hours', $4)`, [claim.id, claim.secretHash, normalized, productId]);
+  await sendMagicLink({ email: normalized, challengeId: claim.id, title: selectedProduct.title, origin: config.origin, env, store: db, mailer, productId });
   return { sent: true, claim, cookie: claimCookie(claim, request, env) };
 }
 
@@ -143,11 +150,11 @@ export async function consumeMagicLink(token, { env = process.env, store } = {})
       AND used_at IS NULL AND expires_at > now() FOR UPDATE`, [tokenHash(token)]);
     if (!found.rowCount) return null;
     const link = found.rows[0];
-    const entitled = await client.query('SELECT 1 FROM recipe_entitlements WHERE email = $1 AND product_id = $2', [link.email, RECIPES_PRODUCT_ID]);
+    const entitled = await client.query('SELECT 1 FROM recipe_entitlements WHERE email = $1 AND product_id = $2', [link.email, link.product_id || RECIPES_PRODUCT_ID]);
     if (!entitled.rowCount) return null;
     await client.query('UPDATE recipe_magic_links SET used_at = now() WHERE token_hash = $1', [link.token_hash]);
     await client.query('UPDATE recipe_login_challenges SET confirmed_at = now() WHERE id = $1 AND confirmed_at IS NULL', [link.challenge_id]);
-    return createSession(link.email, { env, client });
+    return { ...await createSession(link.email, { env, client }), productId: link.product_id || RECIPES_PRODUCT_ID };
   });
 }
 
@@ -156,7 +163,7 @@ export async function authStatus(request, { env = process.env, store } = {}) {
   const entitlement = await verifyProductEntitlement(request, { env, store: db });
   if (entitlement.granted) return { state: 'ready' };
   const claim = await getClaim(request, { env, store: db });
-  if (!claim) return { state: 'login' };
+  if (!claim || (claim.product_id || RECIPES_PRODUCT_ID) !== (requestedRecipeProduct(request)?.id || RECIPES_PRODUCT_ID)) return { state: 'login' };
   if (!claim.confirmed_at) {
     if (!claim.order_id) return { state: 'email' };
     const order = await db.query('SELECT status, checkout_url FROM recipe_orders WHERE id = $1', [claim.order_id]);
@@ -168,7 +175,7 @@ export async function authStatus(request, { env = process.env, store } = {}) {
       WHERE id = $1 AND redeemed_at IS NULL AND confirmed_at IS NOT NULL AND expires_at > now()
       RETURNING email`, [claim.id]);
     if (!claimed.rowCount) return null;
-    const entitled = await client.query('SELECT 1 FROM recipe_entitlements WHERE email = $1 AND product_id = $2', [claimed.rows[0].email, RECIPES_PRODUCT_ID]);
+    const entitled = await client.query('SELECT 1 FROM recipe_entitlements WHERE email = $1 AND product_id = $2', [claimed.rows[0].email, requestedRecipeProduct(request)?.id || RECIPES_PRODUCT_ID]);
     if (!entitled.rowCount) return null;
     return createSession(claimed.rows[0].email, { env, client });
   });

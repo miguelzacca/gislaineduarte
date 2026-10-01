@@ -1,6 +1,8 @@
-# Produto digital · 7 receitas para ajudar você a desinflamar!
+# Produtos digitais · Livro de receitas e coleção GLP-1
 
-O site permanece em Vite + React + JavaScript/JSX. A landing é pública e mostra somente a prévia. Ingredientes, preparo e alertas completos não entram no bundle público; `/minhas-receitas` é um shell estático, e o conteúdo completo é servido por `/api/recipes/content` somente após autorização no servidor. O PDF e o HTML offline ficam em `artifacts/recipes/`, fora de `public/` e `dist/`, e `/api/recipes/download` exige a mesma sessão. Como qualquer arquivo baixado, o PDF e o HTML podem ser copiados pelo comprador depois do download.
+O site permanece em Vite + React + JavaScript/JSX. A landing é pública e mostra somente a prévia. Ingredientes, preparo e alertas completos não entram no bundle público; `/minhas-receitas` é um shell estático, e o conteúdo completo é servido por `/api/recipes/content` somente após autorização no servidor. O painel permite editar e publicar receitas no Postgres. `/api/recipes/download` exige uma sessão autorizada para o produto e gera PDF ou HTML offline a partir do conteúdo publicado atual. Cópias para verificação do build ficam em `artifacts/recipes/`, fora de `public/` e `dist/`. Como qualquer arquivo baixado, os documentos podem ser copiados pelo comprador depois do download.
+
+O caminho e o ID históricos com “7 receitas” são preservados para manter links e compras existentes. `?product=receitas-glp1` seleciona o segundo produto, com preço, publicação, compra e titularidade independentes. A coleção GLP-1 só fica à venda quando a profissional define o preço e a publica. Detalhes da migração editorial estão em [nutrition-editorial-upgrade.md](nutrition-editorial-upgrade.md).
 
 ## Compra e acesso
 
@@ -47,6 +49,6 @@ Na Vercel, uma integração Postgres via Marketplace pode fornecer `DATABASE_URL
 
 ## Build e validação
 
-`npm run build` gera derivados de imagem, HTML offline, PDF e o site. As dependências Python são instaladas em `tmp/product-python/`, sem alterar o Python global. O `package-lock.json` mantém Playwright apenas como legado; conforme `AGENTS.md`, não execute nem instale os testes de navegador por iniciativa própria.
+`npm run build` gera as imagens de apresentação, o HTML offline, o PDF com PDFKit e o site, sem instalar dependências Python. A verificação opcional dos PDFs usa `scripts/validate-recipes-artifacts.py`; o comando legado `product:deps` permanece disponível para preparar suas dependências em `tmp/product-python/`. O `package-lock.json` mantém Playwright apenas como legado; conforme `AGENTS.md`, não execute nem instale os testes de navegador por iniciativa própria.
 
 Os testes unitários de segurança verificam negação sem sessão, rejeição de webhook forjado ou com valor divergente, confirmação independente no provedor, troca de sessão entre dispositivos e autenticação do painel. Um pagamento real, webhook e SMTP precisam ser validados com as credenciais e serviços de produção antes da venda. A InfinitePay documenta o [Checkout Integrado](https://www.infinitepay.io/checkout-documentacao), a Vercel documenta [Postgres no Marketplace](https://vercel.com/docs/postgres), e o Google documenta [senhas de app](https://support.google.com/mail/answer/185833?hl=pt-BR).

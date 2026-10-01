@@ -198,7 +198,7 @@ export const navigation = [
   { label: 'Abordagem', href: '/#abordagem' },
   { label: 'Sobre a Gi', href: '/sobre' },
   { label: 'Atendimentos', href: '/atendimentos' },
-  { label: '7 receitas', href: '/7-receitas-para-ajudar-voce-a-desinflamar' },
+  { label: 'Livro de receitas', href: '/7-receitas-para-ajudar-voce-a-desinflamar' },
   { label: 'Seu plano', href: '/plano-alimentar' },
   { label: 'Contato', href: '/contato' },
 ];

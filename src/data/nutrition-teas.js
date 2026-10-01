@@ -1,0 +1,5 @@
+export const teaIdeas = [
+  { id: 'tea-chamomile', type: 'tea', title: 'Camomila', content: 'Opção de infusão para conversar durante a consulta. Antes de incluir no plano, confirme a espécie, a quantidade, o preparo e a compatibilidade com medicamentos, alergias e condições individuais.', image: '/images/teas/chamomile.jpg', foodIds: [], allergens: [], requiresIngredientReview: true, reviewed: false },
+  { id: 'tea-mint', type: 'tea', title: 'Hortelã-pimenta', content: 'Registre a preferência e avalie a tolerância individual. A profissional deve definir os ingredientes, a quantidade e o preparo antes da inclusão no plano.', image: '/images/teas/mint.jpg', foodIds: [], allergens: [], requiresIngredientReview: true, reviewed: false },
+  { id: 'tea-hibiscus', type: 'tea', title: 'Hibisco', content: 'Referência para edição pela profissional. Revise os ingredientes e a adequação individual; defina a porção e o modo de preparo antes de aprovar.', image: '/images/teas/hibiscus.jpg', foodIds: [], allergens: [], requiresIngredientReview: true, reviewed: false },
+];

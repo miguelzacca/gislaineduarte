@@ -34,8 +34,8 @@ test('nutrition: intake requires consent and valid structured health input, with
   assert.ok(intakeErrors({ ...intake, allergies: ['milk'] }).allergyNotes);
   assert.ok(intakeErrors({ ...intake, name: '<'.repeat(101) }).name);
 });
-test('nutrition: all 36 bases and combinations of restrictions yield compatible drafts', () => {
-  assert.equal(planTemplates.length, 36);
+test('nutrition: all 60 bases and combinations of restrictions yield compatible drafts', () => {
+  assert.equal(planTemplates.length, 60);
   for (const template of planTemplates) for (const diet of ['omnivore', 'vegan', 'vegetarian']) {
     const person = { ...intake, diet, conditions: ['celiac', 'lactose', template.profile], allergies: ['nuts', 'fish'], excludedFoodIds: ['banana'] };
     const plan = generatePlan(person, template.id);

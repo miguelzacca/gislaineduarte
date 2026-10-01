@@ -1,29 +1,27 @@
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import { recipesProduct } from '../../src/data/recipes-product.js';
+import { requestedRecipeProduct } from '../../src/data/recipes-product.js';
 import { productAccessHeaders, verifyProductEntitlement } from '../../server/recipes/access.js';
+import { getStore } from '../../server/recipes/store.js';
+import { readRecipeProduct } from '../../server/recipes/content.js';
+import { buildRecipeHtml, buildRecipePdf } from '../../server/recipes/export.js';
 
-const artifactRoot = resolve(process.cwd(), 'artifacts/recipes');
 const downloads = {
   html: {
-    file: '7-receitas-para-ajudar-voce-a-desinflamar-offline.html',
+    file: 'livro-de-receitas.html',
     type: 'text/html; charset=utf-8',
   },
   pdf: {
-    file: '7-receitas-para-ajudar-voce-a-desinflamar.pdf',
+    file: 'livro-de-receitas.pdf',
     type: 'application/pdf',
   },
 };
 
-async function loadProductArtifact(format) {
-  return readFile(resolve(artifactRoot, downloads[format].file));
-}
-
 export async function handleDownloadRequest(request, {
   env = process.env,
   store,
-  loadArtifact = loadProductArtifact,
+  loadArtifact,
 } = {}) {
+  const product = requestedRecipeProduct(request);
+  if (!product) return Response.json({ error: 'Produto não encontrado.' }, { status: 404, headers: productAccessHeaders() });
   const entitlement = await verifyProductEntitlement(request, { env, store });
   if (!entitlement.granted) {
     return Response.json(
@@ -37,18 +35,20 @@ export async function handleDownloadRequest(request, {
     return Response.json({ error: 'Formato de download inválido.' }, { status: 400, headers: productAccessHeaders() });
   }
   try {
-    const body = await loadArtifact(format);
+    const data = loadArtifact ? null : await readRecipeProduct(store || await getStore(env), product.id);
+    const body = loadArtifact ? await loadArtifact(format) : format === 'pdf' ? await buildRecipePdf(data) : Buffer.from(await buildRecipeHtml(data), 'utf8');
+    const file = product.id === 'receitas-glp1' ? `receitas-glp1.${format}` : download.file;
     return new Response(body, {
       status: 200,
       headers: productAccessHeaders({
         'Content-Type': download.type,
-        'Content-Disposition': `attachment; filename="${download.file}"`,
+        'Content-Disposition': `attachment; filename="${file}"`,
         'Content-Length': String(body.byteLength),
       }),
     });
   } catch {
     return Response.json(
-      { error: 'Arquivo temporariamente indisponível.', product: recipesProduct.id },
+      { error: 'Arquivo temporariamente indisponível.', product: product.id },
       { status: 503, headers: productAccessHeaders({ 'Retry-After': '300' }) },
     );
   }

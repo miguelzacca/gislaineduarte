@@ -13,6 +13,7 @@ import { ContactBand, ProfessionalIdentity } from './Layout.jsx';
 import { BirthMark } from './MotionGraphics.jsx';
 import { INTRO_KEY, INTRO_TAB_KEY } from '../intro/session.js';
 import { NutritionHomeSection } from './NutritionPublic.jsx';
+import { ServiceOffers } from './ServiceOffers.jsx';
 
 export function ServiceCards({ headingTag = 'h3' } = {}) {
   const Heading = headingTag;
@@ -214,6 +215,7 @@ export function ServicesPage() {
       <section className="shell" style={{ paddingBottom: 'var(--section-space)' }}>
         <ServiceCards headingTag="h2" />
       </section>
+      <ServiceOffers />
       <FaqSection />
       <ContactBand />
     </>
@@ -275,6 +277,7 @@ export function ServicePage({ service, index }) {
           </div>
         </div>
       </section>
+      {index > 0 && <ServiceOffers />}
       <ContactBand service={service} />
     </>
   );
@@ -332,7 +335,7 @@ export function PrivacyPage() {
           <h2>Identificação profissional</h2>
           <p>Este é o site profissional de {site.fullName}, {site.profession.toLowerCase()}, {site.registration}. O contato para questões sobre privacidade é <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.</p>
           <h2>Durante a navegação</h2>
-          <p>Este site apresenta informações sobre Gislaine Duarte, seus atendimentos, a coleção digital “7 receitas para ajudar você a desinflamar!” e a solicitação de planos alimentares personalizados. Não instalamos ferramentas de publicidade, pixels de rastreamento ou cookies de análise.</p>
+          <p>Este site apresenta informações sobre Gislaine Duarte, seus atendimentos, os livros digitais de receitas e a solicitação de planos alimentares personalizados. Não instalamos ferramentas de publicidade, pixels de rastreamento ou cookies de análise.</p>
           <p>Para não repetir a introdução na mesma aba, o navegador guarda temporariamente o estado da abertura em <code>{INTRO_KEY}</code> e um identificador aleatório da aba em <code>{INTRO_TAB_KEY}</code>. A preferência <code>gi-visited</code> também ajusta a apresentação em visitas repetidas. Esses registros ficam no armazenamento da sessão do navegador, não são enviados a Gislaine e não são usados para rastreamento.</p>
           <h2>Na coleção digital</h2>
           <p>Quando você decide comprar a coleção, solicitamos seu e-mail para criar um pedido. O pagamento acontece no checkout da InfinitePay. Recebemos a confirmação e conferimos a transação diretamente com a InfinitePay antes de liberar qualquer conteúdo. Após o pagamento, enviamos um link de acesso ao e-mail informado.</p>

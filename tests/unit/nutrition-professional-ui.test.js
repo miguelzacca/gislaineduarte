@@ -10,6 +10,7 @@ test('professional journey renders constraints, calculation origins and content 
   const server = await createServer({ configFile: false, plugins: [react()], optimizeDeps: { noDiscovery: true, include: [], entries: [] }, server: { middlewareMode: true, hmr: false, ws: false, watch: null }, logLevel: 'error' });
   try {
     const { CalculationTrail, CuratedContentEditor, MealQuantityVisual, PatientBrief, TemplateFinder } = await server.ssrLoadModule('/src/components/NutritionProfessionalJourney.jsx');
+    const { ClinicalMeasurementFields } = await server.ssrLoadModule('/src/components/NutritionClinicalEditor.jsx');
     const render = (component, props) => load(renderToStaticMarkup(createElement(component, props)));
     await t.test('critical restrictions are named and remain outside collapsible content', () => {
       const $ = render(PatientBrief, { intake: { goal: 'muscle', conditions: ['glp1'], allergies: ['milk'], allergyNotes: 'Reação relatada', intolerances: ['lactose'], excludedFoodIds: ['egg'], medications: 'Substância informada pela pessoa', glp1Details: 'Nome específico do medicamento', dislikes: 'Prefere evitar frituras' }, onOpen() {} });
@@ -35,6 +36,11 @@ test('professional journey renders constraints, calculation origins and content 
       assert.match($('li').first().text(), /≈ 2 unidades/);
       assert.doesNotMatch($('li').first().text(), /2 ×|2 ovo inteiro/i);
       assert.match($('.nj-macro').text(), /Carboidratos.*gProteínas.*g/s);
+    });
+    await t.test('skinfold preview leaves fat and lean mass unknown until weight is supplied', () => {
+      const $ = render(ClinicalMeasurementFields, { values: { sex: 'female', age: 30, pregnant: false, skinfoldMethod: 'jackson-pollock-3', measurementDate: '2026-09-30', skinfolds: { triceps: 20, suprailiac: 18, thigh: 25 } }, onChange() {} });
+      assert.equal($('.nw-calc-results strong').slice(-2).text(), '——');
+      assert.match($('.nw-calc-results').text(), /Gordura estimada/);
     });
     await t.test('library includes goal and context controls and a selected custom model', () => {
       const $ = render(TemplateFinder, { value: 'custom-id', custom: [{ id: 'custom-id', title: 'Modelo próprio', profile: 'diabetes', goals: ['muscle'] }], onChange() {} });

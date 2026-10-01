@@ -1,6 +1,7 @@
+import { initializeRecipeContent } from './content.js';
 import pg from 'pg';
 import { ProductConfigurationError } from './config.js';
-import { RECIPES_PRODUCT_ID, recipesProduct } from '../../src/data/recipes-product.js';
+import { RECIPES_PRODUCT_ID, recipesProduct, glpRecipesProduct } from '../../src/data/recipes-product.js';
 
 const pools = new Map();
 const initialized = new Map();
@@ -27,12 +28,16 @@ export async function getStore(env = process.env) {
         )`);
         await client.query('INSERT INTO recipe_products (id, kind, title, description) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO NOTHING',
           [RECIPES_PRODUCT_ID, 'recipes', recipesProduct.title, recipesProduct.description]);
+        await client.query('INSERT INTO recipe_products (id, kind, title, description) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO NOTHING', [glpRecipesProduct.id, 'recipes', glpRecipesProduct.title, glpRecipesProduct.description]);
+        await client.query('UPDATE recipe_products SET title = $1, description = $2 WHERE id = $3 AND title = $4', [recipesProduct.title, recipesProduct.description, RECIPES_PRODUCT_ID, '7 receitas para ajudar você a desinflamar!']);
+        await initializeRecipeContent(client);
         await client.query(`CREATE TABLE IF NOT EXISTS recipe_login_challenges (
           id text PRIMARY KEY, secret_hash text NOT NULL, email text NOT NULL,
           order_id text, expires_at timestamptz NOT NULL,
           confirmed_at timestamptz, redeemed_at timestamptz,
           created_at timestamptz NOT NULL DEFAULT now()
         )`);
+        await client.query("ALTER TABLE recipe_login_challenges ADD COLUMN IF NOT EXISTS product_id text NOT NULL DEFAULT '7-receitas-desinflamar'");
         await client.query(`CREATE TABLE IF NOT EXISTS recipe_orders (
           id text PRIMARY KEY, email text NOT NULL, product_id text NOT NULL REFERENCES recipe_products(id),
           amount_cents integer NOT NULL CHECK (amount_cents >= 100),
@@ -54,6 +59,7 @@ export async function getStore(env = process.env) {
           expires_at timestamptz NOT NULL, used_at timestamptz,
           created_at timestamptz NOT NULL DEFAULT now()
         )`);
+        await client.query("ALTER TABLE recipe_magic_links ADD COLUMN IF NOT EXISTS product_id text NOT NULL DEFAULT '7-receitas-desinflamar'");
         await client.query(`CREATE TABLE IF NOT EXISTS recipe_sessions (
           token_hash text PRIMARY KEY, email text NOT NULL REFERENCES recipe_accounts(email),
           expires_at timestamptz NOT NULL, created_at timestamptz NOT NULL DEFAULT now(),

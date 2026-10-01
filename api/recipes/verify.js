@@ -1,7 +1,7 @@
 import { SESSION_COOKIE, cookie, isAllowedCheckoutRequest, isSecureRequest, productAccessHeaders } from '../../server/recipes/access.js';
 import { readCommerceConfig } from '../../server/recipes/config.js';
 import { consumeMagicLink } from '../../server/recipes/flow.js';
-import { recipesProduct } from '../../src/data/recipes-product.js';
+import { recipeProductById, recipesProduct } from '../../src/data/recipes-product.js';
 
 function page(message, token = '', description = 'Seu link de acesso é pessoal e expira em 15 minutos. Ao confirmar, você poderá abrir a coleção neste dispositivo e no computador onde iniciou o pedido.') {
   const button = token ? `<form action="/api/recipes/verify" method="post"><input type="hidden" name="token" value="${token}"><button type="submit">Confirmar meu acesso</button></form>` : '<a href="/minhas-receitas">Voltar à coleção</a>';
@@ -35,7 +35,7 @@ export async function handleVerifyRequest(request, { env = process.env, store } 
     return new Response(null, {
       status: 303,
       headers: productAccessHeaders({
-        Location: new URL(recipesProduct.experiencePath, origin).href,
+        Location: new URL(recipeProductById(session.productId)?.experiencePath || recipesProduct.experiencePath, origin).href,
         'Set-Cookie': cookie(SESSION_COOKIE, session.token, { maxAge: session.maxAge, secure: isSecureRequest(request, env) }),
       }),
     });

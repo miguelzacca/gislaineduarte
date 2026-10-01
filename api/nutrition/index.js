@@ -49,7 +49,7 @@ export async function handleNutritionRequest(request, { env = process.env, store
         const row = (await client.query('SELECT intake_encrypted FROM nutrition_requests WHERE id=$1 FOR UPDATE', [patient.id])).rows[0];
         const intake = unseal(row.intake_encrypted, env);
         if (intake.aiConsent) {
-          await client.query('UPDATE nutrition_requests SET intake_encrypted=$1, updated_at=now() WHERE id=$2', [seal({ ...intake, aiConsent: false }, env), patient.id]);
+          await client.query('UPDATE nutrition_requests SET intake_encrypted=$1, analysis_encrypted=NULL, updated_at=now() WHERE id=$2', [seal({ ...intake, aiConsent: false }, env), patient.id]);
           await event(client, patient.id, 'ai_consent_revoked', 'patient');
         }
       });

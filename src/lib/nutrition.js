@@ -1,3 +1,4 @@
+import { extraIntakeErrors, sanitizeExtraIntake } from '../data/nutrition-intake-fields.js';
 import { activityLevels, allergies, conditions, foodById, foods, mealModules, nutrients, planTemplates, symptoms } from '../data/nutrition.js';
 import { intolerances } from '../data/nutrition-journey.js';
 import { journeyPlanErrors } from './nutrition-journey.js';
@@ -5,11 +6,11 @@ import { journeyPlanErrors } from './nutrition-journey.js';
 export const round = (value, digits = 1) => Math.round(value * 10 ** digits) / 10 ** digits;
 export const normalizeText = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
-export function calculateAnthropometry({ weight, height, age, sex, activity = 1.2, usualWeight, waist, hip, bodyFat }) {
+export function calculateAnthropometry({ weight, height, age, sex, activity = 1.2, usualWeight, waist, hip, bodyFat, pregnant = false }) {
   weight = Number(weight); height = Number(height); age = Number(age); activity = Number(activity);
-  if (![weight, height, age, activity].every(Number.isFinite) || weight < 25 || weight > 350 || height < 120 || height > 230 || age < 18 || age > 100 || !activityLevels.some(level => level.value === activity)) return null;
+  if (![weight, height, age, activity].every(Number.isFinite) || weight < 25 || weight > 350 || height < 120 || height > 230 || age < 18 || age > 100 || activity < 1 || activity > 2.5) return null;
   const bmi = weight / (height / 100) ** 2;
-  const resting = ['female', 'male'].includes(sex) ? 10 * weight + 6.25 * height - 5 * age + (sex === 'male' ? 5 : -161) : null;
+  const resting = !pregnant && age >= 19 && age <= 78 && ['female', 'male'].includes(sex) ? 10 * weight + 6.25 * height - 5 * age + (sex === 'male' ? 5 : -161) : null;
   return {
     bmi: round(bmi), resting: resting === null ? null : Math.round(resting), expenditure: resting === null ? null : Math.round(resting * activity),
     weightChangePercent: Number(usualWeight) >= 25 && Number(usualWeight) <= 350 ? round((Number(usualWeight) - weight) / Number(usualWeight) * 100) : null,
@@ -20,7 +21,7 @@ export function calculateAnthropometry({ weight, height, age, sex, activity = 1.
 }
 
 export function intakeErrors(input) {
-  const errors = {};
+  const errors = extraIntakeErrors(input);
   const selected = (key, value) => Array.isArray(input?.[key]) && input[key].includes(value);
   if (typeof input?.name !== 'string' || input.name.trim().length < 3 || input.name.length > 100) errors.name = 'Informe seu nome completo.';
   if (typeof input?.email !== 'string' || input.email.length > 254 || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(input.email)) errors.email = 'Confira seu e-mail.';
@@ -59,7 +60,7 @@ export function intakeErrors(input) {
 }
 
 export function sanitizeIntake(input) {
-  const result = {};
+  const result = sanitizeExtraIntake(input);
   for (const key of ['name', 'email', 'phone', 'sex', 'goal', 'diet', 'medications', 'clinicalNotes', 'routine', 'preferences', 'dislikes', 'foodExclusionNotes', 'allergyNotes', 'glp1Details', 'weightHistory', 'sleep', 'bowel', 'budget', 'otherConditionDetails', 'intoleranceNotes', 'seasoningPreferences', 'seasoningExclusions']) result[key] = String(input[key] || '').trim();
   result.email = result.email.toLowerCase();
   for (const key of ['age', 'weight', 'height', 'activity']) result[key] = Number(input[key]);
@@ -177,15 +178,16 @@ export function recommendedTemplate(intake = {}) {
 export function generatePlan(intake, templateId = recommendedTemplate(intake), variation = 0) {
   const template = planTemplates.find(item => item.id === templateId);
   if (!template) throw new Error('Selecione uma base válida.');
-  const profileIntake = { ...intake, conditions: [...new Set([...(intake.conditions || []), template.profile])] };
+  const profileIntake = { ...intake, ...(template.diet ? { diet: template.diet } : {}), conditions: [...new Set([...(intake.conditions || []), template.profile])] };
   const divided = template.pattern === 2;
   const seed = Number.isInteger(variation) ? Math.abs(variation % 97) : 0;
-  const preferredTags = {
+  const profileTags = {
     balanced: [], diabetes: ['wholegrain'], cardiovascular: ['wholegrain', 'fish', 'plant'],
     hypertension: ['wholegrain', 'plant'], renal: [], oncology: ['soft', 'cooked'],
     ibs: ['cooked'], gastric: ['soft', 'cooked'], hpylori: ['soft', 'cooked'],
     lactose: ['plant'], celiac: ['cooked'], glp1: ['soft', 'cooked'],
   }[template.profile] || [];
+  const preferredTags = [...profileTags, ...(template.pattern === 3 ? ['plant', 'wholegrain'] : template.pattern === 4 ? ['cooked', 'practical'] : [])];
   const slots = [
     ['breakfast', 'Café da manhã', '07:30'], ['snack', 'Lanche da manhã', '10:00'],
     ['lunch', 'Almoço', '12:30'], ['snack', 'Lanche da tarde', divided ? '15:30' : '16:00'],
@@ -204,7 +206,7 @@ export function generatePlan(intake, templateId = recommendedTemplate(intake), v
     // A practical week reuses a compact set of preparations; the varied week
     // deliberately opens the repertoire. Both still rotate compatible produce.
     const eligible = pool.slice(0, template.pattern !== 1 ? 4 : Math.max(7, pool.filter(module => module.tags.some(tag => preferredTags.includes(tag))).length));
-    const offset = seed + (template.pattern === 1 ? 2 : 0);
+    const offset = seed + template.pattern * 2;
     const start = (index + offset + (slotIndex === 3 ? 3 : 0)) % eligible.length;
     const rotated = eligible.slice(start).concat(eligible.slice(0, start));
     const result = rotated.reduce((best, module) => (usedModules.get(module.id) || 0) < (usedModules.get(best.id) || 0) ? module : best);

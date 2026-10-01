@@ -1,19 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { recipesProductPreview as product } from '../generated/recipes-product-preview.js';
+import { recipesProductPreview as defaultProduct, glpRecipesProductPreview } from '../generated/recipes-product-preview.js';
 import { biography, contactLink } from '../data/site.js';
 import { BrandMark } from './Brand.jsx';
 import { ProfessionalIdentity } from './Layout.jsx';
 import { Arrow, Portrait, TextLink } from './UI.jsx';
 
-const STORAGE_PREFIX = 'gislaine:receitas:v1';
-const cookingPortrait = {
-  src: '/images/recipes/gislaine-cozinheira-960.webp',
-  srcSet: [360, 540, 720, 960].map((width) => `/images/recipes/gislaine-cozinheira-${width}.webp ${width}w`).join(', '),
-  avifSrcSet: [360, 540, 720, 960].map((width) => `/images/recipes/gislaine-cozinheira-${width}.avif ${width}w`).join(', '),
-  width: 960,
-  height: 1280,
-  alt: 'Gislaine Duarte sorrindo, com avental verde de cozinha e um bolinho de coco e maçã na mão.',
-};
+const selectedProductId = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('product') === 'receitas-glp1' ? 'receitas-glp1' : defaultProduct.id;
+const initialProduct = () => selectedProductId() === 'receitas-glp1' ? glpRecipesProductPreview : defaultProduct;
+const apiPath = path => selectedProductId() === 'receitas-glp1' ? path + '?product=receitas-glp1' : path;
+const productPath = (path, name, value) => path + (path.includes('?') ? '&' : '?') + name + '=' + encodeURIComponent(value);
+const STORAGE_PREFIX = 'gislaine:receitas:v2';
+const cookingPortrait = { src: '/images/gislaine-duarte-960.webp', width: 960, height: 1280, alt: 'Retrato de Gislaine Duarte.' };
 
 function ProductPhoto({ image, className = '', eager = false, sizes = '(min-width: 900px) 50vw, 100vw' }) {
   return (
@@ -42,7 +39,7 @@ function Icon({ name }) {
   return null;
 }
 
-function CheckoutButton({ children = 'Quero acessar as 7 receitas', onActivate, className = '' }) {
+function CheckoutButton({ children = 'Quero acessar o livro', onActivate, className = '' }) {
   return (
     <button className={`button product-checkout-button ${className}`} type="button" onClick={onActivate}>
       <span>{children}</span><span className="button__icon"><Arrow /></span>
@@ -50,7 +47,7 @@ function CheckoutButton({ children = 'Quero acessar as 7 receitas', onActivate, 
   );
 }
 
-function ProductCheckoutDialog({ dialogRef, catalog, onRetry, accessStatus, onCheckAccess }) {
+function ProductCheckoutDialog({ product, dialogRef, catalog, onRetry, accessStatus, onCheckAccess }) {
   const { priceCents, available, status } = catalog;
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
@@ -68,7 +65,7 @@ function ProductCheckoutDialog({ dialogRef, catalog, onRetry, accessStatus, onCh
         checkoutTab.document.title = 'Preparando pagamento';
         checkoutTab.document.body.textContent = 'Preparando o pagamento seguro…';
       }
-      const response = await fetch('/api/recipes/checkout', {
+      const response = await fetch(apiPath('/api/recipes/checkout'), {
         method: 'POST', credentials: 'same-origin', cache: 'no-store',
         signal: AbortSignal.timeout(30_000),
         headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -83,7 +80,7 @@ function ProductCheckoutDialog({ dialogRef, catalog, onRetry, accessStatus, onCh
       }
       if (checkoutTab) {
         checkoutTab.location.href = data.checkoutUrl;
-        window.location.assign(`${product.experiencePath}?payment=pending`);
+        window.location.assign(productPath(product.experiencePath, 'payment', 'pending'));
       } else window.location.assign(data.checkoutUrl);
     } catch (failure) {
       checkoutTab?.close();
@@ -116,7 +113,7 @@ function ProductCheckoutDialog({ dialogRef, catalog, onRetry, accessStatus, onCh
   );
 }
 
-function RecipeCardsScene({ fallbackImage }) {
+function RecipeCardsScene({ product, fallbackImage }) {
   const hostRef = useRef(null);
   useEffect(() => {
     let destroy = () => {};
@@ -125,7 +122,7 @@ function RecipeCardsScene({ fallbackImage }) {
       if (!cancelled && hostRef.current) destroy = mountRecipeCardsScene(hostRef.current);
     }).catch(() => {});
     return () => { cancelled = true; destroy(); };
-  }, []);
+  }, [product.id]);
   return (
     <div className="product-hero-recipes" ref={hostRef} data-recipe-scene="" data-scene-images={product.recipes.map((recipe) => recipe.image.src).join('|')} aria-hidden="true">
       <div className="product-card-stack">
@@ -137,7 +134,7 @@ function RecipeCardsScene({ fallbackImage }) {
   );
 }
 
-function ProductFaq() {
+function ProductFaq({ product }) {
   return (
     <section className="section product-faq" aria-labelledby="product-faq-title">
       <div className="shell product-faq__grid">
@@ -154,6 +151,7 @@ function ProductFaq() {
 }
 
 export function RecipeProductLandingPage() {
+  const [product, setProduct] = useState(defaultProduct);
   const dialogRef = useRef(null);
   const [accessLocked, setAccessLocked] = useState(false);
   const [checkoutAccess, setCheckoutAccess] = useState('checking');
@@ -161,9 +159,10 @@ export function RecipeProductLandingPage() {
   const refreshCatalog = useCallback(async (signal = AbortSignal.timeout(10_000)) => {
     setCatalog({ status: 'loading', available: false, priceCents: null });
     try {
-      const response = await fetch('/api/recipes/catalog', { cache: 'no-store', signal });
+      const response = await fetch(apiPath('/api/recipes/catalog'), { cache: 'no-store', signal });
       if (!response.ok) throw new Error('Não foi possível consultar a coleção.');
       const data = await response.json();
+      setProduct(data.product || initialProduct());
       const available = data.available === true && Number.isSafeInteger(data.priceCents) && data.priceCents > 0;
       setCatalog({ status: 'ready', available, priceCents: available ? data.priceCents : null });
     } catch (failure) {
@@ -180,7 +179,7 @@ export function RecipeProductLandingPage() {
     if (!dialogRef.current?.open) dialogRef.current?.showModal();
     setCheckoutAccess('checking');
     try {
-      const response = await fetch('/api/recipes/status', { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10_000) });
+      const response = await fetch(apiPath('/api/recipes/status'), { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10_000) });
       if (!response.ok) throw new Error('Falha ao verificar acesso.');
       const data = await response.json();
       if (['ready', 'payment', 'email'].includes(data.state)) {
@@ -199,20 +198,20 @@ export function RecipeProductLandingPage() {
         <div className="shell product-hero__grid">
           <div className="product-hero__copy">
             <p className="eyebrow eyebrow--gold">{product.positioning} · por Gislaine Duarte</p>
-            <h1 id="product-title">7 receitas para ajudar você a <em>desinflamar!</em></h1>
+            <h1 id="product-title">{product.title}</h1>
             <p className="product-hero__subtitle">{product.subtitle}</p>
             <div className="product-hero__actions">
               <CheckoutButton onActivate={openCheckout} />
               <a className="text-link" href="#colecao">Conhecer a coleção <Arrow /></a>
             </div>
             {catalog.available && catalog.priceCents ? <p className="product-live-price">Acesso completo por {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(catalog.priceCents / 100)}</p> : null}
-            <p className="product-hero__trust"><span>7 receitas</span><span>3 formatos</span><span>acesso organizado</span></p>
+            <p className="product-hero__trust"><span>{product.recipes.length} receitas</span><span>3 formatos</span><span>acesso organizado</span></p>
           </div>
           <div className="product-hero-art">
             <div className="product-hero-art__halo" aria-hidden="true" />
             <ProductPhoto image={cookingPortrait} className="product-hero-art__portrait" eager sizes="(min-width: 1645px) 560px, (min-width: 768px) 34vw, (min-width: 625px) 420px, 67vw" />
-            <RecipeCardsScene fallbackImage={product.hero.image} />
-            <span className="product-hero-art__caption">7 lâminas · uma jornada prática</span>
+            <RecipeCardsScene product={product} fallbackImage={product.hero.image} />
+            <span className="product-hero-art__caption">{product.recipes.length} receitas · uma jornada prática</span>
           </div>
         </div>
       </section>
@@ -239,19 +238,20 @@ export function RecipeProductLandingPage() {
       <section className="product-preview" aria-labelledby="preview-title">
         <div className="shell">
           <div className="product-preview__heading">
-            <div><p className="eyebrow">A jornada</p><h2 id="preview-title">Do doce ao salgado,<br /><em>sete caminhos.</em></h2></div>
+            <div><p className="eyebrow">A jornada</p><h2 id="preview-title">Do doce ao salgado,<br /><em>novas possibilidades.</em></h2></div>
             <p>Uma prévia editorial da seleção. Ingredientes, modo de preparo, substituições e alertas ficam organizados na área da coleção.</p>
           </div>
           <div className="product-preview__list">
             {product.recipes.map((recipe) => (
               <article className="product-preview-item" key={recipe.id}>
-                <span className="product-preview-item__number">0{recipe.number}</span>
+                <span className="product-preview-item__number">{String(recipe.number).padStart(2, '0')}</span>
                 <ProductPhoto image={recipe.image} className="product-preview-item__image" sizes="(min-width: 900px) 34vw, 88vw" />
                 <div className="product-preview-item__copy">
                   <p className="eyebrow">{recipe.category}</p>
                   <h3>{recipe.name}</h3>
                   <p>{recipe.introduction}</p>
                   <span>{recipe.tags.join(' · ')}</span>
+                  <small className="recipe-editorial-context">{recipe.image.reference ? 'Ingrediente de referência. ' : ''}{recipe.image.credit?.author} · {recipe.image.credit?.license}{recipe.image.credit?.sourceUrl ? <> · <a href={recipe.image.credit.sourceUrl} target="_blank" rel="noopener noreferrer">Origem</a></> : null}{recipe.image.credit?.licenseUrl ? <> · <a href={recipe.image.credit.licenseUrl} target="_blank" rel="noopener noreferrer">Licença</a></> : null}</small>
                 </div>
               </article>
             ))}
@@ -326,19 +326,19 @@ export function RecipeProductLandingPage() {
         </div>
       </section>
 
-      <ProductFaq />
+      <ProductFaq product={product} />
 
       <section className="product-final-cta" aria-labelledby="final-cta-title">
         <div className="shell product-final-cta__inner">
           <BrandMark />
           <p className="eyebrow">Sua coleção, sempre à mão</p>
-          <h2 id="final-cta-title">Sete receitas.<br />Um jeito mais leve de <em>começar.</em></h2>
+          <h2 id="final-cta-title">Seu livro de receitas.<br />Um jeito mais leve de <em>começar.</em></h2>
           <p>{product.subtitle}</p>
           <div><CheckoutButton onActivate={openCheckout} /></div>
           <small>{product.educationalNotice}</small>
         </div>
       </section>
-      <ProductCheckoutDialog dialogRef={dialogRef} catalog={catalog} onRetry={() => { void refreshCatalog(); }} accessStatus={checkoutAccess} onCheckAccess={openCheckout} />
+      <ProductCheckoutDialog product={product} dialogRef={dialogRef} catalog={catalog} onRetry={() => { void refreshCatalog(); }} accessStatus={checkoutAccess} onCheckAccess={openCheckout} />
     </>
   );
 }
@@ -348,7 +348,7 @@ function useStoredState(key, initialValue) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(`${STORAGE_PREFIX}:${key}`);
+      const stored = window.localStorage.getItem(`${STORAGE_PREFIX}:${selectedProductId()}:${key}`);
       if (stored != null) setValue(JSON.parse(stored));
     } catch {
       // O estado em memória continua funcional quando o armazenamento falha.
@@ -420,13 +420,13 @@ function RecipeNavigation({ recipes, activeId, favorites, prepared, onSelect, on
   );
 }
 
-function RecipeDetail({ recipe, index, favorites, prepared, multiplier, checkedIngredients, checkedSteps, inShoppingList, onFavorite, onPrepared, onMultiplier, onIngredient, onStep, onShopping }) {
+function RecipeDetail({ recipe, index, total, favorites, prepared, multiplier, checkedIngredients, checkedSteps, inShoppingList, onFavorite, onPrepared, onMultiplier, onIngredient, onStep, onShopping }) {
   return (
     <article className="recipe-detail" aria-labelledby={`recipe-title-${recipe.id}`}>
       <div className="recipe-detail__hero">
         <ProductPhoto image={recipe.image} className="recipe-detail__photo" eager sizes="(min-width: 1000px) 48vw, 100vw" />
         <div className="recipe-detail__hero-copy">
-          <span className="recipe-detail__number">0{index + 1} / 07</span>
+          <span className="recipe-detail__number">{String(index + 1).padStart(2, '0')} / {total}</span>
           <p className="eyebrow">{recipe.category}</p>
           <h2 id={`recipe-title-${recipe.id}`}>{recipe.name}</h2>
           <p>{recipe.introduction}</p>
@@ -439,7 +439,7 @@ function RecipeDetail({ recipe, index, favorites, prepared, multiplier, checkedI
 
       <div className="recipe-facts" aria-label="Informações da receita">
         <div><span>Tempo</span><strong>{recipe.time.label}</strong>{recipe.time.inferred ? <small>Definição editorial a confirmar</small> : null}</div>
-        <div><span>Equipamentos</span><strong>{recipe.equipment.join(' · ')}</strong></div>
+        <div><span>Equipamentos</span><strong>{recipe.equipment.join(' · ') || 'Conforme o preparo'}</strong></div>
         <div><span>Ajuste</span><strong>{multiplier === 1 ? 'Receita original' : `${scaledNumber(multiplier)}× a receita`}</strong></div>
       </div>
 
@@ -447,7 +447,7 @@ function RecipeDetail({ recipe, index, favorites, prepared, multiplier, checkedI
         <section className="recipe-ingredients" aria-labelledby={`ingredients-${recipe.id}`}>
           <div className="recipe-section-heading">
             <div><p className="eyebrow eyebrow--gold">Checklist</p><h3 id={`ingredients-${recipe.id}`}>Ingredientes</h3></div>
-            <fieldset className="portion-control"><legend>Ajustar quantidade</legend>{[0.5, 1, 1.5, 2].map((value) => <button type="button" aria-pressed={multiplier === value} onClick={() => onMultiplier(recipe.id, value)} key={value}>{scaledNumber(value)}×</button>)}</fieldset>
+            {recipe.ingredients.some(item => item.quantity != null) ? <fieldset className="portion-control"><legend>Ajustar quantidade</legend>{[0.5, 1, 1.5, 2].map((value) => <button type="button" aria-pressed={multiplier === value} onClick={() => onMultiplier(recipe.id, value)} key={value}>{scaledNumber(value)}×</button>)}</fieldset> : <small>Medidas da receita original.</small>}
           </div>
           <ul>
             {recipe.ingredients.map((ingredient) => {
@@ -475,6 +475,8 @@ function RecipeDetail({ recipe, index, favorites, prepared, multiplier, checkedI
         <section className="recipe-allergens"><p className="eyebrow">Alergênicos e cuidados</p><ul>{recipe.allergens.map((allergen) => <li key={allergen.id}><strong>{allergen.label}</strong><span>{allergen.detail}</span></li>)}</ul></section>
       </div>
       <p className="recipe-editorial-context">{recipe.editorialContext}</p>
+      {recipe.nutrition ? <p className="recipe-editorial-context">Por porção: {recipe.nutrition.kcal} kcal · Proteínas {recipe.nutrition.protein} g · Carboidratos {recipe.nutrition.carbs} g · Gorduras {recipe.nutrition.fat} g. Fonte: {recipe.nutrition.source}</p> : null}
+      <p className="recipe-editorial-context">{recipe.image.reference ? 'Ingrediente de referência; não representa o resultado da receita. ' : ''}{recipe.image.credit?.author} · {recipe.image.credit?.license} {recipe.image.credit?.sourceUrl ? <a href={recipe.image.credit.sourceUrl} target="_blank" rel="noopener noreferrer">Origem da foto</a> : null}{recipe.image.credit?.licenseUrl ? <> · <a href={recipe.image.credit.licenseUrl} target="_blank" rel="noopener noreferrer">Licença</a></> : null}</p>
     </article>
   );
 }
@@ -540,15 +542,15 @@ export function RecipeLibrary({ data }) {
       <section className="recipe-app-hero">
         <div className="shell recipe-app-hero__grid">
           <div><p className="eyebrow eyebrow--gold">Bem-vinda à sua coleção</p><h1>{data.title}</h1><p>{data.subtitle}</p></div>
-          <div className="recipe-progress" aria-label={`${prepared.length} de 7 receitas preparadas`}><span><strong>{prepared.length}</strong> / 7</span><p>receitas preparadas</p><div><i style={{ width: `${Math.min(100, prepared.length / 7 * 100)}%` }} /></div></div>
+          <div className="recipe-progress" aria-label={`${data.recipes.filter(recipe => prepared.includes(recipe.id)).length} de ${data.recipes.length} receitas preparadas`}><span><strong>{data.recipes.filter(recipe => prepared.includes(recipe.id)).length}</strong> / {data.recipes.length}</span><p>receitas preparadas</p><div><i style={{ width: `${Math.min(100, data.recipes.filter(recipe => prepared.includes(recipe.id)).length / Math.max(1, data.recipes.length) * 100)}%` }} /></div></div>
         </div>
       </section>
 
       <section className="recipe-toolbar" aria-label="Ferramentas da coleção">
         <div className="shell recipe-toolbar__inner">
           <label className="recipe-search"><span className="sr-only">Pesquisar receita ou ingrediente</span><Icon name="search" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar receita ou ingrediente" /></label>
-          <fieldset className="recipe-filters"><legend className="sr-only">Filtrar receitas por categoria</legend>{['todas', 'doce', 'salgada'].map((filter) => <button type="button" aria-pressed={category === filter} onClick={() => setCategory(filter)} key={filter}>{filter === 'todas' ? 'Todas' : filter === 'doce' ? 'Doces' : 'Salgadas'}</button>)}</fieldset>
-          <div className="recipe-downloads"><a href={`${data.downloadEndpoint}?format=html`}><Icon name="download" />Versão offline</a><a href={`${data.downloadEndpoint}?format=pdf`}><Icon name="download" />PDF</a><button type="button" onClick={logout}>Sair da conta</button>{logoutError ? <span role="alert">{logoutError}</span> : null}</div>
+          <fieldset className="recipe-filters"><legend className="sr-only">Filtrar receitas por categoria</legend>{['todas', 'doce', 'salgada', 'bebida'].map((filter) => <button type="button" aria-pressed={category === filter} onClick={() => setCategory(filter)} key={filter}>{filter === 'todas' ? 'Todas' : filter === 'doce' ? 'Doces' : filter === 'bebida' ? 'Bebidas' : 'Salgadas'}</button>)}</fieldset>
+          <div className="recipe-downloads"><a href={productPath(data.downloadEndpoint, 'format', 'html')}><Icon name="download" />Versão offline</a><a href={productPath(data.downloadEndpoint, 'format', 'pdf')}><Icon name="download" />PDF</a><button type="button" onClick={logout}>Sair da conta</button>{logoutError ? <span role="alert">{logoutError}</span> : null}</div>
         </div>
       </section>
 
@@ -559,7 +561,7 @@ export function RecipeLibrary({ data }) {
           <a className="recipe-sidebar-shopping" href="#lista-de-compras"><Icon name="list" /><span><strong>{shoppingRecipes.length}</strong> receitas na lista de compras</span><Arrow /></a>
         </aside>
         <div className="recipe-app-content">
-          {active ? <RecipeDetail recipe={active} index={activeIndex} favorites={favorites} prepared={prepared} multiplier={multipliers[active.id] || 1} checkedIngredients={checkedIngredients[active.id] || []} checkedSteps={checkedSteps[active.id] || []} inShoppingList={shoppingRecipes.includes(active.id)} onFavorite={(id) => setFavorites(toggleInList(favorites, id))} onPrepared={(id) => setPrepared(toggleInList(prepared, id))} onMultiplier={(id, value) => setMultipliers({ ...multipliers, [id]: value })} onIngredient={(id, item) => toggleMapItem(setCheckedIngredients, checkedIngredients, id, item)} onStep={(id, item) => toggleMapItem(setCheckedSteps, checkedSteps, id, item)} onShopping={(id) => setShoppingRecipes(toggleInList(shoppingRecipes, id))} /> : null}
+          {active ? <RecipeDetail recipe={active} index={activeIndex} total={data.recipes.length} favorites={favorites} prepared={prepared} multiplier={multipliers[active.id] || 1} checkedIngredients={checkedIngredients[active.id] || []} checkedSteps={checkedSteps[active.id] || []} inShoppingList={shoppingRecipes.includes(active.id)} onFavorite={(id) => setFavorites(toggleInList(favorites, id))} onPrepared={(id) => setPrepared(toggleInList(prepared, id))} onMultiplier={(id, value) => setMultipliers({ ...multipliers, [id]: value })} onIngredient={(id, item) => toggleMapItem(setCheckedIngredients, checkedIngredients, id, item)} onStep={(id, item) => toggleMapItem(setCheckedSteps, checkedSteps, id, item)} onShopping={(id) => setShoppingRecipes(toggleInList(shoppingRecipes, id))} /> : null}
         </div>
       </div>
 
@@ -574,6 +576,7 @@ export function RecipeLibrary({ data }) {
 }
 
 function ProductAccessGate() {
+  const product = initialProduct();
   const [email, setEmail] = useState('');
   const emailRequested = useRef(false);
   const [waiting, setWaiting] = useState(true);
@@ -589,7 +592,7 @@ function ProductAccessGate() {
     const controller = new AbortController();
     const check = async () => {
       try {
-        const response = await fetch('/api/recipes/status', { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10_000)]) });
+        const response = await fetch(apiPath('/api/recipes/status'), { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10_000)]) });
         if (!response.ok) throw new Error('Falha ao verificar acesso.');
         const data = await response.json();
         if (!active) return;
@@ -610,7 +613,7 @@ function ProductAccessGate() {
     if (busy) return;
     setBusy(true); setMessage('');
     try {
-      const response = await fetch('/api/recipes/login', {
+      const response = await fetch(apiPath('/api/recipes/login'), {
         method: 'POST', credentials: 'same-origin', cache: 'no-store',
         signal: AbortSignal.timeout(30_000),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -660,7 +663,7 @@ export function RecipeExperiencePage() {
   const [state, setState] = useState({ status: 'loading', data: null });
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/recipes/content', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
+    fetch(apiPath('/api/recipes/content'), { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
       .then(async (response) => {
         if (response.status === 401) return setState({ status: 'unauthorized', data: null });
         if (!response.ok) throw new Error('Falha ao carregar a coleção.');
@@ -670,7 +673,7 @@ export function RecipeExperiencePage() {
       .catch((error) => { if (error.name !== 'AbortError') setState({ status: 'error', data: null }); });
     return () => controller.abort();
   }, []);
-  if (state.status === 'loading') return <section className="shell recipe-loading" aria-live="polite"><h1 className="sr-only">Sua jornada de 7 receitas</h1><BrandMark /><p>Preparando sua coleção…</p><span /></section>;
+  if (state.status === 'loading') return <section className="shell recipe-loading" aria-live="polite"><h1 className="sr-only">Seu livro de receitas</h1><BrandMark /><p>Preparando sua coleção…</p><span /></section>;
   if (state.status === 'unauthorized') return <ProductAccessGate />;
   if (state.status === 'error') return <section className="shell recipe-access-gate"><p className="eyebrow eyebrow--gold">Não foi possível carregar</p><h1>Tente novamente em instantes.</h1><p>A sessão não foi alterada. Recarregue a página ou volte à apresentação da coleção.</p><button className="button" type="button" onClick={() => window.location.reload()}><span>Recarregar</span><span className="button__icon"><Arrow /></span></button></section>;
   return <RecipeLibrary data={state.data} />;

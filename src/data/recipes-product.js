@@ -1,5 +1,9 @@
+import { expandedRecipes, glpRecipes } from './recipes-expanded.js';
+import { recipeAllergens } from './recipe-allergens.js';
+export { recipeAllergens } from './recipe-allergens.js';
+import photoCredits from '../../public/images/foods/credits.json' with { type: 'json' };
 /**
- * Fonte canônica do produto "7 receitas para ajudar você a desinflamar!".
+ * Fonte canônica do produto "Livro de receitas".
  *
  * Este módulo é server/build-only. Nunca o importe em componentes enviados ao
  * navegador. A landing usa `src/generated/recipes-product-preview.js`, gerado a
@@ -33,62 +37,20 @@
 
 export const RECIPES_PRODUCT_ID = '7-receitas-desinflamar';
 
-export const recipeAllergens = {
-  eggs: {
-    id: 'eggs',
-    label: 'Ovos',
-    detail: 'A receita contém ovos.',
-  },
-  milk: {
-    id: 'milk',
-    label: 'Leite e derivados',
-    detail: 'A receita contém leite e/ou derivados lácteos.',
-  },
-  whey: {
-    id: 'whey',
-    label: 'Whey protein',
-    detail: 'Whey é derivado do leite. Confira também os demais ingredientes e alergênicos declarados no rótulo do produto escolhido.',
-  },
-  oats: {
-    id: 'oats',
-    label: 'Aveia e possível contato com glúten',
-    detail: 'A aveia pode sofrer contaminação cruzada. Para uma preparação sem glúten, use aveia certificada e controle o contato com utensílios e superfícies.',
-  },
-  almonds: {
-    id: 'almonds',
-    label: 'Amêndoas (na alternativa low carb)',
-    detail: 'A farinha de amêndoas é uma oleaginosa e aparece somente na substituição low carb.',
-  },
-  cheese: {
-    id: 'cheese',
-    label: 'Queijos',
-    detail: 'A receita contém queijo ou oferece queijo como ingrediente opcional.',
-  },
-  certifiedGlutenFree: {
-    id: 'certifiedGlutenFree',
-    label: 'Atenção à certificação sem glúten',
-    detail: 'Use ingredientes certificados e evite contaminação cruzada para sustentar a alegação sem glúten.',
-  },
+const legacyPhotos = { 'bolinho-cacau-curcuma': 'oats', 'bolinho-coco-maca': 'yogurt', 'bolo-maca': 'apple', 'paozinho-fitness': 'egg', 'pao-abobrinha': 'zucchini', 'paozinho-tapioca': 'egg', 'torta-frango': 'chicken' };
+const foodPhoto = (foodId, caption = '') => {
+  const credit = photoCredits.photos.find(photo => photo.id === foodId);
+  return { src: credit.file, width: 960, height: 720, alt: caption || credit.caption, original: 'public' + credit.file, pdf: 'public' + credit.file, credit, reference: true };
 };
-
-const image = (slug, alt) => ({
-  src: `/images/recipes/${slug}-800.webp`,
-  srcSet: [480, 800, 1024].map((width) => `/images/recipes/${slug}-${width}.webp ${width}w`).join(', '),
-  avifSrcSet: [480, 800, 1024].map((width) => `/images/recipes/${slug}-${width}.avif ${width}w`).join(', '),
-  width: 1024,
-  height: 1536,
-  alt,
-  original: `src/assets/recipes/original/${slug}.png`,
-  pdf: `artifacts/recipes/assets/${slug}.jpg`,
-});
+const image = (slug) => foodPhoto(legacyPhotos[slug], 'Fotografia real de ingrediente de referência; não representa o resultado da receita.');
 
 const unit = (singular, plural = `${singular}s`) => ({ singular, plural });
 
 /** @type {{ id: string, title: string, shortTitle: string, subtitle: string, description: string, positioning: string, publicPath: string, experiencePath: string, downloadEndpoint: string, educationalNotice: string, commerce: { currency: string, priceCents: null, showPrice: boolean, note: string }, hero: object, formats: object[], whatYouFind: string[], audience: string[], faqs: { question: string, answer: string }[], recipes: CanonicalRecipe[] }} */
 export const recipesProduct = {
   id: RECIPES_PRODUCT_ID,
-  title: '7 receitas para ajudar você a desinflamar!',
-  shortTitle: 'Jornada de 7 receitas',
+  title: 'Livro de receitas',
+  shortTitle: 'Livro de receitas',
   subtitle: 'Uma seleção prática de receitas doces e salgadas para trazer mais variedade, sabor e intenção à sua rotina.',
   description: 'Uma coleção digital interativa criada para apoiar uma alimentação equilibrada com preparações possíveis, organização e cuidado no dia a dia.',
   positioning: 'Coleção digital de receitas',
@@ -103,16 +65,7 @@ export const recipesProduct = {
     note: 'Preço e disponibilidade são definidos no painel de gestão e consultados no momento da compra.',
   },
   hero: {
-    image: {
-      src: '/images/recipes/colecao-hero-1200.webp',
-      srcSet: [720, 1200, 1536].map((width) => `/images/recipes/colecao-hero-${width}.webp ${width}w`).join(', '),
-      avifSrcSet: [720, 1200, 1536].map((width) => `/images/recipes/colecao-hero-${width}.avif ${width}w`).join(', '),
-      width: 1536,
-      height: 1024,
-      alt: 'Mesa clara com a seleção das sete receitas: bolinhos, bolo de maçã, pães e torta de frango.',
-      original: 'src/assets/recipes/original/colecao-hero.png',
-      pdf: 'artifacts/recipes/assets/colecao-hero.jpg',
-    },
+    image: foodPhoto('oats', 'Fotografia real de aveia, um ingrediente do livro de receitas.'),
     socialImage: '/images/og-7-receitas.jpg',
   },
   formats: [
@@ -133,7 +86,7 @@ export const recipesProduct = {
     },
   ],
   whatYouFind: [
-    'Sete receitas doces e salgadas com ingredientes e preparo organizados.',
+    'Receitas doces e salgadas com ingredientes e preparo organizados.',
     'Alertas claros de alergênicos, substituições e observações importantes.',
     'Checklist por receita e lista de compras consolidada.',
     'Orientações de tempo apenas quando informadas ou marcadas como aproximadas.',
@@ -162,7 +115,7 @@ export const recipesProduct = {
     },
     {
       question: 'As receitas têm calorias ou macronutrientes?',
-      answer: 'Não. A coleção não apresenta valores nutricionais estimados, pois não foi realizado um cálculo verificável com marcas, rendimentos e porções padronizadas.',
+      answer: 'Valores nutricionais aparecem apenas quando a profissional cadastra um cálculo com fonte, rendimento e porções definidos. Receitas sem esse cálculo não exibem estimativas.',
     },
   ],
   recipes: [
@@ -428,12 +381,38 @@ export const recipesProduct = {
   ],
 };
 
+// Preserve o ID original para manter compras e links existentes.
+export const GLP_RECIPES_PRODUCT_ID = 'receitas-glp1';
+for (const recipe of recipesProduct.recipes) { recipe.productIds = [RECIPES_PRODUCT_ID]; recipe.published = true; }
+recipesProduct.recipes.push(...expandedRecipes);
+for (const recipe of [...expandedRecipes, ...glpRecipes]) {
+  recipe.image.credit = photoCredits.photos.find(photo => photo.id === recipe.image.creditId);
+  if (!recipe.published && recipe.validation.status === 'source-transcribed') recipe.validation.status = 'incomplete-source-pending-review';
+}
+for (const slug of ['bombom-banana-cacau', 'torta-proteica-frango', 'kafta-batatas', 'pao-fuba', 'tamaras-recheadas', 'bolo-banana-aveia']) {
+  const recipe = recipesProduct.recipes.find(item => item.slug === slug);
+  recipe.image = { src: '/images/recipes-real/' + slug + '.jpg', original: 'public/images/recipes-real/' + slug + '.jpg', pdf: 'public/images/recipes-real/' + slug + '.jpg', width: 1290, height: 1400, alt: 'Registro fotográfico fornecido para ' + recipe.name, reference: false, credit: { author: 'Arquivo fornecido pelo usuário', license: 'Autoria e licença original não informadas na referência' } };
+}
+export const glpRecipesProduct = {
+  ...recipesProduct, id: GLP_RECIPES_PRODUCT_ID, title: 'Receitas para GLP-1', shortTitle: 'Receitas para GLP-1',
+  subtitle: 'Preparações em pequenas porções para apoiar a conversa com sua nutricionista durante o acompanhamento.',
+  description: 'Livro educativo com preparações simples, texturas variadas, ingredientes e cuidados para personalizar durante o acompanhamento nutricional de quem utiliza GLP-1.',
+  publicPath: recipesProduct.publicPath + '?product=receitas-glp1', experiencePath: '/minhas-receitas?product=receitas-glp1',
+  downloadEndpoint: '/api/recipes/download?product=receitas-glp1', recipes: glpRecipes,
+  educationalNotice: 'Material educativo. A tolerância, a porção e as necessidades nutricionais variam. As receitas não substituem acompanhamento e não orientam doses ou ajustes de medicamentos GLP-1.',
+  hero: { ...recipesProduct.hero, image: foodPhoto('papaya') },
+};
+export const recipeProducts = [recipesProduct, glpRecipesProduct];
+export const allRecipes = [...recipesProduct.recipes, ...glpRecipes];
+export function recipeProductById(id = RECIPES_PRODUCT_ID) { return recipeProducts.find(product => product.id === id) || null; }
+export function requestedRecipeProduct(request) { return recipeProductById(new URL(request.url).searchParams.get('product') || RECIPES_PRODUCT_ID); }
+
 export function expandRecipeAllergens(recipe) {
-  return recipe.allergenIds.map((id) => recipeAllergens[id]);
+  return (recipe.allergenIds || []).map((id) => recipeAllergens[id]).filter(Boolean);
 }
 
-export function buildProtectedProductPayload() {
-  const publicImage = ({ src, srcSet, avifSrcSet, width, height, alt }) => ({ src, srcSet, avifSrcSet, width, height, alt });
+export function buildProtectedProductPayload(recipesProduct = recipeProducts[0]) {
+  const publicImage = ({ src, srcSet, avifSrcSet, width, height, alt, credit, reference }) => ({ src, srcSet, avifSrcSet, width, height, alt, credit, reference });
   return {
     id: recipesProduct.id,
     title: recipesProduct.title,
@@ -444,7 +423,7 @@ export function buildProtectedProductPayload() {
     publicPath: recipesProduct.publicPath,
     experiencePath: recipesProduct.experiencePath,
     downloadEndpoint: recipesProduct.downloadEndpoint,
-    recipes: recipesProduct.recipes.map(({ validation: _validation, editorialContext, image: recipeImage, ...recipe }) => ({
+    recipes: recipesProduct.recipes.filter(recipe => recipe.published !== false).map(({ validation: _validation, editorialContext, image: recipeImage, ...recipe }) => ({
       ...recipe,
       image: publicImage(recipeImage),
       editorialContext,
@@ -453,9 +432,9 @@ export function buildProtectedProductPayload() {
   };
 }
 
-export function buildPublicProductPreview() {
-  const publicImage = ({ src, srcSet, avifSrcSet, width, height, alt }) => ({
-    src, srcSet, avifSrcSet, width, height, alt,
+export function buildPublicProductPreview(recipesProduct = recipeProducts[0]) {
+  const publicImage = ({ src, srcSet, avifSrcSet, width, height, alt, credit, reference }) => ({
+    src, srcSet, avifSrcSet, width, height, alt, credit, reference,
   });
   return {
     id: recipesProduct.id,
@@ -476,7 +455,7 @@ export function buildPublicProductPreview() {
     whatYouFind: recipesProduct.whatYouFind,
     audience: recipesProduct.audience,
     faqs: recipesProduct.faqs,
-    recipes: recipesProduct.recipes.map((recipe, index) => ({
+    recipes: recipesProduct.recipes.filter(recipe => recipe.published !== false).map((recipe, index) => ({
       id: recipe.id,
       slug: recipe.slug,
       number: index + 1,

@@ -42,10 +42,12 @@ const variants = [
   { id: 'pratica', name: 'Rotina prática', description: 'Preparos simples e ingredientes do dia a dia.', pattern: 0 },
   { id: 'variada', name: 'Mesa variada', description: 'Outras combinações para ampliar o repertório.', pattern: 1 },
   { id: 'fracionada', name: 'Refeições menores', description: 'Mais momentos no dia; volumes a revisar.', pattern: 2 },
+  { id: 'vegetal', name: 'Mesa vegetal', description: 'Combinações com leguminosas, cereais e hortaliças, sem ingredientes de origem animal.', pattern: 3, diet: 'vegan' },
+  { id: 'caseira', name: 'Cozinha de casa', description: 'Cuscuz, raízes, preparos cozidos e combinações brasileiras para a semana.', pattern: 4 },
 ];
 export const planTemplates = clinicalProfiles.flatMap(profile => variants.map(variant => ({
   id: `${profile.id}-${variant.id}`, profile: profile.id, name: `${profile.name} · ${variant.name}`,
-  description: `${variant.description} ${profile.focus}`, pattern: variant.pattern, meals: variant.pattern === 2 ? 6 : 5,
+  description: `${variant.description} ${profile.focus}`, pattern: variant.pattern, diet: variant.diet, meals: variant.pattern === 2 ? 6 : 5,
   goals: ['balanced', 'diabetes', 'glp1'].includes(profile.id) ? goalOptions.map(goal => goal.id) : ['renal', 'oncology'].includes(profile.id) ? ['clinical'] : ['clinical', 'wellbeing', 'weight-management'],
   tags: [profile.name, variant.name, ...(profile.id === 'balanced' ? goalOptions.filter(goal => goal.id !== 'clinical').map(goal => goal.label) : ['Contexto clínico', profile.id === 'glp1' ? 'GLP-1' : profile.name])],
 })));

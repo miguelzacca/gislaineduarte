@@ -1,14 +1,17 @@
-import { RECIPES_PRODUCT_ID } from '../../src/data/recipes-product.js';
+import { readRecipeProduct } from '../../server/recipes/content.js';
+import { requestedRecipeProduct } from '../../src/data/recipes-product.js';
 import { productAccessHeaders } from '../../server/recipes/access.js';
 import { readCommerceConfig } from '../../server/recipes/config.js';
 import { getStore } from '../../server/recipes/store.js';
 
-export async function handleCatalogRequest(_request, { env = process.env, store } = {}) {
+export async function handleCatalogRequest(request, { env = process.env, store } = {}) {
+  const product = requestedRecipeProduct(request);
+  if (!product) return Response.json({ error: 'Produto não encontrado.' }, { status: 404, headers: productAccessHeaders() });
   try {
-    if (!readCommerceConfig(env).ready) throw new Error('Pagamento ainda não configurado.');
+    const commerceReady = readCommerceConfig(env).ready;
     const db = store || await getStore(env);
-    const result = await db.query('SELECT price_cents FROM recipe_products WHERE id = $1 AND published = true AND price_cents IS NOT NULL', [RECIPES_PRODUCT_ID]);
-    return Response.json({ available: Boolean(result.rowCount), priceCents: result.rows[0]?.price_cents || null, currency: 'BRL' }, { headers: productAccessHeaders() });
+    const result = await db.query('SELECT price_cents FROM recipe_products WHERE id = $1 AND published = true AND price_cents IS NOT NULL', [product.id]);
+    return Response.json({ available: commerceReady && Boolean(result.rowCount), priceCents: result.rows[0]?.price_cents || null, currency: 'BRL', product: await readRecipeProduct(db, product.id, { publicPreview: true }) }, { headers: productAccessHeaders() });
   } catch {
     return Response.json({ available: false, priceCents: null, currency: 'BRL' }, { headers: productAccessHeaders() });
   }

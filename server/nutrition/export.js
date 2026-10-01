@@ -5,11 +5,12 @@ import { foodById, foodSource } from '../../src/data/nutrition.js';
 import { dayTotals, shoppingList, sumItems } from '../../src/lib/nutrition.js';
 import { site } from '../../src/data/site.js';
 import { formatFoodPortion } from '../../src/lib/nutrition-journey.js';
-import { assessmentSections, mealVisualData } from './presentation.js';
+import { assessmentHighlights, assessmentSections, mealVisualData, plateGroupLabels } from './presentation.js';
+import { curatedImageBuffer, curatedImageCredit } from './assets.js';
 
 export { buildPlanHtml } from './html.js';
 const decimal = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
-const portionText = (foodId, grams) => formatFoodPortion(foodId, grams).replace('Quantidade: ', '').replace(' · Medida caseira: ', ' · medida caseira: ').replaceAll('≈', 'aprox.');
+const portionText = (foodId, grams) => formatFoodPortion(foodId, grams).replace('Quantidade: ', '').replace(' · Medida caseira: ', ' · ').replaceAll('≈', 'aprox.').replace(/ \(1 [^)]+\)$/, '');
 const imageCache = new Map();
 async function imageBuffer(foodId) {
   if (!foodById[foodId]) throw new Error('Alimento desconhecido.');
@@ -17,7 +18,7 @@ async function imageBuffer(foodId) {
   return imageCache.get(foodId);
 }
 export async function buildPlanPdf({ plan, patientName, revision, approvedAt, draft = false }) {
-  const doc = new PDFDocument({ size: 'A4', margin: 44, bufferPages: true, info: { Title: `${plan.title} · ${patientName}`, Author: site.fullName } });
+  const doc = new PDFDocument({ size: 'A4', margins: { top: 44, left: 44, right: 44, bottom: 94 }, bufferPages: true, info: { Title: `${plan.title} · ${patientName}`, Author: site.fullName } });
   const chunks = []; const finished = new Promise((resolvePromise, reject) => { doc.on('data', chunk => chunks.push(chunk)); doc.on('end', () => resolvePromise(Buffer.concat(chunks))); doc.on('error', reject); });
   const [body, serif] = await Promise.all(['body', 'editorial'].map(font => readFile(resolve('server/nutrition/fonts', `${font}.ttf`))));
   doc.registerFont('Body', body); doc.registerFont('Editorial', serif);
@@ -29,7 +30,7 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
   const width = doc.page.width - 88;
   const text = (value, size = 10, options = {}) => doc.font('Body').fontSize(size).fillColor('#173f35').text(String(value), options);
   const title = (value, size = 32) => doc.font('Editorial').fontSize(size).fillColor('#173f35').text(value);
-  const ensure = height => { if (doc.y + height > 762) { doc.addPage(); doc.y = 44; } };
+  const ensure = height => { if (doc.y + height > 748) { doc.addPage(); doc.y = 44; } };
   const section = name => { ensure(70); doc.moveDown(0.7); title(name, 28); doc.moveDown(0.3); };
   const coverTitleHeight = doc.font('Editorial').fontSize(40).heightOfString(plan.title, { width });
   const coverNameHeight = doc.font('Body').fontSize(12).heightOfString(`Preparado para ${patientName}`, { width });
@@ -53,6 +54,42 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
     text('Alimentos simples. Escolhas possíveis. Cuidado todos os dias.', 9);
   }
   doc.addPage(); title('Por que este plano foi feito assim', 34); doc.moveDown(.5);
+  const clinical = assessmentHighlights(plan);
+  if (clinical.metrics.length) {
+    const cardWidth = (width - 12) / 2;
+    for (let start = 0; start < clinical.metrics.length; start += 2) {
+      ensure(97); const y = doc.y;
+      for (const [index, metric] of clinical.metrics.slice(start, start + 2).entries()) {
+        const x = 44 + index * (cardWidth + 12);
+        doc.roundedRect(x, y, cardWidth, 87, 9).fill('#edf1e5');
+        doc.font('Body').fontSize(9).fillColor('#496b56').text(metric.label, x + 12, y + 11, { width: cardWidth - 24, height: 25 });
+        doc.font('Editorial').fontSize(25).fillColor('#173f35').text(`${decimal(metric.value)} ${metric.unit}`, x + 12, y + 40, { width: cardWidth - 24 });
+      }
+      doc.x = 44; doc.y = y + 98;
+    }
+  }
+  if (clinical.bmi) {
+    ensure(150); section('Entendendo o seu IMC');
+    text(`${decimal(clinical.bmi.value)} kg/m² · ${clinical.bmi.label}`, 12); doc.moveDown(.6);
+    if (clinical.bmi.bands.length) {
+      const y = doc.y; const count = clinical.bmi.bands.length; const bandWidth = (width - (count - 1) * 5) / count;
+      clinical.bmi.bands.forEach((band, index) => {
+        const x = 44 + index * (bandWidth + 5); const active = index === clinical.bmi.activeIndex;
+        doc.roundedRect(x, y, bandWidth, 63, 6).fill(active ? '#173f35' : '#edf1e5');
+        doc.font('Body').fontSize(7).fillColor(active ? '#fffdf7' : '#173f35').text(`${active ? 'SEU RESULTADO\n' : ''}${band.label}\n${band.range.replace('≥', 'a partir de').replace('≤', 'até')}`, x + 6, y + 8, { width: bandWidth - 12, lineGap: 2 });
+      });
+      doc.x = 44; doc.y = y + 75;
+    }
+    text(clinical.bmi.note, 9, { width, lineGap: 2 }); doc.moveDown(.7);
+  }
+  if (clinical.metrics.some(item => ['resting', 'expenditure'].includes(item.id))) { ensure(60); text(clinical.energyNote, 9, { width, lineGap: 2 }); doc.moveDown(.7); }
+  if (clinical.metrics.some(item => /Mass|BodyFat/.test(item.id))) { ensure(65); text(clinical.compositionNote, 9, { width, lineGap: 2 }); doc.moveDown(.7); }
+  if (clinical.bristol) {
+    ensure(130); section('Seu relato intestinal');
+    text(`Bristol tipo ${clinical.bristol.type} · ${clinical.bristol.label}`, 11); doc.moveDown(.3);
+    text(`${clinical.bristol.description} A escala descreve o aspecto das fezes. Frequência, desconforto e mudanças fazem parte da conversa; o tipo informado isoladamente não define diagnóstico.`, 9, { width, lineGap: 2 });
+    doc.moveDown(.4); text('Referência: Bristol Stool Chart · NHS England', 8, { link: clinical.bristolSource.url, underline: true });
+  }
   for (const item of assessmentSections(plan)) {
     section(item.title);
     for (const line of item.lines) {
@@ -64,10 +101,14 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
   if (modules.length) {
     section('Conteúdos para você');
     for (const module of modules) {
+      const photo = await curatedImageBuffer(module.image);
+      if (photo) { ensure(200); doc.save().roundedRect(44, doc.y, width, 145, 10).clip(); doc.image(photo, 44, doc.y, { cover: [width, 145], align: 'center', valign: 'center' }); doc.restore(); doc.x = 44; doc.y += 155; }
       section(module.title);
       text(module.content, 10, { width, lineGap: 3 }); doc.moveDown(.5);
       if (module.foodIds.length) text(`Alimentos deste conteúdo: ${module.foodIds.map(id => foodById[id].name).join(', ')}.`, 9, { width, lineGap: 2 });
       text('Conteúdo selecionado e revisado pela nutricionista para este plano.', 8, { width }); doc.moveDown(.7);
+      const credit = await curatedImageCredit(module.image);
+      if (credit) { ensure(35); text(`Fotografia: ${credit.author} · ${credit.license}. Recorte e redimensionamento.`, 8, { width, link: credit.sourceUrl, underline: true }); text('Licença da fotografia', 8, { link: credit.licenseUrl, underline: true }); doc.moveDown(.7); }
     }
   }
   for (const day of plan.days) {
@@ -87,10 +128,14 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
       });
       const rowHeights = cells.map(cell => cell.height);
       const noteHeight = meal.note ? doc.font('Body').fontSize(8).heightOfString(meal.note, { width: width - 16, lineGap: 2 }) + 12 : 0;
-      const visual = mealVisualData(meal.items);
+      const visual = mealVisualData(meal.items, plan.plateGuide);
       const legendLines = visual.portions.map(part => `${part.name}: ${decimal(part.grams)} g`);
-      const legendHeights = legendLines.map(line => doc.font('Body').fontSize(8).heightOfString(line, { width: 188, lineGap: 1 }) + 3);
-      const visualHeight = Math.max(82, legendHeights.reduce((sum, value) => sum + value, 0) + 16) + 21;
+      const legendHeights = legendLines.map(line => doc.font('Body').fontSize(8).heightOfString(line, { width: 162, lineGap: 1 }) + 3);
+      const guideText = visual.plateGuide ? Object.entries(plateGroupLabels).map(([group, label]) => `${decimal(visual.plateGuide[group])}% ${label}`).join(' · ') : '';
+      const guideHeight = guideText ? doc.font('Body').fontSize(8).heightOfString(guideText, { width: 162, lineGap: 1 }) + 8 : 0;
+      const smallPlate = meal.items.length <= 2;
+      const plateScale = smallPlate ? .38 : .5;
+      const visualHeight = Math.max(smallPlate ? 90 : 110, legendHeights.reduce((sum, value) => sum + value, 0) + 20 + guideHeight) + 33;
       const headingHeight = Math.max(24, doc.font('Editorial').fontSize(18).heightOfString(`${meal.time}  ${meal.name}`, { width: width - 20 }) + 8);
       const drawMealHeading = () => {
         const top = doc.y;
@@ -98,28 +143,36 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
         doc.fillColor('#173f35').font('Editorial').fontSize(18).text(`${meal.time}  ${meal.name}`, 52, top+4, {width:width-20});
         return top + headingHeight + 5;
       };
-      if (doc.y + visualHeight + headingHeight + (rowHeights[0] || 0) > 762) { doc.addPage(); doc.x = 44; title(`${day.label} · continuação`, 28); doc.moveDown(.4); }
+      const fullMealHeight = visualHeight + headingHeight + rowHeights.reduce((sum, height) => sum + height, 0) + noteHeight + 10;
+      const minimumHeight = fullMealHeight <= 650 ? fullMealHeight : visualHeight + headingHeight + (rowHeights[0] || 0);
+      if (doc.y + minimumHeight > 748) { doc.addPage(); doc.x = 44; title(`${day.label} · continuação`, 28); doc.moveDown(.4); }
       let y=drawMealHeading();
-      doc.save().translate(44, y + 8).scale(.66);
-      for (const part of visual.portions) doc.path(part.path).fill(part.color);
-      doc.restore();
-      doc.font('Body').fontSize(8).fillColor('#173f35').text('Seu prato em gramas', 132, y + 2, { width: 185 });
+      const plateCenterY = y + 7 + 100 * plateScale;
+      doc.circle(108, plateCenterY, 105 * plateScale).fillAndStroke('#fafaf4', '#dbded4');
+      doc.circle(108, plateCenterY, 92 * plateScale).strokeColor('#e3e4dc').stroke();
+      for (const part of visual.portions) {
+        const radius = part.radius * plateScale; const px = 108 + (part.x - 100) * plateScale; const py = plateCenterY + (part.y - 100) * plateScale;
+        doc.save().circle(px, py, radius).clip();
+        doc.image(await pdfImage(part.foodId), px - radius, py - radius, { cover: [radius * 2, radius * 2], align: 'center', valign: 'center' }); doc.restore();
+      }
+      doc.font('Body').fontSize(8).fillColor('#173f35').text('Alimentos da refeição', 180, y + 2, { width: 155 });
       let legendY = y + 17;
       visual.portions.forEach((part, index) => {
-        doc.circle(133, legendY + 4, 2.5).fill(part.color);
-        doc.font('Body').fontSize(8).fillColor('#173f35').text(legendLines[index], 141, legendY, { width: 188, lineGap: 1 }); legendY += legendHeights[index];
+        doc.circle(182, legendY + 4, 2.5).fill(part.color);
+        doc.font('Body').fontSize(8).fillColor('#173f35').text(legendLines[index], 190, legendY, { width: 162, lineGap: 1 }); legendY += legendHeights[index];
       });
+      if (guideText) doc.font('Body').fontSize(8).fillColor('#806624').text(guideText, 180, legendY + 5, { width: 162, lineGap: 1 });
       [['protein', 'Proteínas', '#52715a'], ['carbs', 'Carboidratos', '#b38d45'], ['fat', 'Gorduras', '#9b6557']].forEach(([nutrient, label, color], index) => {
         const barY = y + index * 24;
-        doc.font('Body').fontSize(8).fillColor('#173f35').text(`${label}: ${decimal(visual.values[nutrient])} g`, 344, barY, { width: 160 });
-        doc.rect(344, barY + 12, 160, 5).fill('#e4e8dc');
-        if (visual.values[nutrient] > 0) doc.rect(344, barY + 12, visual.values[nutrient] / visual.max * 160, 5).fill(color);
+        doc.font('Body').fontSize(8).fillColor('#173f35').text(`${label}: ${decimal(visual.values[nutrient])} g`, 370, barY, { width: 172 });
+        doc.rect(370, barY + 12, 170, 5).fill('#e4e8dc');
+        if (visual.values[nutrient] > 0) doc.rect(370, barY + 12, visual.values[nutrient] / visual.max * 170, 5).fill(color);
       });
-      doc.font('Body').fontSize(7).fillColor('#496b56').text(`Mesma escala: 0 a ${decimal(visual.max)} g de nutriente.`, 344, y + 73, { width: 160 });
-      doc.font('Body').fontSize(7).fillColor('#496b56').text('Diagrama proporcional à massa dos alimentos, sem representar volume ou tamanho real do prato. Fotos ajudam a reconhecer os alimentos.', 44, y + visualHeight - 17, { width, lineGap: 1 });
+      doc.font('Body').fontSize(7).fillColor('#496b56').text(`Mesma escala: 0 a ${decimal(visual.max)} g de nutriente.`, 370, y + 73, { width: 172 });
+      doc.font('Body').fontSize(7).fillColor('#496b56').text('Montagem ilustrativa com fotografias reais. Siga os pesos escritos. Percentuais, quando exibidos, orientam grupos alimentares; não são percentuais de macronutrientes nem porções em escala.', 44, y + visualHeight - 27, { width, lineGap: 1 });
       y += visualHeight;
       for (let i=0;i<cells.length;i++) {
-        if (y + rowHeights[i] > 768) {
+        if (y + rowHeights[i] > 748) {
           doc.addPage(); doc.x=44; title(`${day.label} · continuação`, 28); doc.moveDown(.4); y=drawMealHeading();
         }
         const cell=cells[i];
@@ -136,7 +189,7 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
       doc.x=44;doc.y+=5;
     }
     const journalTop = doc.y + 20;
-    const journalHeight = Math.min(180, 752 - journalTop);
+    const journalHeight = Math.min(180, 748 - journalTop);
     if (journalHeight >= 100) {
       doc.roundedRect(44, journalTop, width, journalHeight, 10).fill('#f2f4eb');
       doc.font('Editorial').fontSize(23).fillColor('#173f35').text('Como foi o seu dia?', 58, journalTop + 14, { width: width - 28 });
@@ -171,7 +224,7 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
       const row = extraIds.slice(start, start + 4);
       const nameHeights = row.map(foodId => doc.font('Body').fontSize(9).heightOfString(foodById[foodId].name, { width: cardWidth - 16, lineGap: 2 }));
       const rowHeight = imageHeight + Math.max(...nameHeights) + 16;
-      if (doc.y + rowHeight > 762) { doc.addPage(); doc.x = 44; title('Possibilidades de troca · continuação', 28); doc.moveDown(.6); }
+      if (doc.y + rowHeight > 748) { doc.addPage(); doc.x = 44; title('Possibilidades de troca · continuação', 28); doc.moveDown(.6); }
       const top = doc.y;
       for (let index = 0; index < row.length; index++) {
         const foodId = row[index]; const left = 44 + index * (cardWidth + 12);

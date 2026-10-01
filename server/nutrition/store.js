@@ -29,6 +29,8 @@ export async function getNutritionStore(env = process.env, injectedStore) {
       await client.query('SELECT pg_advisory_xact_lock(71020260926)');
       await client.query(`CREATE TABLE IF NOT EXISTS nutrition_settings (id integer PRIMARY KEY CHECK (id = 1), offer jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())`);
       await client.query('INSERT INTO nutrition_settings (id, offer) VALUES (1, $1) ON CONFLICT (id) DO NOTHING', [JSON.stringify(defaultOffer)]);
+      await client.query('ALTER TABLE nutrition_settings ADD COLUMN IF NOT EXISTS curated_library jsonb');
+      await client.query('ALTER TABLE nutrition_settings ADD COLUMN IF NOT EXISTS library_revision integer NOT NULL DEFAULT 0');
       await client.query(`CREATE TABLE IF NOT EXISTS nutrition_requests (
         id uuid PRIMARY KEY, intake_encrypted text NOT NULL, consent_version text NOT NULL, consent_at timestamptz NOT NULL DEFAULT now(),
         access_hash text NOT NULL UNIQUE, access_expires_at timestamptz NOT NULL DEFAULT now() + interval '90 days',
@@ -43,6 +45,7 @@ export async function getNutritionStore(env = process.env, injectedStore) {
         created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
       )`);
       await client.query('ALTER TABLE nutrition_requests ADD COLUMN IF NOT EXISTS first_delivered_at timestamptz');
+      await client.query('ALTER TABLE nutrition_requests ADD COLUMN IF NOT EXISTS analysis_encrypted text');
       await client.query(`CREATE TABLE IF NOT EXISTS nutrition_events (
         id bigserial PRIMARY KEY, request_id uuid NOT NULL REFERENCES nutrition_requests(id) ON DELETE CASCADE,
         type text NOT NULL, actor text NOT NULL, created_at timestamptz NOT NULL DEFAULT now()
@@ -57,6 +60,7 @@ export async function getNutritionStore(env = process.env, injectedStore) {
       )`);
       await client.query("ALTER TABLE nutrition_templates ADD COLUMN IF NOT EXISTS goals jsonb NOT NULL DEFAULT '[]'::jsonb");
       await client.query("ALTER TABLE nutrition_templates ADD COLUMN IF NOT EXISTS tags jsonb NOT NULL DEFAULT '[]'::jsonb");
+      await client.query('ALTER TABLE nutrition_templates ADD COLUMN IF NOT EXISTS revision integer NOT NULL DEFAULT 1');
       await client.query(`CREATE TABLE IF NOT EXISTS nutrition_plan_versions (
         request_id uuid NOT NULL REFERENCES nutrition_requests(id) ON DELETE CASCADE,
         revision integer NOT NULL, stage text NOT NULL, reason text NOT NULL,

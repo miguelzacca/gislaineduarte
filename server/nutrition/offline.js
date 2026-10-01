@@ -6,6 +6,7 @@ export function initializeOfflinePlan(config) {
   const byId = id => document.getElementById(id);
   const each = (selector, visit) => document.querySelectorAll(selector).forEach(visit);
   const number = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
+  const svgNamespace = document.querySelector('.plate-photo').namespaceURI;
   const object = value => value && !Array.isArray(value) && typeof value === 'object' ? value : {};
   const cleanState = raw => {
     const input = object(raw);
@@ -108,7 +109,7 @@ export function initializeOfflinePlan(config) {
           const values = Object.fromEntries(Object.keys(total).map(nutrient => [nutrient, (Number(food[nutrient]) || 0) * option.grams / 100]));
           card.querySelector('[data-food-nutrients]').textContent = number(values.kcal) + ' kcal · Proteínas ' + number(values.protein) + ' g · Carboidratos ' + number(values.carbs) + ' g · Gorduras ' + number(values.fat) + ' g';
           for (const nutrient of Object.keys(mealValues)) mealValues[nutrient] += values[nutrient];
-          selectedItems.push({ name: food.name, grams: option.grams });
+          selectedItems.push({ name: food.name, grams: option.grams, foodId: option.foodId, plateGroup: food.plateGroup });
           for (const nutrient of Object.keys(total)) total[nutrient] += values[nutrient];
           mealEnergy += values.kcal;
           card.querySelectorAll('[data-choice]').forEach(radio => { radio.checked = Number(radio.value) === item.options.indexOf(option); });
@@ -122,20 +123,25 @@ export function initializeOfflinePlan(config) {
           visual.querySelector('[data-macro-bar="' + nutrient + '"]').style.width = value / maximum * 100 + '%';
         }
         visual.querySelector('[data-macro-scale]').textContent = 'Mesma escala: 0 a ' + number(maximum) + ' g de nutriente.';
-        const chart = visual.querySelector('[data-mass-chart]'); const legend = visual.querySelector('[data-mass-legend]');
+        const chart = visual.querySelector('[data-food-plate]'); const legend = visual.querySelector('[data-mass-legend]');
         chart.replaceChildren(); legend.replaceChildren();
-        const mass = selectedItems.reduce((sum, item) => sum + item.grams, 0);
         const colors = ['#315e49', '#b38d45', '#9b6557', '#668092', '#879747', '#77648b', '#477b73'];
-        let angle = -Math.PI / 2;
         selectedItems.forEach((item, index) => {
-          const start = angle; angle += item.grams / mass * Math.PI * 2;
-          const steps = Math.max(1, Math.ceil((angle - start) / .10));
-          const points = Array.from({ length: steps + 1 }, (_, i) => { const a = start + (angle - start) * i / steps; return (60 + 52 * Math.cos(a)).toFixed(2) + ' ' + (60 + 52 * Math.sin(a)).toFixed(2); });
-          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.setAttribute('d', 'M 60 60 L ' + points.join(' L ') + ' Z'); path.setAttribute('fill', colors[index % colors.length]); path.setAttribute('stroke', '#fffdf7'); path.setAttribute('stroke-width', '1.5'); chart.append(path);
+          const count = selectedItems.length; const angle = -Math.PI / 2 + index * Math.PI * 2 / count;
+          const distance = count === 1 ? 0 : count === 2 ? 30 : 39;
+          const photo = document.createElementNS(svgNamespace, 'svg');
+          photo.setAttribute('class', 'plate-photo'); photo.setAttribute('viewBox', '0 0 384 288'); photo.setAttribute('aria-hidden', 'true');
+          photo.style.left = (100 + Math.cos(angle) * distance) / 2 + '%'; photo.style.top = (100 + Math.sin(angle) * distance) / 2 + '%';
+          photo.style.width = photo.style.height = (count <= 2 ? 43 : count <= 4 ? 35 : 29) + '%';
+          const image = document.createElementNS(svgNamespace, 'use'); image.setAttribute('href', '#photo-' + item.foodId); photo.append(image); chart.append(photo);
           const row = document.createElement('li'); const dot = document.createElement('i'); dot.style.background = colors[index % colors.length]; dot.setAttribute('aria-hidden', 'true');
           row.append(dot, item.name + ': ' + number(item.grams) + ' g'); legend.append(row);
         });
+        const targets = visual.querySelector('[data-plate-targets]'); targets.replaceChildren();
+        const labels = { protein: 'Proteínas e leguminosas', carbs: 'Cereais e raízes', vegetables: 'Vegetais' };
+        if (config.plateGuide && Object.keys(labels).every(group => selectedItems.some(item => item.plateGroup === group))) {
+          for (const [group, label] of Object.entries(labels)) { const line = document.createElement('span'); const value = document.createElement('b'); value.textContent = number(config.plateGuide[group]) + '%'; line.append(value, ' ' + label); targets.append(line); }
+        }
       });
       for (const [nutrient, value] of Object.entries(total)) byId('total-' + d + '-' + nutrient).textContent = number(value) + (nutrient === 'kcal' ? '' : ' g');
     });

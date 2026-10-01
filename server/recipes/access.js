@@ -1,5 +1,5 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
-import { RECIPES_PRODUCT_ID, recipesProduct } from '../../src/data/recipes-product.js';
+import { RECIPES_PRODUCT_ID, recipesProduct, requestedRecipeProduct } from '../../src/data/recipes-product.js';
 import { getStore } from './store.js';
 import { sessionDays } from './config.js';
 
@@ -69,14 +69,16 @@ export async function createSession(email, { env = process.env, store, client } 
   return { token, maxAge };
 }
 
-export async function verifyProductEntitlement(request, { env = process.env, store } = {}) {
+export async function verifyProductEntitlement(request, { env = process.env, store, productId } = {}) {
+  const selectedId = productId || (request?.url ? requestedRecipeProduct(request)?.id : RECIPES_PRODUCT_ID);
+  if (!selectedId) return { granted: false, reason: 'unknown-product' };
   const token = parseCookieHeader(request?.headers?.get?.('cookie'))[SESSION_COOKIE];
   if (!token || !/^[A-Za-z0-9_-]{40,60}$/.test(token)) return { granted: false, reason: 'missing-session' };
   const db = store || await getStore(env);
   const result = await db.query(`SELECT s.email FROM recipe_sessions s
     JOIN recipe_entitlements e ON e.email = s.email
     WHERE s.token_hash = $1 AND s.expires_at > now() AND s.revoked_at IS NULL AND e.product_id = $2`,
-  [tokenHash(token), RECIPES_PRODUCT_ID]);
+  [tokenHash(token), selectedId]);
   return result.rowCount ? { granted: true, email: result.rows[0].email } : { granted: false, reason: 'no-entitlement' };
 }
 

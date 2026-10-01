@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import vm from 'node:vm';
+import { parseHTML } from 'linkedom';
+import { buildOfflineHtml } from '../../scripts/lib/build-offline-recipes.mjs';
+import { buildProtectedProductPayload, glpRecipesProduct } from '../../src/data/recipes-product.js';
+
+test('offline HTML initializes, filters, remembers progress and safely builds shopping list without a browser', () => {
+  const data = buildProtectedProductPayload(glpRecipesProduct);
+  data.recipes = structuredClone(data.recipes.slice(0, 2));
+  data.recipes[0].ingredients[0].display = '1 porção <img src=x onerror=alert(1)> "especial"';
+  data.recipes[0].ingredients[0].shoppingKey = '" onfocus="alert(1)';
+  const html = buildOfflineHtml({ data, imageData: Object.fromEntries(data.recipes.map(recipe => [recipe.slug, 'data:image/jpeg;base64,'])), heroData: 'data:image/jpeg;base64,', fonts: {}, brandSvg: '<svg></svg>' });
+  const { window, document } = parseHTML(html);
+  const storage = new Map();
+  const context = { document, window, location: { hash: '' }, history: { replaceState() {} }, matchMedia: () => ({ matches: true }), localStorage: { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) }, CSS: { escape: value => value }, console };
+  for (const element of document.querySelectorAll('[id]')) element.scrollIntoView = () => {};
+  const script = [...document.querySelectorAll('script')].find(element => !element.id).textContent;
+  vm.runInNewContext(script, context);
+  const nav = document.querySelector('[data-nav]');
+  assert.equal(nav.querySelector('strong').textContent, data.recipes[0].name);
+  document.querySelector('button[data-prepared]').click();
+  assert.equal(document.getElementById('progress-value').textContent, '1');
+  document.querySelector('button[data-favorite]').click();
+  assert.equal(nav.getAttribute('data-favorite'), 'true');
+  assert.equal(nav.querySelector('strong').textContent, data.recipes[0].name);
+  document.getElementById('add-all').click();
+  const shopping = document.getElementById('shopping-content');
+  assert.equal(shopping.querySelectorAll('img,[onfocus],[onerror]').length, 0);
+  assert.ok(shopping.textContent.includes('<img src=x'));
+  document.getElementById('search').value = data.recipes[1].name;
+  document.getElementById('search').dispatchEvent(new window.Event('input'));
+  assert.equal(nav.hidden, true);
+  assert.equal(document.getElementById(data.recipes[1].slug).hidden, false);
+  document.querySelector('[data-filter="bebida"]').click();
+  assert.equal(document.getElementById('no-results').hidden, false);
+  assert.ok([...storage.keys()].every(key => key.includes(data.id)));
+});

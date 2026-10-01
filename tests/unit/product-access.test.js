@@ -11,7 +11,7 @@ import { handleDownloadRequest } from '../../api/recipes/download.js';
 import { handleLogoutRequest } from '../../api/recipes/logout.js';
 import { GET as getVerifyPage, handleVerifyRequest } from '../../api/recipes/verify.js';
 import { adminCookie, readAdminSession, verifyAdminCredentials } from '../../server/recipes/admin.js';
-import { RECIPES_PRODUCT_ID } from '../../src/data/recipes-product.js';
+import { RECIPES_PRODUCT_ID, GLP_RECIPES_PRODUCT_ID } from '../../src/data/recipes-product.js';
 
 const base = 'https://gislaineduarte.com.br';
 const secureEnv = {
@@ -45,6 +45,24 @@ test('checkout envia à InfinitePay o mesmo e-mail normalizado que vincula o ped
   const order = writes.find(({ sql }) => sql.includes('INSERT INTO recipe_orders'));
   assert.equal(order.params[1], payload.customer.email);
   assert.equal(order.params[3], 999);
+});
+
+test('checkout GLP-1 uses its own price and does not resume a different book order', async () => {
+  const writes = [], secret = 'x'.repeat(43);
+  const store = {
+    query: async (sql, params) => {
+      if (sql.includes('FROM recipe_login_challenges')) return result([{ id: 'legacy-claim', secret_hash: tokenHash(secret), email: 'first@example.com', order_id: 'legacy-order', product_id: RECIPES_PRODUCT_ID }]);
+      if (sql.includes('FROM recipe_entitlements')) { assert.equal(params[1], GLP_RECIPES_PRODUCT_ID); return result(); }
+      if (sql.includes('FROM recipe_products')) { assert.equal(params[0], GLP_RECIPES_PRODUCT_ID); return result([{ id: GLP_RECIPES_PRODUCT_ID, title: 'Receitas GLP-1', price_cents: 4200, published: true }]); }
+      writes.push({ sql, params }); return result();
+    },
+    connect: async () => ({ query: async (sql, params) => { writes.push({ sql, params }); return result(); }, release() {} }),
+  };
+  let payload;
+  const checkout = await startCheckout('second@example.com', request('/api/recipes/checkout?product=receitas-glp1', `${CLAIM_COOKIE}=legacy-claim.${secret}`), { env: secureEnv, store, fetcher: async (_url, options) => { payload = JSON.parse(options.body); return Response.json({ url: 'https://checkout.infinitepay.io/glp' }); } });
+  assert.ok(checkout.orderId); assert.equal(payload.items[0].price, 4200);
+  assert.equal(writes.find(item => item.sql.includes('INSERT INTO recipe_orders')).params[2], GLP_RECIPES_PRODUCT_ID);
+  assert.equal(writes.find(item => item.sql.includes('INSERT INTO recipe_login_challenges')).params[4], GLP_RECIPES_PRODUCT_ID);
 });
 
 test('sessão válida abre a coleção sem novo checkout, e-mail ou verificação', async () => {
@@ -268,7 +286,9 @@ test('conteúdo e arquivos negam acesso sem sessão comprada, inclusive com cook
 test('sessão opaca só funciona se o banco a relaciona a uma compra vigente', async () => {
   const token = 'x'.repeat(43);
   const seen = [];
-  const store = { query: async (_sql, params) => {
+  const store = { query: async (sql, params = []) => {
+    if (sql.includes('FROM recipe_content')) return result();
+    if (sql.startsWith('SELECT title, description')) return result([{ title: 'Livro de receitas', description: 'Coleção educativa' }]);
     seen.push(params);
     return params[0] === tokenHash(token) && params[1] === RECIPES_PRODUCT_ID ? result([{ email: 'buyer@example.com' }]) : result();
   } };
