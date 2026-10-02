@@ -38,6 +38,31 @@ test('clinical: JP3 computes sex-specific density and Siri only with complete pl
   assert.deepEqual(createCalculationRecords({ weight: 70 }).filter(row => /Mass|Density|BodyFat/.test(row.id)), []);
 });
 
+test('clinical: reported body fat requires a documented method and measurement date', () => {
+  const input = { weight: 70, bodyFat: 25 };
+  assert.ok(calculationInputErrors(input).some(error => error.includes('origem')));
+  assert.ok(calculationInputErrors(input).some(error => error.includes('data válida')));
+  assert.deepEqual(createCalculationRecords(input), []);
+  for (const measurementDate of ['', '2026-02-30', 'yesterday']) {
+    assert.ok(calculationInputErrors({ ...input, bodyFatMethod: 'Avaliação de bioimpedância', measurementDate }).length);
+  }
+  const records = createCalculationRecords({ ...input, bodyFatMethod: 'Avaliação de bioimpedância', measurementDate: '2026-10-01' });
+  assert.equal(records.find(record => record.id === 'fatMass').value, 17.5);
+  assert.equal(records.find(record => record.id === 'leanMass').value, 52.5);
+  for (const record of records) {
+    assert.ok(record.inputs.some(field => field.value === '2026-10-01'));
+    assert.ok(record.inputs.some(field => field.value === 'Avaliação de bioimpedância'));
+  }
+});
+
+test('clinical: protein energy participates in macro allocation validation', () => {
+  const input = { weight: 70, proteinRatio: 4, energy: 1000, carbPercent: 50, fatPercent: 40 };
+  assert.ok(calculationInputErrors(input).some(error => error.includes('distribuição')));
+  assert.deepEqual(createCalculationRecords(input), []);
+  assert.deepEqual(calculationInputErrors({ weight: 70, proteinRatio: 1.5, energy: 1800, carbPercent: 45, fatPercent: 30 }), []);
+  assert.deepEqual(calculationInputErrors({ weight: 70, proteinRatio: 1.5 }), [], 'Partial calculations do not invent the missing macro targets');
+});
+
 test('clinical: food-group guide is distinct from macro grams and unsafe content images are rejected', () => {
   const guide = { protein: 25, carbs: 25, vegetables: 50 };
   assert.deepEqual(plateGuideErrors(guide), []); assert.ok(plateGuideErrors({ ...guide, carbs: 50 }).length);

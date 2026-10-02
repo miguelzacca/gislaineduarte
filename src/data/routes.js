@@ -1,5 +1,5 @@
 import { site, services, faqs } from './site.js';
-import { recipesProductPreview } from '../generated/recipes-product-preview.js';
+import { recipesProductPreview, glpRecipesProductPreview } from '../generated/recipes-product-preview.js';
 
 const initial = { name: 'Início', href: '/' };
 const attendance = { name: 'Atendimentos', href: '/atendimentos' };
@@ -26,6 +26,15 @@ export const routes = [
       alt: 'Livro digital de receitas por Gislaine Duarte.',
     },
     crumbs: [initial, { name: 'Livro de receitas', href: recipesProductPreview.publicPath }],
+  },
+  {
+    path: '/receitas-glp-1',
+    page: 'recipe-product',
+    className: 'recipe-product-page',
+    title: 'Livro de receitas GLP-1 | Gislaine Duarte',
+    description: 'Conheça a coleção de receitas GLP-1 de Gislaine Duarte e consulte sua disponibilidade. Material educativo para complementar o acompanhamento nutricional individual.',
+    product: glpRecipesProductPreview,
+    crumbs: [initial, { name: 'Receitas GLP-1', href: '/receitas-glp-1' }],
   },
   {
     path: recipesProductPreview.experiencePath,

@@ -1,7 +1,7 @@
 export const pdfColors = { forest: '#173f35', ink: '#203d34', sage: '#eaf0e5', ivory: '#fbfaf6', gold: '#ac803b', sand: '#f4ecdf', muted: '#50675c', line: '#d7dfd1', white: '#ffffff' };
 
 export function createPdfLayout(doc) {
-  const left = 42, width = doc.page.width - 84, bottom = 756;
+  const left = 42, width = doc.page.width - 84, bottom = 770;
   let cursor = 42, chapter = '', pageTitle = '', serial = 0;
   const entries = [];
   const text = value => String(value ?? '').replaceAll('≥', 'a partir de ').replaceAll('≤', 'até ');
@@ -16,7 +16,7 @@ export function createPdfLayout(doc) {
     pageTitle = title; chapter = eyebrow;
     doc.rect(0, 0, doc.page.width, doc.page.height).fill(pdfColors.ivory);
     at(eyebrow.toLocaleUpperCase('pt-BR'), left, 34, { size: 10, font: 'Strong', color: pdfColors.gold, lineGap: 0 });
-    cursor = at(title, left, 56, { size: 32, font: 'Editorial', lineGap: 1 }) + 23;
+    cursor = at(title, left, 56, { size: 32, font: 'Editorial', lineGap: 1 }) + 13;
     if (anchor || toc) {
       const destination = anchor || `section-${serial++}`;
       doc.addNamedDestination(destination, 'XYZ', left, 40, null);

@@ -5,7 +5,7 @@ import { BrandMark } from './Brand.jsx';
 import { ProfessionalIdentity } from './Layout.jsx';
 import { Arrow, Portrait, TextLink } from './UI.jsx';
 
-const selectedProductId = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('product') === 'receitas-glp1' ? 'receitas-glp1' : defaultProduct.id;
+const selectedProductId = () => typeof window !== 'undefined' && (window.location.pathname.replace(/\/$/, '') === '/receitas-glp-1' || new URLSearchParams(window.location.search).get('product') === 'receitas-glp1') ? 'receitas-glp1' : defaultProduct.id;
 const initialProduct = () => selectedProductId() === 'receitas-glp1' ? glpRecipesProductPreview : defaultProduct;
 const apiPath = path => selectedProductId() === 'receitas-glp1' ? path + '?product=receitas-glp1' : path;
 const productPath = (path, name, value) => path + (path.includes('?') ? '&' : '?') + name + '=' + encodeURIComponent(value);
@@ -150,8 +150,8 @@ function ProductFaq({ product }) {
   );
 }
 
-export function RecipeProductLandingPage() {
-  const [product, setProduct] = useState(defaultProduct);
+export function RecipeProductLandingPage({ product: routeProduct } = {}) {
+  const [product, setProduct] = useState(routeProduct?.id === 'receitas-glp1' || routeProduct === 'receitas-glp1' ? glpRecipesProductPreview : defaultProduct);
   const dialogRef = useRef(null);
   const [accessLocked, setAccessLocked] = useState(false);
   const [checkoutAccess, setCheckoutAccess] = useState('checking');
@@ -172,6 +172,7 @@ export function RecipeProductLandingPage() {
   useEffect(() => setAccessLocked(new URLSearchParams(window.location.search).get('access') === 'locked'), []);
   useEffect(() => {
     const controller = new AbortController();
+    setProduct(initialProduct());
     void refreshCatalog(AbortSignal.any([controller.signal, AbortSignal.timeout(10_000)]));
     return () => controller.abort();
   }, [refreshCatalog]);
@@ -191,6 +192,13 @@ export function RecipeProductLandingPage() {
       void refreshCatalog();
     } catch { setCheckoutAccess('error'); }
   };
+
+  if (!product.recipes.length) return (
+    <section className="section product-introduction" aria-labelledby="collection-preparation-title"><div className="shell product-introduction__grid">
+      <div><p className="eyebrow eyebrow--gold">Coleção digital · Gislaine Duarte</p><h1 id="collection-preparation-title">{product.title}</h1><p className="product-hero__subtitle">Uma coleção própria, em preparação.</p></div>
+      <div className="product-introduction__copy"><p>O conteúdo desta coleção e suas condições de acesso aguardam definição e revisão de Gislaine. As receitas serão apresentadas aqui quando estiverem disponíveis.</p><p>O livro tem caráter educativo. A escolha das preparações e porções deve considerar o acompanhamento nutricional individual.</p><div className="product-hero__actions"><a className="button" href={defaultProduct.publicPath}>Conhecer o Livro de receitas <Arrow /></a><a className="text-link" href={product.experiencePath}>Já tenho acesso <Arrow /></a></div>{catalog.status === 'error' && <p role="status">A consulta da disponibilidade está temporariamente indisponível. Tente novamente mais tarde.</p>}</div>
+    </div></section>
+  );
 
   return (
     <>

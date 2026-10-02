@@ -6,7 +6,7 @@ import { buildOfflineHtml } from '../../scripts/lib/build-offline-recipes.mjs';
 import { buildProtectedProductPayload, glpRecipesProduct } from '../../src/data/recipes-product.js';
 
 test('offline HTML initializes, filters, remembers progress and safely builds shopping list without a browser', () => {
-  const data = buildProtectedProductPayload(glpRecipesProduct);
+  const data = buildProtectedProductPayload({ ...glpRecipesProduct, recipes: glpRecipesProduct.recipes.slice(0, 2).map(recipe => ({ ...recipe, published: true })) });
   data.recipes = structuredClone(data.recipes.slice(0, 2));
   data.recipes[0].ingredients[0].display = '1 porção <img src=x onerror=alert(1)> "especial"';
   data.recipes[0].ingredients[0].shoppingKey = '" onfocus="alert(1)';

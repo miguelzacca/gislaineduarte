@@ -10,7 +10,8 @@ import { commerceReady, followupStatus, NutritionError, readBody, readOffer, val
 import { archivePlan, event, getNutritionStore, seal, unseal } from '../../server/nutrition/store.js';
 import { analyzeWithNim, suggestWithNim } from '../../server/nutrition/ai.js';
 import { buildPlanHtml, buildPlanPdf } from '../../server/nutrition/export.js';
-import { readContentLibrary, readTemplates, saveContentLibrary, saveTemplate, templateDetail } from '../../server/nutrition/library.js';
+import { plateReferenceForPlan } from '../../server/nutrition/plate-reference.js';
+import { readContentLibrary, readTemplates, reusablePlan, saveContentLibrary, saveTemplate, templateDetail } from '../../server/nutrition/library.js';
 
 const json = (value, status = 200, headers = {}) => Response.json(value, { status, headers: productAccessHeaders(headers) });
 const isId = value => /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value || '');
@@ -68,7 +69,8 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
         const events = await db.query('SELECT type,actor,created_at AS "createdAt" FROM nutrition_events WHERE request_id=$1 ORDER BY created_at DESC LIMIT 30', [id]);
         const checkins = await db.query('SELECT body_encrypted, created_at AS "createdAt" FROM nutrition_checkins WHERE request_id=$1 ORDER BY created_at DESC LIMIT 20', [id]);
         const versions = await db.query('SELECT revision,stage,reason,created_at AS "createdAt" FROM nutrition_plan_versions WHERE request_id=$1 ORDER BY revision DESC,created_at DESC LIMIT 40', [id]);
-        return json({ id, intake, plan, analysis: intake.aiConsent ? unseal(row.analysis_encrypted, env) : null, revision: row.revision, stage: row.stage, payment: row.payment_status, offer: row.offer_snapshot, createdAt: row.created_at, approvedAt: row.approved_at, ...followupStatus(row), events: events.rows, versions: versions.rows, checkins: checkins.rows.map(item => ({ ...unseal(item.body_encrypted, env), createdAt: item.createdAt })) });
+        const deliveryWarnings = !plan ? [] : !plan.plateGuide ? ['As proporções do prato ainda não foram definidas. Configure e salve o guia para conferir a fotografia na entrega.'] : !(await plateReferenceForPlan(plan).catch(() => null)) ? ['A biblioteca ainda não tem uma fotografia de prato pronto compatível com esta seleção e suas restrições. A entrega usará os grupos e percentuais escritos, sem fotografia do prato. Confira a prévia antes de liberar.'] : [];
+        return json({ id, intake, plan, deliveryWarnings, analysis: intake.aiConsent ? unseal(row.analysis_encrypted, env) : null, revision: row.revision, stage: row.stage, payment: row.payment_status, offer: row.offer_snapshot, createdAt: row.created_at, approvedAt: row.approved_at, ...followupStatus(row), events: events.rows, versions: versions.rows, checkins: checkins.rows.map(item => ({ ...unseal(item.body_encrypted, env), createdAt: item.createdAt })) });
       }
       if (action === 'download' || action === 'preview') {
         if (!plan) throw new NutritionError('Monte e salve o plano primeiro.');
@@ -97,11 +99,13 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
       if (body.offer.published && !commerceReady(env)) throw new NutritionError('Configure a integração de pagamento e a chave de proteção de dados antes de disponibilizar a oferta.', 422);
       const { title, description, priceCents, deliveryDays, followupDays, published } = body.offer;
       const previousOffer = await readOffer(db);
+      if (!Number.isInteger(body.revision) || body.revision !== previousOffer.revision) throw new NutritionError('A oferta mudou em outra aba. Reabra “Minha oferta” para conferir as condições atuais antes de salvar.', 409);
       const bristolReviewed = body.offer.bristolReviewed === true;
-      await db.query('UPDATE nutrition_settings SET offer=$1, updated_at=now() WHERE id=1', [JSON.stringify({ title: title.trim(), description: description.trim(), priceCents, deliveryDays, followupDays, published, bristolReviewed,
+      const saved = await db.query('UPDATE nutrition_settings SET offer=$1, offer_revision=offer_revision+1, updated_at=now() WHERE id=1 AND offer_revision=$2 RETURNING offer_revision', [JSON.stringify({ title: title.trim(), description: description.trim(), priceCents, deliveryDays, followupDays, published, bristolReviewed,
         bristolReviewedAt: bristolReviewed ? previousOffer.bristolReviewedAt || new Date().toISOString() : null,
-        bristolReviewedBy: bristolReviewed ? env.RECIPES_ADMIN_USERNAME : null })]);
-      return json({ ok: true });
+        bristolReviewedBy: bristolReviewed ? env.RECIPES_ADMIN_USERNAME : null }), body.revision]);
+      if (!saved.rowCount) throw new NutritionError('A oferta mudou em outra aba. Suas alterações não foram salvas; confira as condições atuais antes de tentar novamente.', 409);
+      return json({ ok: true, revision: saved.rows[0].offer_revision });
     }
     if (!isId(body.id)) throw new NutritionError('Atendimento inválido.');
     const row = (await db.query('SELECT * FROM nutrition_requests WHERE id=$1', [body.id])).rows[0];
@@ -128,6 +132,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
         candidate.guidance = plan.guidance;
         candidate.assessment = plan.assessment;
         candidate.curatedModules = plan.curatedModules || [];
+        candidate.plateGuide = plan.plateGuide ? structuredClone(plan.plateGuide) : undefined;
       }
       return json(await savePlan(db, row, candidate, env, body.revision, 'plan_generated'));
     }
@@ -196,7 +201,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
       if (!plan || typeof body.title !== 'string' || body.title.trim().length < 3 || body.title.length > 120 || !clinicalProfiles.some(profile => profile.id === body.profile)) throw new NutritionError('Informe nome e categoria para o modelo.');
       const goals = body.goals || []; const tags = body.tags || [];
       if (!Array.isArray(goals) || goals.length > 4 || goals.some(goal => !['wellbeing', 'weight-management', 'muscle', 'clinical'].includes(goal)) || !Array.isArray(tags) || tags.length > 12 || tags.some(tag => typeof tag !== 'string' || tag.length > 60)) throw new NutritionError('Confira objetivos e palavras-chave do modelo.');
-      const template = { ...plan, templateId: `${body.profile}-pratica`, plateGuide: undefined, clinicalNotes: '', assessment: undefined, curatedModules: [], review: {}, title: 'Seu plano alimentar', guidance: 'Siga as porções e os preparos combinados em atendimento. Revise as opções com sua nutricionista.', days: plan.days.map((day, dayIndex) => ({ ...day, label: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'][dayIndex], meals: day.meals.map((meal, mealIndex) => ({ ...meal, name: `Refeição ${mealIndex + 1}`, note: '' })) })), targets: { ...plan.targets, energy: null, protein: null, carbs: null, fat: null, water: null, sodium: null, potassium: null, phosphorus: null } };
+      const template = reusablePlan(plan, body.profile, { fromPatient: true });
       const templateErrors = validatePlan(template, intake);
       if (templateErrors.length) throw new NutritionError(`Revise o modelo para a categoria escolhida: ${templateErrors[0]}`, 422);
       await db.query('INSERT INTO nutrition_templates (id,title,profile,plan_encrypted,goals,tags) VALUES ($1,$2,$3,$4,$5,$6)', [randomUUID(), body.title.trim(), body.profile, seal(template, env), JSON.stringify([...new Set(goals)]), JSON.stringify([...new Set(tags.map(tag => tag.trim()).filter(Boolean))])]);

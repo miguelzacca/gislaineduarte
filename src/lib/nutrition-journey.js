@@ -1,7 +1,7 @@
 import { foodById } from '../data/nutrition.js';
 import { curatedModuleTypes, goalOptions } from '../data/nutrition-journey.js';
 import { calculateAnthropometry, foodAllowed, normalizeText, round } from './nutrition.js';
-import { bmiInterpretation, clinicalSources, curatedImageAllowed, plateGuideErrors, skinfoldEvaluation, skinfoldInputErrors, skinfoldLabels } from './nutrition-clinical.js';
+import { bmiInterpretation, clinicalSources, curatedImageAllowed, plateGuideErrors, skinfoldEvaluation, skinfoldInputErrors, skinfoldLabels, validMeasurementDate } from './nutrition-clinical.js';
 
 const decimal = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
 const units = { unidade: 'unidades', 'unidade pequena': 'unidades pequenas', 'unidade média': 'unidades médias', 'colher de sopa': 'colheres de sopa', 'colher de servir': 'colheres de servir', 'colher de sobremesa': 'colheres de sobremesa', fatia: 'fatias', 'fatia grossa': 'fatias grossas', porção: 'porções', folha: 'folhas', ramo: 'ramos', pedaço: 'pedaços', 'cacho pequeno': 'cachos pequenos', 'filé pequeno': 'filés pequenos', 'bife pequeno': 'bifes pequenos', pote: 'potes', 'concha pequena': 'conchas pequenas', copo: 'copos', 'copo pequeno': 'copos pequenos' };
@@ -44,9 +44,16 @@ export function calculationInputErrors(input) {
   if (filled(input.activity) && (typeof input.activity === 'boolean' || !Number.isFinite(Number(input.activity)) || Number(input.activity) < 1 || Number(input.activity) > 2.5)) errors.push('Confira o fator de atividade nos cálculos (1 a 2,5).');
   if (input.pregnant !== undefined && typeof input.pregnant !== 'boolean') errors.push('Confira a informação de gestação/amamentação nos cálculos.');
   if (filled(input.bodyFatMethod) && (typeof input.bodyFatMethod !== 'string' || input.bodyFatMethod.length > 120)) errors.push('Descreva o método de gordura corporal em até 120 caracteres.');
+  if (filled(input.bodyFat) && (typeof input.bodyFatMethod !== 'string' || !input.bodyFatMethod.trim())) errors.push('Registre a origem ou o método do percentual de gordura informado antes de usá-lo na avaliação.');
+  if ((filled(input.measurementDate) || filled(input.bodyFat)) && !validMeasurementDate(input.measurementDate)) errors.push('Registre uma data válida para as medidas da avaliação.');
   errors.push(...skinfoldInputErrors(input));
   if (input.skinfoldMethod && !skinfoldInputErrors(input).length && !skinfoldEvaluation(input)) errors.push('As dobras produzem uma estimativa fora dos limites. Confira as medidas e a adequação do método.');
   if (filled(input.carbPercent) && filled(input.fatPercent) && Number(input.carbPercent) + Number(input.fatPercent) > 100) errors.push('Os percentuais de carboidratos e gorduras ultrapassam 100% da energia.');
+  const macroFields = ['weight', 'proteinRatio', 'energy', 'carbPercent', 'fatPercent'];
+  if (macroFields.every(key => filled(input[key]) && Number.isFinite(Number(input[key])) && Number(input[key]) > 0)) {
+    const allocated = Number(input.weight) * Number(input.proteinRatio) * 4 / Number(input.energy) * 100 + Number(input.carbPercent) + Number(input.fatPercent);
+    if (Math.abs(allocated - 100) > 5) errors.push(`Proteína, carboidratos e gorduras representam ${decimal(allocated)}% da energia definida. Confira a distribuição antes de registrar os cálculos.`);
+  }
   return errors;
 }
 
@@ -84,8 +91,9 @@ export function createCalculationRecords(input) {
     add('weightChangePercent', 'Variação relativa de peso', 'Peso habitual e atual informados', '(peso habitual − peso atual) ÷ peso habitual × 100; negativo indica ganho', [weight, ['usualWeight', 'Peso habitual', 'kg']], round((data.usualWeight - data.weight) / data.usualWeight * 100), '%', source);
     add('waistHip', 'Relação cintura/quadril', 'Razão entre medidas informadas', 'cintura (cm) ÷ quadril (cm)', [['waist', 'Cintura', 'cm'], ['hip', 'Quadril', 'cm']], round(data.waist / data.hip, 2), 'razão', source);
     add('waistHeight', 'Relação cintura/altura', 'Razão entre medidas informadas', 'cintura (cm) ÷ altura (cm)', [['waist', 'Cintura', 'cm'], height], round(data.waist / data.height, 2), 'razão', source);
-    add('leanMass', 'Massa livre de gordura estimada', `Percentual de gordura informado${data.bodyFatMethod ? ` (${data.bodyFatMethod})` : ''}`, 'peso (kg) × [1 − gordura corporal (%) ÷ 100]', [weight, ['bodyFat', 'Gordura corporal informada', '%']], round(data.weight * (1 - data.bodyFat / 100)), 'kg', source);
-    add('fatMass', 'Massa de gordura estimada', `Percentual de gordura informado${data.bodyFatMethod ? ` (${data.bodyFatMethod})` : ''}`, 'peso (kg) × gordura corporal (%) ÷ 100', [weight, ['bodyFat', 'Gordura corporal informada', '%']], filled(data.bodyFat) ? round(data.weight * data.bodyFat / 100) : null, 'kg', source);
+    const compositionFields = [weight, ['bodyFat', 'Gordura corporal informada', '%'], ['bodyFatMethod', 'Origem do percentual', ''], ['measurementDate', 'Data da avaliação', '']];
+    add('leanMass', 'Massa livre de gordura estimada', `Percentual de gordura informado${data.bodyFatMethod ? ` (${data.bodyFatMethod})` : ''}`, 'peso (kg) × [1 − gordura corporal (%) ÷ 100]', compositionFields, round(data.weight * (1 - data.bodyFat / 100)), 'kg', source);
+    add('fatMass', 'Massa de gordura estimada', `Percentual de gordura informado${data.bodyFatMethod ? ` (${data.bodyFatMethod})` : ''}`, 'peso (kg) × gordura corporal (%) ÷ 100', compositionFields, filled(data.bodyFat) ? round(data.weight * data.bodyFat / 100) : null, 'kg', source);
   const skinfold = skinfoldEvaluation(data);
   if (skinfold) {
     const inputs = skinfold.sites.map(site => ({ label: skinfoldLabels[site], value: data.skinfolds[site], unit: 'mm' })).concat({ label: 'Idade', value: data.age, unit: 'anos' }, { label: 'Referência da equação', value: data.sex === 'female' ? 'Feminina' : 'Masculina', unit: '' }, { label: 'Data das medidas', value: data.measurementDate, unit: '' });

@@ -110,6 +110,29 @@ test('nutrition offline: corrupted storage cannot break the plan and out-of-rang
   assert.deepEqual(app.printStates, [true], 'print includes all clinical data and swap galleries');
 });
 
+test('nutrition offline: photo reference notes follow the selected preparation and appear in every swap option', async () => {
+  const plan = generatePlan({ diet: 'omnivore', conditions: [], allergies: [], excludedFoodIds: [] });
+  plan.days[0].meals[0].items[0] = { foodId: 'chicken', grams: 100, alternatives: [{ foodId: 'grilled-chicken', grams: 95 }] };
+  const html = await buildPlanHtml({ plan, patientName: 'Demonstração de fotografias', id: 'photo-note-test', revision: 1, draft: true });
+  const app = openOffline(html);
+  const card = app.document.getElementById('food-0-0-0');
+  const note = card.querySelector('[data-photo-note]');
+  assert.match(note.textContent, /ingrediente.*(?:cru|antes do preparo)/);
+  assert.equal(note.hidden, false);
+  const options = card.querySelectorAll('.food-options label');
+  assert.match(options[0].querySelector('.photo-note').textContent, /ingrediente.*(?:cru|antes do preparo)/);
+  assert.equal(options[1].querySelector('.photo-note'), null);
+  const galleryCard = [...app.document.querySelectorAll('.swap-gallery article')].find(article => article.querySelector('h4').textContent === foodById.chicken.name);
+  assert.match(galleryCard.querySelector('.photo-note').textContent, /ingrediente.*(?:cru|antes do preparo)/);
+  app.change('[data-choice="0-0-0"][value="1"]', true, 'checked');
+  assert.equal(card.querySelector('[data-food-name]').textContent, foodById['grilled-chicken'].name);
+  assert.equal(note.hidden, true);
+  assert.equal(note.textContent, '');
+  app.change('[data-choice="0-0-0"][value="0"]', true, 'checked');
+  assert.equal(note.hidden, false);
+  assert.match(note.textContent, /ingrediente.*(?:cru|antes do preparo)/);
+});
+
 test('nutrition offline: contents and gallery anchors reveal their destinations; browser printing restores collapsed details', async () => {
   const { html } = await createHtml(); const app = openOffline(html);
   const identifiers = [...app.document.querySelectorAll('[id]')].map(element => element.id);

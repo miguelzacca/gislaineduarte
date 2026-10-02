@@ -1,0 +1,585 @@
+[
+  {
+    "source": "C:/Users/Distritek/Downloads/PHOTO-2026-09-03-22-57-10.jpg.jpeg",
+    "label": "Avaliação inicial, IMC e gasto energético",
+    "category": "entrega-paciente",
+    "notes": "Exemplo visual de organização da avaliação. Dados pessoais e conclusões clínicas do exemplo não devem ser transportados para outros pacientes.",
+    "id": "R001",
+    "file": "referencias/ref-001.jpg",
+    "sha256": "a6d39f0566394fc477073f21de06d79b016a31ab812f370397ce288377c47822"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/PHOTO-2026-09-04-11-51-23.jpg.jpeg",
+    "label": "Como montar seu prato — refeição montada e grupos alimentares",
+    "category": "entrega-paciente",
+    "notes": "Referência principal para imagem de prato inteiro, identificação de verduras/legumes, proteínas e carboidratos e orientações curtas.",
+    "id": "R002",
+    "file": "referencias/ref-002.jpg",
+    "sha256": "218fb57ae08c5f4eb5dba5ee8d9d70016bd420fd16ccf3ac8161cde1ffc29bf1"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/PHOTO-2026-09-04-11-50-45.jpg.jpeg",
+    "label": "Substituições inteligentes — troque isso por isso",
+    "category": "entrega-paciente",
+    "notes": "Referência principal para comparação lado a lado. As substituições do produto precisam corresponder às porções e restrições do paciente.",
+    "id": "R003",
+    "file": "referencias/ref-003.jpg",
+    "sha256": "455f9320df9966f18af3e76701ab863ec227b07e394b791a6a0931cea6bbdacd"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-85dc8028-1a7c-4a6f-b721-b3674c6f8102.jpg",
+    "label": "Chocolate caseiro e saudável — receita com identidade de Gislaine Duarte",
+    "category": "receitas",
+    "notes": "Referência de fotografia de receita, retrato profissional, ingredientes ilustrados, preparo numerado e marca.",
+    "id": "R004",
+    "file": "referencias/ref-004.jpg",
+    "sha256": "e00237b32cfeb3bd586a258480312753a22805a80e248690ca7e24276b38251b"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-55664e42-2347-46a3-a93b-8755a910e653.jpg",
+    "label": "Suco de laranja, cenoura, mamão e gengibre",
+    "category": "bebidas",
+    "notes": "A imagem contém alegações de desintoxicação do fígado e imunidade; são texto da referência, não requisito clínico validado.",
+    "id": "R005",
+    "file": "referencias/ref-005.jpg",
+    "sha256": "8e70350744daba8d0b8d8b4c3acb376af7813f00d7b77b21715c8e9cdbd89d48"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-40eee070-a7ff-496b-b71a-e651b08b7bf3.jpg",
+    "label": "Suco de couve, água de coco, limão e hortelã",
+    "category": "bebidas",
+    "notes": "A imagem contém alegações de energia e desintoxicação; são texto da referência, não requisito clínico validado.",
+    "id": "R006",
+    "file": "referencias/ref-006.jpg",
+    "sha256": "0667805f8d27342c9dfbc9bc6cc479bd8c2abe6b6cf86a9b5614cdfc0713d4e2"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-b0bb123c-e0fb-4182-b317-b4d2a4aee284.jpg",
+    "label": "Suco de laranja, mamão, ameixa, aveia e chia ou linhaça",
+    "category": "bebidas",
+    "notes": "A imagem contém alegação de regular o intestino; a orientação deve passar por revisão profissional.",
+    "id": "R007",
+    "file": "referencias/ref-007.jpg",
+    "sha256": "186f2d38fd273fbca8af7c16762add4a8d750eb4f85287d9a859b2718bd89b18"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-0652ca91-71a6-4aa1-91c1-6efc79e4bd93.jpg",
+    "label": "Bolo de cacau e nozes — ingredientes e preparo",
+    "category": "receitas",
+    "notes": "Título da referência declara zero açúcar e glúten; revisar a formulação e a nomenclatura antes de reutilizar.",
+    "id": "R008",
+    "file": "referencias/ref-008.jpg",
+    "sha256": "2adc21645a5d0e7167f063fd3d8a1ef9d1ca1db6d11230f41c67024e6b29a8d3"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-b9d7cba5-32d5-49af-ae29-74fcbd63792b.jpg",
+    "label": "Supercoffee caseiro — café, especiarias e óleo de coco",
+    "category": "bebidas",
+    "notes": "Receita de bebida com café solúvel, canela, gengibre, pimenta-caiena e óleo de coco; não é chá.",
+    "id": "R009",
+    "file": "referencias/ref-009.jpg",
+    "sha256": "1234f08afa043b7dc9dedabe20421118746df8f4fc5f8e6b789967de829b510a"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.16.03.jpeg",
+    "label": "Banana com cobertura de chocolate — imagem da sobremesa",
+    "category": "receitas",
+    "id": "R010",
+    "file": "referencias/ref-010.jpg",
+    "sha256": "44fc840805981b3948260e181e421568f78986d23a476e57b9a97d7e667c22db",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-b6a32699-05f7-4990-979f-928f7245ee0c.jpg",
+    "label": "Banana com cobertura de chocolate — imagem da sobremesa, versão de clipboard",
+    "category": "receitas",
+    "notes": "",
+    "id": "R011",
+    "file": "referencias/ref-011.jpg",
+    "sha256": "44fc840805981b3948260e181e421568f78986d23a476e57b9a97d7e667c22db",
+    "duplicate_of": "R010"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-776a0ff3-f070-434a-8dcb-d9e823afabbf.jpg",
+    "label": "Banana com cobertura de chocolate — ingredientes e instruções",
+    "category": "receitas",
+    "notes": "O texto remete parte do preparo a um vídeo; a referência isolada não contém o passo a passo completo.",
+    "id": "R012",
+    "file": "referencias/ref-012.jpg",
+    "sha256": "50a02e19da9f95c2c7808d6a49711b0858458fa5de2f220bb2294fd578265394"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-dc6d1336-e97f-46ca-8862-2c50cfc15263.jpg",
+    "label": "Tortinha de frango com tapioca — ingredientes e preparo",
+    "category": "receitas",
+    "id": "R013",
+    "file": "referencias/ref-013.jpg",
+    "sha256": "d5cdce51cc42dcc58f6feede45ff8b2d5d94fd3429e8fc27bce92a5724dda77c",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-53f2976a-4567-408c-931f-b8865dc604b4.jpg",
+    "label": "Tortinha de frango — imagem da receita pronta",
+    "category": "receitas",
+    "id": "R014",
+    "file": "referencias/ref-014.jpg",
+    "sha256": "1301a9f967ba8c29f1b071f977742d08d8be43c0fff3d6fb6afe0eac5835853c",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-fa981df0-ac83-4da3-8cf2-bc57e7b4f02c.jpg",
+    "label": "Carne moída assada sobre batatas — imagem da receita pronta",
+    "category": "receitas",
+    "id": "R015",
+    "file": "referencias/ref-015.jpg",
+    "sha256": "11d310ae2a0487f9c4d13545d0ae1915b60e45b50bb33e875de0887a81b64797",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-160118ad-a87b-48b0-b200-e5c25e8fe6d9.jpg",
+    "label": "Carne moída assada com batatas — ingredientes, preparo e informação nutricional",
+    "category": "receitas",
+    "notes": "Valores nutricionais impressos pertencem à referência e precisam ser conferidos antes de reutilização.",
+    "id": "R016",
+    "file": "referencias/ref-016.jpg",
+    "sha256": "a80c4db77a8bc9b9a1c61760f7358164590600f9c5bcc53cb4596c99a173baed"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-0befb060-ea12-4990-9283-96d5de84bdc2.jpg",
+    "label": "Maçã cozida — modo de preparo e observações digestivas",
+    "category": "receitas",
+    "notes": "A imagem contém recomendações sobre sintomas intestinais; não tratar como regra universal para pacientes.",
+    "id": "R017",
+    "file": "referencias/ref-017.jpg",
+    "sha256": "1490a5fa7e87a590172077794a099020e7f2ed77e41bbbf7d00e15398ffd29fa"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-d4e972d5-96bb-4820-b03e-97648175d6eb.jpg",
+    "label": "Maçã com canela, cravo e noz-moscada — ingredientes e imagem",
+    "category": "receitas",
+    "id": "R018",
+    "file": "referencias/ref-018.jpg",
+    "sha256": "e0736d3bca66eb6d7088f37486a287e417294fcd06389f43c81a934ffcbf0ff8",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-694ad1a9-5e8f-492e-8f3a-1e0bf5deb1ec.jpg",
+    "label": "Purê de mandioquinha com alecrim — ingredientes e preparo",
+    "category": "receitas",
+    "notes": "A referência contém alegações de ação antioxidante e melhora digestiva a revisar profissionalmente.",
+    "id": "R019",
+    "file": "referencias/ref-019.jpg",
+    "sha256": "3e1bf944e0899e76dfec81d7610ea63e1e03d45e12c7fa64a4d43f3e3a9e92c9"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-440dd926-66e5-449f-bf9f-cfeef39c9f58.jpg",
+    "label": "Pão de aveia e iogurte",
+    "category": "receitas",
+    "notes": "Referência com ingredientes, fotografia e resumo de preparo; sem temperatura ou tempo de forno detalhados.",
+    "id": "R020",
+    "file": "referencias/ref-020.jpg",
+    "sha256": "b4815b10191b4c300e741db07bced2b5581431d7d2f0ba9942865deb1234c23e"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-743a5391-8a85-4bc9-9a8f-69604d5badd5.jpg",
+    "label": "Pão de amêndoa e sementes",
+    "category": "receitas",
+    "notes": "Referência com ingredientes, fotografia e resumo de preparo; sem temperatura ou tempo de forno detalhados.",
+    "id": "R021",
+    "file": "referencias/ref-021.jpg",
+    "sha256": "eb44cd4951feb3673faf17535d41f2cf3fd5223c79cc77ce39f9bd7b494d2006"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-d6c1ab17-109c-4778-b6ed-6409f34ce414.jpg",
+    "label": "Pão de quinoa e chia",
+    "category": "receitas",
+    "notes": "Referência com ingredientes, fotografia e resumo de preparo; sem temperatura ou tempo de forno detalhados.",
+    "id": "R022",
+    "file": "referencias/ref-022.jpg",
+    "sha256": "341f2f221258d3252e7c34c2b4b67eb2bed8cd0e95f91187c281aa6622231e78"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-29e9116e-3ecc-48b7-805f-d43e30be48a9.jpg",
+    "label": "Bolo de coco com três ingredientes",
+    "category": "receitas",
+    "notes": "Referência de ingredientes e foto; não apresenta modo de preparo completo.",
+    "id": "R023",
+    "file": "referencias/ref-023.jpg",
+    "sha256": "49798aaad446fc34a39c28909ce2463e23e970e7ec4911df75ad647e1b47d9af"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-dc792720-f3bc-48a1-bb18-21f675b2fed6.jpg",
+    "label": "Pão australiano low carb e vegano — ingredientes e preparo",
+    "category": "receitas",
+    "id": "R024",
+    "file": "referencias/ref-024.jpg",
+    "sha256": "6b34ad722bc55b1efe043ff6157ff81afa1bd5fbee7bde2efd5ddfcbbdfbed8d",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-a06311ad-c964-47ec-974a-b5091a120b7e.jpg",
+    "label": "Pão australiano low carb e vegano — capa e imagem",
+    "category": "receitas",
+    "id": "R025",
+    "file": "referencias/ref-025.jpg",
+    "sha256": "3bee727e7bbea64c6c90aa7269b164b8f021c1065616ff37ab7f1084fcff7795",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-dc2792dc-c0b5-4d48-aa67-2ac63fbb81b9.jpg",
+    "label": "Pão de fubá sem glúten — ingredientes e preparo",
+    "category": "receitas",
+    "id": "R026",
+    "file": "referencias/ref-026.jpg",
+    "sha256": "ebf36d514b4816e2fb1bab2fa45c567bfbdc1936dd9d2f8e7796521b87c4af04",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-19ae4383-1526-4a39-984a-0e51238ba97e.jpg",
+    "label": "Pão de fubá — imagem da receita pronta",
+    "category": "receitas",
+    "id": "R027",
+    "file": "referencias/ref-027.jpg",
+    "sha256": "08594ae6a667e6d2de82a2c73d82519a92ec3ca7b2fc7108f416380a075a6eda",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-f12bf251-672f-46c5-bfa7-2d253b5d89f6.jpg",
+    "label": "Tâmaras recheadas com nozes e chocolate branco — ingredientes e preparo",
+    "category": "receitas",
+    "id": "R028",
+    "file": "referencias/ref-028.jpg",
+    "sha256": "c06202a6dc37f8e03ec9fe7bfb60ee438d8f39068f273ef7bfafc13c2e5994ee",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-f83f5138-cc65-43ba-a45b-a95ade06e5da.jpg",
+    "label": "Tâmaras recheadas e banhadas em chocolate branco — imagem",
+    "category": "receitas",
+    "id": "R029",
+    "file": "referencias/ref-029.jpg",
+    "sha256": "273c9a8c4d37a58844370f4e55abf56d0a2c9d15c5c8982da0e85d3e51f25c72",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-1b5a4fcc-c99d-431e-bd4b-980a07418713.jpg",
+    "label": "Docinho de uva — ingredientes, preparo e imagem",
+    "category": "receitas",
+    "id": "R030",
+    "file": "referencias/ref-030.jpg",
+    "sha256": "f76f7c2ce2da57e5372c634d011cff1e08e6ce540cef03e768aaebcb0662f9d7",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-e1c717dd-bc27-4cd7-8199-03c838fc3838.jpg",
+    "label": "Docinho de morango — ingredientes, preparo e imagem",
+    "category": "receitas",
+    "notes": "A referência usa a expressão sem açúcar; distinguir ausência de adição de açúcar dos açúcares naturais.",
+    "id": "R031",
+    "file": "referencias/ref-031.jpg",
+    "sha256": "618392369f54ea687f50de6aaa9fca87038b031b5a1061c68567a1ffe985afe7"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-00176718-0bd0-4f02-a197-96f6d3b9e46d.jpg",
+    "label": "Beijinho — ingredientes, preparo e imagem",
+    "category": "receitas",
+    "notes": "A referência usa a expressão zero açúcar; distinguir ausência de adição de açúcar dos açúcares naturais.",
+    "id": "R032",
+    "file": "referencias/ref-032.jpg",
+    "sha256": "814b901818ed054cf17cbda14d6d5882bca2a10c2832cec27d59e837efa38975"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-fdba244c-68f3-4d63-bef4-c665da01e468.jpg",
+    "label": "Bolo de banana — imagem da receita pronta",
+    "category": "receitas",
+    "notes": "O título da referência usa sem açúcar e sem farinha; a receita correspondente contém aveia e deve ser descrita com precisão.",
+    "id": "R033",
+    "file": "referencias/ref-033.jpg",
+    "sha256": "d182e0df44fa28348619182065aceb252d24c8e89845d721b06a94ee609a9188"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-089898b1-1bb4-45ae-bbd2-d0d515f1d2de.jpg",
+    "label": "Bolo de banana — ingredientes e preparo",
+    "category": "receitas",
+    "notes": "Contém aveia, banana e uvas-passas opcionais; revisar o título sem açúcar e sem farinha antes de reutilizar.",
+    "id": "R034",
+    "file": "referencias/ref-034.jpg",
+    "sha256": "8653fdda390fb809e80aa06a63a09cf5248a20847d507e751ceb2ad153a71c57"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-ad4a709c-f106-405d-b5e2-d1116ff871a7.jpg",
+    "label": "Brigadeiro de banana — ingredientes, preparo e imagem",
+    "category": "receitas",
+    "id": "R035",
+    "file": "referencias/ref-035.jpg",
+    "sha256": "e193883e697f694a76cb8c1437742c0797ab8c79f8d858beb244095b3f30e22f",
+    "notes": ""
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.16.47.jpeg",
+    "label": "Banana com cobertura de chocolate — ingredientes e instruções, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "O texto remete parte do preparo a um vídeo; a referência isolada não contém o passo a passo completo.",
+    "id": "R036",
+    "file": "referencias/ref-036.jpg",
+    "sha256": "50a02e19da9f95c2c7808d6a49711b0858458fa5de2f220bb2294fd578265394",
+    "duplicate_of": "R012"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.19.13.jpeg",
+    "label": "Tortinha de frango com tapioca — ingredientes e preparo, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R037",
+    "file": "referencias/ref-037.jpg",
+    "sha256": "d5cdce51cc42dcc58f6feede45ff8b2d5d94fd3429e8fc27bce92a5724dda77c",
+    "duplicate_of": "R013"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.19.29.jpeg",
+    "label": "Tortinha de frango — imagem da receita pronta, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R038",
+    "file": "referencias/ref-038.jpg",
+    "sha256": "1301a9f967ba8c29f1b071f977742d08d8be43c0fff3d6fb6afe0eac5835853c",
+    "duplicate_of": "R014"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.19.49.jpeg",
+    "label": "Carne moída assada sobre batatas — imagem, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R039",
+    "file": "referencias/ref-039.jpg",
+    "sha256": "11d310ae2a0487f9c4d13545d0ae1915b60e45b50bb33e875de0887a81b64797",
+    "duplicate_of": "R015"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.20.20.jpeg",
+    "label": "Carne moída assada com batatas — ingredientes e preparo, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "Valores nutricionais impressos pertencem à referência e precisam ser conferidos antes de reutilização.",
+    "id": "R040",
+    "file": "referencias/ref-040.jpg",
+    "sha256": "a80c4db77a8bc9b9a1c61760f7358164590600f9c5bcc53cb4596c99a173baed",
+    "duplicate_of": "R016"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.22.34.jpeg",
+    "label": "Maçã cozida — preparo e observações digestivas, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "A imagem contém recomendações sobre sintomas intestinais; não tratar como regra universal para pacientes.",
+    "id": "R041",
+    "file": "referencias/ref-041.jpg",
+    "sha256": "1490a5fa7e87a590172077794a099020e7f2ed77e41bbbf7d00e15398ffd29fa",
+    "duplicate_of": "R017"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.22.43.jpeg",
+    "label": "Maçã com especiarias — ingredientes e imagem, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R042",
+    "file": "referencias/ref-042.jpg",
+    "sha256": "e0736d3bca66eb6d7088f37486a287e417294fcd06389f43c81a934ffcbf0ff8",
+    "duplicate_of": "R018"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.22.54.jpeg",
+    "label": "Purê de mandioquinha com alecrim — arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "A referência contém alegações de ação antioxidante e melhora digestiva a revisar profissionalmente.",
+    "id": "R043",
+    "file": "referencias/ref-043.jpg",
+    "sha256": "3e1bf944e0899e76dfec81d7610ea63e1e03d45e12c7fa64a4d43f3e3a9e92c9",
+    "duplicate_of": "R019"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.29.12.jpeg",
+    "label": "Pão de aveia e iogurte — arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "Referência com ingredientes, fotografia e resumo de preparo; sem temperatura ou tempo de forno detalhados.",
+    "id": "R044",
+    "file": "referencias/ref-044.jpg",
+    "sha256": "b4815b10191b4c300e741db07bced2b5581431d7d2f0ba9942865deb1234c23e",
+    "duplicate_of": "R020"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.29.24.jpeg",
+    "label": "Pão de amêndoa e sementes — arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "Referência com ingredientes, fotografia e resumo de preparo; sem temperatura ou tempo de forno detalhados.",
+    "id": "R045",
+    "file": "referencias/ref-045.jpg",
+    "sha256": "eb44cd4951feb3673faf17535d41f2cf3fd5223c79cc77ce39f9bd7b494d2006",
+    "duplicate_of": "R021"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.29.34.jpeg",
+    "label": "Pão de quinoa e chia — arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "Referência com ingredientes, fotografia e resumo de preparo; sem temperatura ou tempo de forno detalhados.",
+    "id": "R046",
+    "file": "referencias/ref-046.jpg",
+    "sha256": "341f2f221258d3252e7c34c2b4b67eb2bed8cd0e95f91187c281aa6622231e78",
+    "duplicate_of": "R022"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.29.46.jpeg",
+    "label": "Bolo de coco com três ingredientes — arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "Referência de ingredientes e foto; não apresenta modo de preparo completo.",
+    "id": "R047",
+    "file": "referencias/ref-047.jpg",
+    "sha256": "49798aaad446fc34a39c28909ce2463e23e970e7ec4911df75ad647e1b47d9af",
+    "duplicate_of": "R023"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.30.07.jpeg",
+    "label": "Pão australiano low carb e vegano — ingredientes, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R048",
+    "file": "referencias/ref-048.jpg",
+    "sha256": "6b34ad722bc55b1efe043ff6157ff81afa1bd5fbee7bde2efd5ddfcbbdfbed8d",
+    "duplicate_of": "R024"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.30.18.jpeg",
+    "label": "Pão australiano low carb e vegano — imagem, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R049",
+    "file": "referencias/ref-049.jpg",
+    "sha256": "3bee727e7bbea64c6c90aa7269b164b8f021c1065616ff37ab7f1084fcff7795",
+    "duplicate_of": "R025"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.30.29.jpeg",
+    "label": "Pão de fubá sem glúten — ingredientes e preparo, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R050",
+    "file": "referencias/ref-050.jpg",
+    "sha256": "ebf36d514b4816e2fb1bab2fa45c567bfbdc1936dd9d2f8e7796521b87c4af04",
+    "duplicate_of": "R026"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.30.38.jpeg",
+    "label": "Pão de fubá — imagem, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R051",
+    "file": "referencias/ref-051.jpg",
+    "sha256": "08594ae6a667e6d2de82a2c73d82519a92ec3ca7b2fc7108f416380a075a6eda",
+    "duplicate_of": "R027"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.12.58.jpeg",
+    "label": "Tâmaras recheadas com nozes e chocolate branco — ingredientes, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R052",
+    "file": "referencias/ref-052.jpg",
+    "sha256": "c06202a6dc37f8e03ec9fe7bfb60ee438d8f39068f273ef7bfafc13c2e5994ee",
+    "duplicate_of": "R028"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.13.14.jpeg",
+    "label": "Tâmaras com chocolate branco — imagem, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R053",
+    "file": "referencias/ref-053.jpg",
+    "sha256": "273c9a8c4d37a58844370f4e55abf56d0a2c9d15c5c8982da0e85d3e51f25c72",
+    "duplicate_of": "R029"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.13.41.jpeg",
+    "label": "Docinho de uva — arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R054",
+    "file": "referencias/ref-054.jpg",
+    "sha256": "f76f7c2ce2da57e5372c634d011cff1e08e6ce540cef03e768aaebcb0662f9d7",
+    "duplicate_of": "R030"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.13.54.jpeg",
+    "label": "Docinho de morango — arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "A referência usa a expressão sem açúcar; distinguir ausência de adição de açúcar dos açúcares naturais.",
+    "id": "R055",
+    "file": "referencias/ref-055.jpg",
+    "sha256": "618392369f54ea687f50de6aaa9fca87038b031b5a1061c68567a1ffe985afe7",
+    "duplicate_of": "R031"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.14.12.jpeg",
+    "label": "Beijinho — arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "A referência usa a expressão zero açúcar; distinguir ausência de adição de açúcar dos açúcares naturais.",
+    "id": "R056",
+    "file": "referencias/ref-056.jpg",
+    "sha256": "814b901818ed054cf17cbda14d6d5882bca2a10c2832cec27d59e837efa38975",
+    "duplicate_of": "R032"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.14.36.jpeg",
+    "label": "Bolo de banana — imagem, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "O título da referência usa sem açúcar e sem farinha; a receita correspondente contém aveia e deve ser descrita com precisão.",
+    "id": "R057",
+    "file": "referencias/ref-057.jpg",
+    "sha256": "d182e0df44fa28348619182065aceb252d24c8e89845d721b06a94ee609a9188",
+    "duplicate_of": "R033"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.15.24.jpeg",
+    "label": "Bolo de banana — ingredientes e preparo, arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "Contém aveia, banana e uvas-passas opcionais; revisar o título sem açúcar e sem farinha antes de reutilizar.",
+    "id": "R058",
+    "file": "referencias/ref-058.jpg",
+    "sha256": "8653fdda390fb809e80aa06a63a09cf5248a20847d507e751ceb2ad153a71c57",
+    "duplicate_of": "R034"
+  },
+  {
+    "source": "C:/Users/Distritek/Downloads/sla/WhatsApp Image 2026-10-01 at 15.15.42.jpeg",
+    "label": "Brigadeiro de banana — arquivo WhatsApp",
+    "category": "receitas",
+    "notes": "",
+    "id": "R059",
+    "file": "referencias/ref-059.jpg",
+    "sha256": "e193883e697f694a76cb8c1437742c0797ab8c79f8d858beb244095b3f30e22f",
+    "duplicate_of": "R035"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-1fd1d1e7-c69a-4ad2-923c-25f27715f94e.jpg",
+    "label": "Protocolo completo de avaliação antropométrica",
+    "category": "painel-profissional",
+    "notes": "Referência de dobras cutâneas, pontos anatômicos, fórmulas, ficha de medidas e fotos evolutivas. Validar protocolos e fórmulas antes de implementação.",
+    "id": "R060",
+    "file": "referencias/ref-060.jpg",
+    "sha256": "b32c665f7161cc40ce565131b48fe725bf402987f3b82aaaa8725380f6ece982"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-4ec82392-2399-42a0-8bc1-d90bf7b3f791.jpg",
+    "label": "Ficha de anamnese nutricional",
+    "category": "painel-profissional",
+    "notes": "Referência de identificação, objetivos, sintomas, histórico clínico e familiar, antropometria, rotina alimentar, líquidos, intestino, saúde da mulher, sono, atividade física, hábitos, exames e metas.",
+    "id": "R061",
+    "file": "referencias/ref-061.jpg",
+    "sha256": "11349a30d5d129773adf65d9784056a758143ba61a1aebe240429cbf53889ca7"
+  },
+  {
+    "source": "C:/Users/DISTRI~1/AppData/Local/Temp/codex-clipboard-5a8d7bb8-8a63-43e3-8067-b33cebbfea99.jpg",
+    "label": "Acompanhamento nutricional personalizado — apresentação e planos",
+    "category": "identidade-e-oferta",
+    "notes": "Referência de marca, retrato, tipografia, cartões e apresentação do acompanhamento. Os preços e promoções da imagem são exemplos e não determinam a oferta vigente.",
+    "id": "R062",
+    "file": "referencias/ref-062.jpg",
+    "sha256": "fa4f7f284d5b8fef12d174ed7ee3e0b3a4ff2dbf9396fda46281d721c53bb972"
+  }
+]

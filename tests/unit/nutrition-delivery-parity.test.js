@@ -6,7 +6,7 @@ import { parseHTML } from 'linkedom';
 import { buildPlanHtml, buildPlanPdf } from '../../server/nutrition/export.js';
 import { foodById, foodSource } from '../../src/data/nutrition.js';
 import { bristolTypes, bristolSource } from '../../src/data/nutrition-journey.js';
-import { generatePlan, dayTotals, shoppingList } from '../../src/lib/nutrition.js';
+import { generatePlan, dayTotals, shoppingList, sumItems } from '../../src/lib/nutrition.js';
 import { buildAssessment, formatFoodPortion } from '../../src/lib/nutrition-journey.js';
 
 const decimal = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
@@ -195,6 +195,13 @@ test('nutrition delivery: HTML and PDF retain the same approved patient data', {
             // household quantity itself must survive in both deliveries.
             const household = formatFoodPortion(option.foodId, option.grams).split('≈ ')[1].split(' (1 ')[0];
             bothContain(household, `household portion ${option.foodId} ${option.grams}g`);
+            const values = sumItems([option]);
+            bothContain(`${decimal(values.kcal)} kcal`, `option energy ${option.foodId} ${option.grams}g`);
+            for (const [key, label] of [['protein', 'P'], ['carbs', 'C'], ['fat', 'G']]) {
+              // Formats may spell out the label differently; both must retain
+              // the exact amount calculated for this approved alternative.
+              assert.ok(pdfText.includes(`${label} ${decimal(values[key])} g`), `PDF omitted ${key} for ${option.foodId} ${option.grams}g`);
+            }
           }
         }
       }

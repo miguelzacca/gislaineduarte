@@ -29,6 +29,7 @@ test('checkout envia à InfinitePay o mesmo e-mail normalizado que vincula o ped
     query: async (sql, params) => {
       if (sql.includes('FROM recipe_entitlements')) return result();
       if (sql.includes('FROM recipe_products')) return result([{ id: RECIPES_PRODUCT_ID, title: 'Coleção', price_cents: 999, published: true }]);
+      if (sql.includes('FROM recipe_content')) return result([{ id: 'approved-recipe' }]);
       writes.push({ sql, params }); return result();
     },
     connect: async () => ({ query: async (sql, params) => { writes.push({ sql, params }); return result(); }, release() {} }),
@@ -53,6 +54,7 @@ test('checkout GLP-1 uses its own price and does not resume a different book ord
     query: async (sql, params) => {
       if (sql.includes('FROM recipe_login_challenges')) return result([{ id: 'legacy-claim', secret_hash: tokenHash(secret), email: 'first@example.com', order_id: 'legacy-order', product_id: RECIPES_PRODUCT_ID }]);
       if (sql.includes('FROM recipe_entitlements')) { assert.equal(params[1], GLP_RECIPES_PRODUCT_ID); return result(); }
+      if (sql.includes('FROM recipe_content')) return result([{ id: 'approved-recipe' }]);
       if (sql.includes('FROM recipe_products')) { assert.equal(params[0], GLP_RECIPES_PRODUCT_ID); return result([{ id: GLP_RECIPES_PRODUCT_ID, title: 'Receitas GLP-1', price_cents: 4200, published: true }]); }
       writes.push({ sql, params }); return result();
     },
@@ -63,6 +65,12 @@ test('checkout GLP-1 uses its own price and does not resume a different book ord
   assert.ok(checkout.orderId); assert.equal(payload.items[0].price, 4200);
   assert.equal(writes.find(item => item.sql.includes('INSERT INTO recipe_orders')).params[2], GLP_RECIPES_PRODUCT_ID);
   assert.equal(writes.find(item => item.sql.includes('INSERT INTO recipe_login_challenges')).params[4], GLP_RECIPES_PRODUCT_ID);
+});
+
+test('collection with no approved recipe cannot charge a new buyer', async () => {
+  const store = { query: async sql => sql.includes('FROM recipe_products') ? result([{ id: GLP_RECIPES_PRODUCT_ID, title: 'Receitas GLP-1', price_cents: 4200, published: true }]) : result() };
+  const response = await startCheckout('buyer@example.com', request('/api/recipes/checkout?product=receitas-glp1'), { env: secureEnv, store, fetcher: () => { throw new Error('Checkout must not be called'); } });
+  assert.equal(response.status, 423);
 });
 
 test('sessão válida abre a coleção sem novo checkout, e-mail ou verificação', async () => {

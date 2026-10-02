@@ -45,9 +45,9 @@ const variants = [
   { id: 'vegetal', name: 'Mesa vegetal', description: 'Combinações com leguminosas, cereais e hortaliças, sem ingredientes de origem animal.', pattern: 3, diet: 'vegan' },
   { id: 'caseira', name: 'Cozinha de casa', description: 'Cuscuz, raízes, preparos cozidos e combinações brasileiras para a semana.', pattern: 4 },
 ];
-export const planTemplates = clinicalProfiles.flatMap(profile => variants.map(variant => ({
+export const planTemplates = clinicalProfiles.flatMap((profile, repertoireIndex) => variants.map(variant => ({
   id: `${profile.id}-${variant.id}`, profile: profile.id, name: `${profile.name} · ${variant.name}`,
-  description: `${variant.description} ${profile.focus}`, pattern: variant.pattern, diet: variant.diet, meals: variant.pattern === 2 ? 6 : 5,
+  description: `${variant.description} ${profile.focus}`, pattern: variant.pattern, diet: variant.diet, repertoireIndex, meals: variant.pattern === 2 ? 6 : 5,
   goals: ['balanced', 'diabetes', 'glp1'].includes(profile.id) ? goalOptions.map(goal => goal.id) : ['renal', 'oncology'].includes(profile.id) ? ['clinical'] : ['clinical', 'wellbeing', 'weight-management'],
   tags: [profile.name, variant.name, ...(profile.id === 'balanced' ? goalOptions.filter(goal => goal.id !== 'clinical').map(goal => goal.label) : ['Contexto clínico', profile.id === 'glp1' ? 'GLP-1' : profile.name])],
 })));
@@ -84,6 +84,9 @@ export const mealModules = [
   module('lunch-lentil-bowl', 'lunch', 'Arroz integral com lentilha e legumes', [['brown-rice', 120], ['lentils', 200], ['carrot', 80], ['broccoli', 80], ['olive-oil', 8]], ['plant', 'wholegrain', 'cooked']),
   module('lunch-bean-bowl', 'lunch', 'Arroz com feijão-fradinho e abóbora', [['rice', 120], ['cowpea', 190], ['pumpkin', 100], ['cucumber', 60], ['olive-oil', 8]], ['plant', 'practical']),
   module('lunch-black-beans', 'lunch', 'Arroz integral com feijão preto e legumes', [['brown-rice', 120], ['black-beans', 200], ['chayote', 100], ['beet', 60], ['olive-oil', 8]], ['plant', 'practical', 'wholegrain', 'cooked']),
+  module('lunch-plant-polenta', 'lunch', 'Polenta com lentilha e abobrinha', [['polenta', 160], ['lentils', 200], ['zucchini', 100], ['olive-oil', 8]], ['plant', 'soft', 'cooked'], 'Sirva a lentilha cozida e os legumes sobre a polenta.'),
+  module('lunch-plant-potato', 'lunch', 'Batata com feijão-fradinho e brócolis', [['potato', 160], ['cowpea', 180], ['broccoli', 100], ['olive-oil', 8]], ['plant', 'practical', 'cooked']),
+  module('lunch-plant-cassava', 'lunch', 'Mandioca com feijão e legumes', [['cassava', 120], ['beans', 190], ['carrot', 80], ['chayote', 80], ['olive-oil', 8]], ['plant', 'cooked']),
   module('dinner-fish-potato', 'dinner', 'Batata com peixe e cenoura', [['potato', 160], ['white-fish', 120], ['carrot', 90], ['olive-oil', 8]], ['fish', 'soft', 'cooked']),
   module('dinner-chicken-sweet-potato', 'dinner', 'Batata-doce com frango e abobrinha', [['sweet-potato', 150], ['grilled-chicken', 100], ['zucchini', 100], ['olive-oil', 8]], ['practical', 'cooked']),
   module('dinner-rice-beef', 'dinner', 'Arroz com patinho e berinjela', [['rice', 120], ['beef', 90], ['eggplant', 100], ['tomato', 60], ['olive-oil', 8]], ['practical']),
@@ -93,6 +96,9 @@ export const mealModules = [
   module('dinner-plant-lentils', 'dinner', 'Arroz com lentilha e abobrinha', [['rice', 120], ['lentils', 210], ['zucchini', 100], ['olive-oil', 8]], ['plant', 'soft', 'cooked']),
   module('dinner-plant-beans', 'dinner', 'Arroz integral com feijão e legumes', [['brown-rice', 120], ['beans', 210], ['pumpkin', 100], ['carrot', 70], ['olive-oil', 8]], ['plant', 'practical', 'wholegrain', 'cooked']),
   module('dinner-plant-cowpea', 'dinner', 'Cuscuz com feijão-fradinho e legumes', [['couscous', 120], ['cowpea', 200], ['zucchini', 80], ['beet', 60], ['olive-oil', 8]], ['plant', 'cooked']),
+  module('dinner-plant-arracacha', 'dinner', 'Mandioquinha com lentilha e cenoura', [['arracacha', 180], ['lentils', 210], ['carrot', 100], ['olive-oil', 8]], ['plant', 'soft', 'cooked'], 'Sirva a mandioquinha amassada com a lentilha e os legumes cozidos.'),
+  module('dinner-plant-polenta', 'dinner', 'Polenta com feijão preto e couve-flor', [['polenta', 160], ['black-beans', 210], ['cauliflower', 100], ['olive-oil', 8]], ['plant', 'soft', 'cooked']),
+  module('dinner-plant-roots', 'dinner', 'Batata-doce com feijão-fradinho e abóbora', [['sweet-potato', 150], ['cowpea', 200], ['pumpkin', 100], ['olive-oil', 8]], ['plant', 'practical', 'cooked']),
   module('supper-yogurt', 'supper', 'Iogurte com pera', [['yogurt', 150], ['pear', 80]], ['soft', 'practical']),
   module('supper-soy', 'supper', 'Bebida de soja com aveia', [['soy-milk', 180], ['oats', 20]], ['plant', 'wholegrain', 'soft']),
   module('supper-papaya', 'supper', 'Mamão com nozes', [['papaya', 150], ['walnut', 15]], ['plant', 'practical']),

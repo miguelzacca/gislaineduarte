@@ -199,6 +199,7 @@ export const navigation = [
   { label: 'Sobre a Gi', href: '/sobre' },
   { label: 'Atendimentos', href: '/atendimentos' },
   { label: 'Livro de receitas', href: '/livro-de-receitas' },
+  { label: 'Receitas GLP-1', href: '/receitas-glp-1' },
   { label: 'Seu plano', href: '/plano-alimentar' },
   { label: 'Contato', href: '/contato' },
 ];
@@ -210,6 +211,7 @@ export const publicRoutes = [
   ...services.map((service) => service.href),
   '/contato',
   '/livro-de-receitas',
+  '/receitas-glp-1',
   '/plano-alimentar',
   '/privacidade',
 ];

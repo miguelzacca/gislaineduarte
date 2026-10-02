@@ -9,16 +9,17 @@ import { load } from 'cheerio';
 test('professional journey renders constraints, calculation origins and content review together', async t => {
   const server = await createServer({ configFile: false, plugins: [react()], optimizeDeps: { noDiscovery: true, include: [], entries: [] }, server: { middlewareMode: true, hmr: false, ws: false, watch: null }, logLevel: 'error' });
   try {
-    const { CalculationTrail, CuratedContentEditor, MealQuantityVisual, PatientBrief, TemplateFinder } = await server.ssrLoadModule('/src/components/NutritionProfessionalJourney.jsx');
+    const { CalculationTrail, CuratedContentEditor, MealQuantityVisual, PatientBrief, TemplateFinder, WhatsAppShare } = await server.ssrLoadModule('/src/components/NutritionProfessionalJourney.jsx');
     const { ClinicalMeasurementFields } = await server.ssrLoadModule('/src/components/NutritionClinicalEditor.jsx');
     const render = (component, props) => load(renderToStaticMarkup(createElement(component, props)));
     await t.test('critical restrictions are named and remain outside collapsible content', () => {
-      const $ = render(PatientBrief, { intake: { goal: 'muscle', conditions: ['glp1'], allergies: ['milk'], allergyNotes: 'Reação relatada', intolerances: ['lactose'], excludedFoodIds: ['egg'], medications: 'Substância informada pela pessoa', glp1Details: 'Nome específico do medicamento', dislikes: 'Prefere evitar frituras' }, onOpen() {} });
+      const $ = render(PatientBrief, { intake: { goal: 'muscle', conditions: ['glp1'], allergies: ['milk'], allergyNotes: 'Reação relatada', intolerances: ['lactose'], excludedFoodIds: ['egg'], medications: 'Substância informada pela pessoa', glp1Details: 'Nome específico do medicamento', dislikes: 'Prefere evitar frituras', routine: 'Trabalha em turnos', budget: 'Prepara marmitas' }, onOpen() {} });
       assert.equal($('details').length, 0);
       assert.match($('dl').text(), /Proteína do leite/);
       assert.match($('dl').text(), /Lactose/);
       assert.match($('dl').text(), /Nome específico do medicamento/);
       assert.match($('dl').text(), /Ovo/);
+      assert.match($('dl').text(), /Trabalha em turnos/); assert.match($('dl').text(), /Prepara marmitas/);
     });
     await t.test('calculation display shows a real result and does not infer missing anthropometry', () => {
       const $ = render(CalculationTrail, { assessment: { calculationInput: { weight: 80, proteinRatio: 1.5 } } });
@@ -57,6 +58,16 @@ test('professional journey renders constraints, calculation origins and content 
       assert.match($('.nj-module-checks').text(), /medicamento/);
       assert.equal($('.nj-module>.nw-check input').prop('disabled'), true);
       assert.match($('.nj-module').text(), /Aguardando sua revisão/);
+    });
+    await t.test('WhatsApp opens only a draft after showing its recipient and exact message', () => {
+      const url = 'https://nutrition.example/meu-plano#acesso=demo-only';
+      const $ = render(WhatsAppShare, { url, name: 'Pessoa Fictícia', phone: '(47) 99999-8888' });
+      const link = new URL($('a').attr('href'));
+      assert.equal($('input[type=tel]').val(), '(47) 99999-8888');
+      assert.equal(link.pathname, '/5547999998888'); assert.equal(link.searchParams.get('text'), $('textarea').text());
+      assert.ok($('textarea').text().includes(url)); assert.match($('.nw-fine').last().text(), /confirme o envio/);
+      const invalid = render(WhatsAppShare, { url, name: 'Pessoa', phone: '9999' });
+      assert.equal(invalid('a').length, 0);
     });
   } finally { await server.close(); }
 });

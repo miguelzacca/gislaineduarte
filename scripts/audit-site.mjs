@@ -12,7 +12,7 @@ const configuredInstagram = process.env.PUBLIC_INSTAGRAM?.trim() || null;
 const expectedRoutes = [
   '/', '/sobre', '/atendimentos', '/atendimentos/consulta-nutricional',
   '/atendimentos/ciclos-de-acompanhamento', '/contato',
-  '/livro-de-receitas', '/privacidade', '/plano-alimentar',
+  '/livro-de-receitas', '/receitas-glp-1', '/privacidade', '/plano-alimentar',
 ];
 const errors = [];
 const warnings = [];

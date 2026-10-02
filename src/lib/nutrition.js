@@ -175,6 +175,29 @@ export function recommendedTemplate(intake = {}) {
   return `${profile}-${intake.symptoms?.some(id => ['early-satiety', 'nausea'].includes(id)) || profile === 'glp1' ? 'fracionada' : 'pratica'}`;
 }
 
+// Pick an actual subset of culinary preparations, not just a different starting
+// day for the same menu. Enumeration is deterministic so a saved base stays
+// stable. These are repertoire choices, never disease-specific prescriptions.
+function culinaryRepertoire(pool, count, ordinal) {
+  if (pool.length <= count) return pool;
+  const combinations = (n, k) => {
+    let total = 1;
+    for (let i = 1; i <= k; i++) total = total * (n - k + i) / i;
+    return Math.round(total);
+  };
+  let rank = ordinal % combinations(pool.length, count);
+  const selected = [];
+  let start = 0;
+  for (let remaining = count; remaining > 0; remaining--) {
+    for (let index = start; index <= pool.length - remaining; index++) {
+      const block = combinations(pool.length - index - 1, remaining - 1);
+      if (rank < block) { selected.push(pool[index]); start = index + 1; break; }
+      rank -= block;
+    }
+  }
+  return selected;
+}
+
 export function generatePlan(intake, templateId = recommendedTemplate(intake), variation = 0) {
   const template = planTemplates.find(item => item.id === templateId);
   if (!template) throw new Error('Selecione uma base válida.');
@@ -205,7 +228,8 @@ export function generatePlan(intake, templateId = recommendedTemplate(intake), v
     if (!pool.length) return null;
     // A practical week reuses a compact set of preparations; the varied week
     // deliberately opens the repertoire. Both still rotate compatible produce.
-    const eligible = pool.slice(0, template.pattern !== 1 ? 4 : Math.max(7, pool.filter(module => module.tags.some(tag => preferredTags.includes(tag))).length));
+    const count = template.diet === 'vegan' && ['lunch', 'dinner'].includes(type) ? 3 : template.pattern !== 1 ? 4 : 7;
+    const eligible = culinaryRepertoire(pool, count, template.repertoireIndex || 0);
     const offset = seed + template.pattern * 2;
     const start = (index + offset + (slotIndex === 3 ? 3 : 0)) % eligible.length;
     const rotated = eligible.slice(start).concat(eligible.slice(0, start));
@@ -284,6 +308,12 @@ export function clinicalAlerts(intake = {}, plan) {
   if (plan?.targets?.water && intake.conditions?.some(id => ['renal', 'cardiovascular'].includes(id))) alerts.push({ id: 'fluid', text: 'Confirmar meta hídrica individual e eventual restrição de líquidos com a equipe.' });
   if (plan?.targets?.energy && plan.days.some(day => Math.abs(dayTotals(day).kcal - plan.targets.energy) / plan.targets.energy > .15)) alerts.push({ id: 'energy', text: 'Há dias com energia mais de 15% distante da meta. Ajustar porções ou justificar a diferença na avaliação.' });
   if (plan?.targets?.protein && plan.days.some(day => Math.abs(dayTotals(day).protein - plan.targets.protein) / plan.targets.protein > .2)) alerts.push({ id: 'protein', text: 'Há dias com proteína mais de 20% distante da meta que você definiu. Conferir distribuição, porções e substituições antes de entregar.' });
+  if (plan?.targets?.energy > 0) {
+    const macros = ['protein', 'carbs', 'fat'];
+    const macroEnergy = macros.reduce((total, key) => total + (Number(plan.targets[key]) || 0) * (key === 'fat' ? 9 : 4), 0);
+    const share = macroEnergy / plan.targets.energy;
+    if (share > 1.05 || macros.every(key => Number.isFinite(plan.targets[key]) && plan.targets[key] > 0) && share < .95) alerts.push({ id: 'macro-energy', text: 'A energia das metas de proteína, carboidratos e gorduras (4, 4 e 9 kcal/g) difere mais de 5% da meta energética. Confira a distribuição e registre a justificativa de eventual diferença antes de aprovar.' });
+  }
   if (intake.diet === 'vegan' || intake.diet === 'vegetarian') alerts.push({ id: 'plant-based', text: 'Conferir adequação de proteínas, vitamina B12, ferro e cálcio no padrão alimentar escolhido. A seleção automática não prescreve suplementos nem garante adequação de micronutrientes.' });
   if (plan?.targets && ['sodium', 'potassium', 'phosphorus'].some(key => plan.targets[key])) alerts.push({ id: 'minerals', text: 'Conferir metas de minerais com rótulos, exames e sal acrescentado. Totais com dados ausentes são parciais.' });
   return alerts;

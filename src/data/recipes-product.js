@@ -383,7 +383,12 @@ export const recipesProduct = {
 
 // Preserve o ID original para manter compras e links existentes.
 export const GLP_RECIPES_PRODUCT_ID = 'receitas-glp1';
-for (const recipe of recipesProduct.recipes) { recipe.productIds = [RECIPES_PRODUCT_ID]; recipe.published = true; }
+for (const recipe of recipesProduct.recipes) {
+  recipe.productIds = [RECIPES_PRODUCT_ID];
+  // Um preparo completado pelo sistema não equivale à revisão da profissional.
+  recipe.published = recipe.validation.status !== 'editorially-completed-pending-review' && recipe.id !== 'recipe-02';
+  recipe.validation.source = recipe.validation.source.replace(' e conteúdo canônico aprovado no briefing do produto.', '. Aprovação profissional não registrada.');
+}
 recipesProduct.recipes.push(...expandedRecipes);
 for (const recipe of [...expandedRecipes, ...glpRecipes]) {
   recipe.image.credit = photoCredits.photos.find(photo => photo.id === recipe.image.creditId);
@@ -391,19 +396,22 @@ for (const recipe of [...expandedRecipes, ...glpRecipes]) {
 }
 for (const slug of ['bombom-banana-cacau', 'torta-proteica-frango', 'kafta-batatas', 'pao-fuba', 'tamaras-recheadas', 'bolo-banana-aveia']) {
   const recipe = recipesProduct.recipes.find(item => item.slug === slug);
-  recipe.image = { src: '/images/recipes-real/' + slug + '.jpg', original: 'public/images/recipes-real/' + slug + '.jpg', pdf: 'public/images/recipes-real/' + slug + '.jpg', width: 1290, height: 1400, alt: 'Registro fotográfico fornecido para ' + recipe.name, reference: false, credit: { author: 'Arquivo fornecido pelo usuário', license: 'Autoria e licença original não informadas na referência' } };
+  // O envio de uma referência não concede licença para publicá-la como fotografia editorial.
+  recipe.validation.referenceImage = '/images/recipes-real/' + slug + '.jpg';
+  recipe.validation.imageNote = 'A imagem da preparação enviada como referência está sem autoria/licença confirmadas. A entrega utiliza uma fotografia licenciada de ingrediente, identificada como referência.';
 }
 export const glpRecipesProduct = {
   ...recipesProduct, id: GLP_RECIPES_PRODUCT_ID, title: 'Receitas para GLP-1', shortTitle: 'Receitas para GLP-1',
   subtitle: 'Preparações em pequenas porções para apoiar a conversa com sua nutricionista durante o acompanhamento.',
   description: 'Livro educativo com preparações simples, texturas variadas, ingredientes e cuidados para personalizar durante o acompanhamento nutricional de quem utiliza GLP-1.',
-  publicPath: recipesProduct.publicPath + '?product=receitas-glp1', experiencePath: '/minhas-receitas?product=receitas-glp1',
+  publicPath: '/receitas-glp-1', experiencePath: '/minhas-receitas?product=receitas-glp1',
   downloadEndpoint: '/api/recipes/download?product=receitas-glp1', recipes: glpRecipes,
   educationalNotice: 'Material educativo. A tolerância, a porção e as necessidades nutricionais variam. As receitas não substituem acompanhamento e não orientam doses ou ajustes de medicamentos GLP-1.',
   hero: { ...recipesProduct.hero, image: foodPhoto('papaya') },
 };
 export const recipeProducts = [recipesProduct, glpRecipesProduct];
 export const allRecipes = [...recipesProduct.recipes, ...glpRecipes];
+for (const recipe of allRecipes) recipe.seedVersion = '2026-10-02-editorial-audit';
 export function recipeProductById(id = RECIPES_PRODUCT_ID) { return recipeProducts.find(product => product.id === id) || null; }
 export function requestedRecipeProduct(request) { return recipeProductById(new URL(request.url).searchParams.get('product') || RECIPES_PRODUCT_ID); }
 

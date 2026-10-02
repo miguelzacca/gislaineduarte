@@ -25,5 +25,5 @@ export default function App({ path }) {
     return () => { hide(); window.removeEventListener('pagehide', hide); window.removeEventListener('pageshow', show); };
   }, [path, route.page]);
   if (route.page === 'admin') return <><a className="skip-link" href="#conteudo">Pular para o conteúdo</a><main id="conteudo" tabIndex={-1}><AdminPage /></main></>;
-  return <>{route.page === 'home' ? <IntroOverlay /> : null}<a className="skip-link" href="#conteudo">Pular para o conteúdo</a><div className="route-veil" aria-hidden="true"><BrandMark mono /></div><Header path={route.path} /><main id="conteudo" tabIndex={-1}>{route.page === 'home' ? <JourneySvg /> : null}{route.crumbs ? <Breadcrumbs items={route.crumbs} /> : null}<Page service={route.service} index={route.index} /></main><Footer /></>;
+  return <>{route.page === 'home' ? <IntroOverlay /> : null}<a className="skip-link" href="#conteudo">Pular para o conteúdo</a><div className="route-veil" aria-hidden="true"><BrandMark mono /></div><Header path={route.path} /><main id="conteudo" tabIndex={-1}>{route.page === 'home' ? <JourneySvg /> : null}{route.crumbs ? <Breadcrumbs items={route.crumbs} /> : null}<Page service={route.service} index={route.index} product={route.product} /></main><Footer /></>;
 }

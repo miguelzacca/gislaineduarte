@@ -1,5 +1,7 @@
 # Painel clínico e biblioteca editorial · outubro de 2026
 
+> Revisão de 2 de outubro de 2026: a [auditoria atual do briefing](auditoria-briefing-2026-10-02.md) corrige e delimita conclusões deste registro, inclusive sobre diversidade, fontes editoriais e receitas GLP-1. O texto abaixo preserva a execução anterior e não comprova o estado atual.
+
 ## Anamnese e avaliação
 
 A anamnese inclui preferências e aversões a chás, líquidos, frequência intestinal, atividade física, histórico familiar, rotina profissional, saúde hormonal, exames e medidas opcionais. Esses campos são autorrelatos e não substituem a avaliação. Fotos opcionais contextualizam refeições; não são usadas para estimar composição corporal.

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { hasPublishedRecipe } from './content.js';
 import { RECIPES_PRODUCT_ID, requestedRecipeProduct, recipeProductById } from '../../src/data/recipes-product.js';
 import { CLAIM_COOKIE, cookie, createSession, getClaim, isSecureRequest, randomToken, safeEqual, tokenHash, verifyProductEntitlement } from './access.js';
 import { requireAccessConfig, requireCommerceConfig } from './config.js';
@@ -46,6 +47,7 @@ export async function startCheckout(email, request, { env = process.env, fetcher
   const productResult = await db.query('SELECT id, title, price_cents, published FROM recipe_products WHERE id = $1', [productId]);
   const product = productResult.rows[0];
   if (!product?.published || !product.price_cents) return { error: 'A coleção ainda não está disponível para compra.', status: 423 };
+  if (!await hasPublishedRecipe(db, productId)) return { error: 'As receitas desta coleção estão em revisão. A compra estará disponível após a conclusão.', status: 423 };
   const orderId = randomUUID();
   const claim = claimValues(normalized);
   const webhookToken = randomToken();

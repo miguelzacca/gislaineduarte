@@ -17,7 +17,7 @@ export const extraIntakeMeasurements = {
   usualWeight: { label: 'Peso habitual', unit: 'kg', min: 25, max: 350 },
   waist: { label: 'Circunferência da cintura', unit: 'cm', min: 31, max: 250 },
   hip: { label: 'Circunferência do quadril', unit: 'cm', min: 31, max: 250 },
-  bodyFat: { label: 'Gordura corporal medida', unit: '%', min: 0.1, max: 69.9 },
+  bodyFat: { label: 'Gordura corporal informada', unit: '%', min: 0.1, max: 69.9 },
 };
 export const extraIntakeDefaults = Object.fromEntries([...Object.keys(extraIntakeTextFields), ...Object.keys(extraIntakeMeasurements), 'teaHabit'].map(key => [key, '']));
 

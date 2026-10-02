@@ -9,10 +9,10 @@ import { seal, unseal } from './store.js';
 
 const emptyIntake = { conditions: [], allergies: [], excludedFoodIds: [], diet: 'omnivore', symptoms: [] };
 const allowedGoals = ['wellbeing', 'weight-management', 'muscle', 'clinical'];
-export function reusablePlan(plan, profile) {
-  // The model editor retains reusable meal labels and notes, but no clinical assessment.
+export function reusablePlan(plan, profile, { fromPatient = false } = {}) {
+  // Editorial models retain reusable labels; patient-derived models retain no free text.
   return { title: 'Seu plano alimentar', templateId: `${profile}-pratica`,
-    days: plan.days.map((day, index) => ({ label: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'][index], meals: day.meals.map((meal, mi) => ({ name: meal.name || `Refeição ${mi + 1}`, time: meal.time, note: meal.note || '', items: meal.items.map(item => ({ foodId: item.foodId, grams: item.grams, alternatives: item.alternatives.map(alt => ({ foodId: alt.foodId, grams: alt.grams })) })) })) })),
+    days: plan.days.map((day, index) => ({ label: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'][index], meals: day.meals.map((meal, mi) => ({ name: fromPatient ? `Refeição ${mi + 1}` : meal.name || `Refeição ${mi + 1}`, time: meal.time, note: fromPatient ? '' : meal.note || '', items: meal.items.map(item => ({ foodId: item.foodId, grams: item.grams, alternatives: item.alternatives.map(alt => ({ foodId: alt.foodId, grams: alt.grams })) })) })) })),
     targets: { energy: null, protein: null, carbs: null, fat: null, water: null, sodium: null, potassium: null, phosphorus: null },
     guidance: 'Siga as porções e os preparos combinados em atendimento.', clinicalNotes: '', review: {}, version: 2,
     assessment: { summary: '', criteria: '', calculationInput: null }, curatedModules: [],

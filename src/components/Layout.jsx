@@ -40,7 +40,7 @@ export function Header({ path }) {
     document.body.classList.add('menu-open');
     closeRef.current.focus();
     animationRef.current = playMenu(dialog, true);
-    const media = matchMedia('(min-width: 768px)');
+    const media = matchMedia('(min-width: 1101px)');
     const closeOnDesktop = event => { if (event.matches) setOpen(false); };
     media.addEventListener('change', closeOnDesktop);
     return () => {

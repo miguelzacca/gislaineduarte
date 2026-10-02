@@ -6,10 +6,12 @@ import { nutritionApi } from './NutritionPublic.jsx';
 
 const api = (action, body, query) => nutritionApi(action, body, true, query);
 const num = value => Number(value).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
-export function NutritionTemplateEditor({ template, onClose, onSaved }) {
+export function NutritionTemplateEditor({ template, onClose, onSaved, onEditingStateChange }) {
   const [model, setModel] = useState(null); const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false); const [day, setDay] = useState(0); const [dirty, setDirty] = useState(false);
   const dialog = useRef(null);
+  useEffect(() => { onEditingStateChange?.({ dirty, busy }); }, [dirty, busy, onEditingStateChange]);
+  useEffect(() => () => { onEditingStateChange?.({ dirty: false, busy: false }); }, [onEditingStateChange]);
   useEffect(() => { if (!dirty) return; const handler = event => { event.preventDefault(); event.returnValue = ''; }; window.addEventListener('beforeunload', handler); return () => window.removeEventListener('beforeunload', handler); }, [dirty]);
   useEffect(() => { dialog.current.showModal(); let active = true; api('template-detail', null, `&templateId=${encodeURIComponent(template.id)}`).then(result => { if (active) setModel(result); }).catch(error => { if (active) setMessage(error.message); }); return () => { active = false; }; }, [template.id]);
   const close = () => { if (!busy && (!dirty || window.confirm('Sair sem salvar as alterações deste modelo?'))) onClose(); };

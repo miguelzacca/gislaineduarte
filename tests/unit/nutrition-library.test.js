@@ -6,6 +6,23 @@ import { getNutritionStore } from '../../server/nutrition/store.js';
 import { handleAdminNutritionRequest } from '../../api/admin/nutrition.js';
 import { adminCookie } from '../../server/recipes/admin.js';
 import { analyzeWithNim } from '../../server/nutrition/ai.js';
+import { reusablePlan } from '../../server/nutrition/library.js';
+import { generatePlan } from '../../src/lib/nutrition.js';
+
+test('patient-derived model removes free text while editorial models keep reusable meal instructions', () => {
+  const plan = generatePlan({ conditions: [], allergies: [], excludedFoodIds: [], diet: 'omnivore', symptoms: [] });
+  plan.title = 'Nome privado no título'; plan.guidance = 'Orientação de pessoa privada'; plan.clinicalNotes = 'Prontuário privado';
+  plan.assessment = { summary: 'Resumo privado', criteria: 'Critérios privados' };
+  plan.days[0].label = 'Dia da pessoa privada'; plan.days[0].meals[0].name = 'Nome privado na refeição'; plan.days[0].meals[0].note = 'Preferência privada da pessoa';
+  plan.days[0].meals[0].privateMetadata = 'Não deve ser transportado';
+  const reusable = reusablePlan(plan, 'balanced', { fromPatient: true });
+  assert.doesNotMatch(JSON.stringify(reusable), /privad|transportado/i);
+  assert.equal(reusable.days[0].label, 'Segunda'); assert.equal(reusable.days[0].meals[0].name, 'Refeição 1'); assert.equal(reusable.days[0].meals[0].note, '');
+  assert.deepEqual(reusable.days[0].meals[0].items, plan.days[0].meals[0].items);
+  const editorial = reusablePlan(plan, 'balanced');
+  assert.equal(editorial.days[0].meals[0].name, plan.days[0].meals[0].name); assert.equal(editorial.days[0].meals[0].note, plan.days[0].meals[0].note);
+  assert.equal(editorial.days[0].meals[0].privateMetadata, undefined);
+});
 
 test('professional library persists edited models and curated content with conflict protection', async t => {
   const pg = await PGlite.create();

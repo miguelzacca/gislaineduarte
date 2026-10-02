@@ -55,7 +55,8 @@ p + p { margin-top: 1.15rem; }
 .menu-top .wordmark .brand-mark__part--leaf { fill: var(--ivory); }
 .wordmark__name { font: 400 26px/1 var(--serif); letter-spacing: -.055em; }
 .wordmark__profession { display: block; font-size: 8px; letter-spacing: .23em; margin-top: 7px; text-transform: uppercase; }
-.desktop-nav { display: flex; align-items: center; gap: clamp(20px, 2.8vw, 44px); font-size: 11px; }
+.desktop-nav { display: flex; align-items: center; gap: clamp(14px, 1.7vw, 28px); font-size: 11px; }
+.desktop-nav a { white-space: nowrap; }
 .desktop-nav a { position: relative; min-height: 44px; display: inline-flex; align-items: center; }
 .desktop-nav a::after { content: ''; position: absolute; bottom: 5px; left: 0; width: 100%; height: 1px; background: var(--gold-ink); transform: scaleX(0); transform-origin: left; transition: transform var(--duration-base); }
 .desktop-nav a:hover::after, .desktop-nav a[aria-current]::after { transform: scaleX(1); }
@@ -248,6 +249,16 @@ p + p { margin-top: 1.15rem; }
 @keyframes fade-out { to { opacity: 0; } }
 @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } }
 @media (min-width: 1800px) { .hero-grid { min-height: 850px; } .hero h1 { font-size: 118px; } }
+@media (max-width: 1100px) { .desktop-nav { display: none; } .menu-toggle { display: inline-flex; } .no-js .header-inner { flex-wrap: wrap; padding-block: 15px; } .no-js .desktop-nav { display: flex; flex-wrap: wrap; width: 100%; } }
+.books-section { border-bottom: 1px solid var(--color-line); }
+.books-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; }
+.book-discovery { position: relative; padding: clamp(28px,4vw,50px); border: 1px solid var(--color-line); background: #fffdf7; }
+.book-discovery--glp { background: #eaf0e5; }
+.book-discovery h3 { font: 400 clamp(34px,4vw,49px)/1.1 var(--serif); margin: 20px 0; }
+.book-discovery>p:not(.eyebrow) { max-width: 440px; line-height: 1.85; margin-bottom: 24px; }
+.book-discovery .text-link { font-size: 14px; }
+.book-discovery__number { font: 400 42px/1 var(--serif); color: var(--gold-ink); margin-bottom: 30px; }
+@media (max-width: 767px) { .books-grid { grid-template-columns: 1fr; gap: 18px; } }
 @media (max-width: 1100px) { .desktop-nav { gap: 22px; } .header-contact { display: none; } .hero .actions { align-items: flex-start; gap: 12px; flex-direction: column; } .hero-grid { min-height: 680px; } .hero-art { min-height: 600px; } .hero-art .portrait { right: -25%; } .hero h1 { font-size: clamp(60px, 7.2vw, 82px); } .hero-seal { left: 0; top: 10%; } .portrait-caption { left: 5%; bottom: 15%; } .approach-grid { gap: 7%; } .faq-grid { gap: 8%; } }
 @media (max-width: 767px) {
   html { scroll-padding-top: 80px; }

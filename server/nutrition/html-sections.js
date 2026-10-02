@@ -5,6 +5,7 @@ import { assessmentHighlights, assessmentSections, targetLabels } from './presen
 import { patientVisuals } from './patient-visuals.js';
 import { patientSwapExamples } from './swap-comparisons.js';
 import { plateGroupLabels } from './presentation.js';
+import { foodPhotoNote } from './photo-labels.js';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const decimal = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
@@ -68,12 +69,12 @@ export function alternativesMarkup(plan, foodImage) {
   })));
   if (!groups.size) return '';
   const comparisons = patientSwapExamples(plan).map(({ from, to, dayIndex, mealIndex, itemIndex, dayLabel, mealName }) => {
-    const option = (item, className, label) => `<div class="${className}">${foodImage(item.foodId)}<span class="eyebrow">${label}</span><h4>${escape(foodById[item.foodId].name)}</h4><p><strong>${decimal(item.grams)} g</strong><br>${escape(formatFoodPortion(item.foodId, item.grams))}</p></div>`;
+    const option = (item, className, label) => `<div class="${className}">${foodImage(item.foodId)}${foodPhotoNote(foodById[item.foodId]) ? `<p class="fine">${escape(foodPhotoNote(foodById[item.foodId]))}</p>` : ''}<span class="eyebrow">${label}</span><h4>${escape(foodById[item.foodId].name)}</h4><p><strong>${decimal(item.grams)} g</strong><br>${escape(formatFoodPortion(item.foodId, item.grams))}</p></div>`;
     return `<article class="smart-swap"><div class="smart-swap-pair">${option(from, 'from', 'Opção do plano')}<span class="smart-swap-arrow" aria-hidden="true">→</span>${option(to, 'to', 'Pode substituir por')}</div><a href="#food-${dayIndex}-${mealIndex}-${itemIndex}" data-plan-anchor>${escape(dayLabel)} · ${escape(mealName)} · Ver na refeição</a></article>`;
   }).join('');
   const gallery = [...groups.values()].map(({ options, occurrences }) => `<details class="swap-group"><summary><span>${escape(foodById[options[0].foodId].name)} · ${decimal(options[0].grams)} g</span><small>${options.length - 1} ${options.length === 2 ? 'troca aprovada' : 'trocas aprovadas'}</small></summary><div><div class="swap-gallery">${options.map((item, index) => {
     const values = sumItems([item]);
-    return `<article>${foodImage(item.foodId)}<span class="eyebrow">${index === 0 ? 'Opção principal' : `Alternativa ${index}`}</span><h4>${escape(foodById[item.foodId].name)}</h4><p><strong>${decimal(item.grams)} g</strong> · ${escape(formatFoodPortion(item.foodId, item.grams))}</p><p class="fine">${decimal(values.kcal)} kcal · P ${decimal(values.protein)} g · C ${decimal(values.carbs)} g · G ${decimal(values.fat)} g</p></article>`;
+    return `<article>${foodImage(item.foodId)}${foodPhotoNote(foodById[item.foodId]) ? `<p class="fine photo-note">${escape(foodPhotoNote(foodById[item.foodId]))}</p>` : ''}<span class="eyebrow">${index === 0 ? 'Opção principal' : `Alternativa ${index}`}</span><h4>${escape(foodById[item.foodId].name)}</h4><p><strong>${decimal(item.grams)} g</strong> · ${escape(formatFoodPortion(item.foodId, item.grams))}</p><p class="fine">${decimal(values.kcal)} kcal · P ${decimal(values.protein)} g · C ${decimal(values.carbs)} g · G ${decimal(values.fat)} g</p></article>`;
   }).join('')}</div><p class="fine">Disponível nestas refeições:</p><div class="swap-occurrences">${occurrences.map(({ d, m, i, label, meal }) => `<a href="#food-${d}-${m}-${i}" data-plan-anchor>${escape(label)} · ${escape(meal)}</a>`).join('')}</div></div></details>`).join('');
   return `<section class="panel alternatives-guide" id="swaps"><p class="eyebrow">Flexibilidade no seu plano</p><h2>Substituições inteligentes</h2><p>Estes são exemplos das trocas registradas no seu plano. Cada comparação vale somente para a refeição indicada: a alternativa substitui o alimento principal, não se soma a ele. Siga a quantidade de cada opção.</p><div class="smart-swaps">${comparisons}</div><details class="technical-section all-swaps"><summary>Todas as suas opções de troca · ${groups.size} grupos</summary><div><p>Veja as fotografias, as porções e os nutrientes das opções aprovadas. Escolha uma opção por alimento, na refeição correspondente. Os links levam diretamente ao seletor.</p><p class="fine">Cada grupo vale apenas para as refeições indicadas. Alternativas não precisam ter valores nutricionais idênticos; os cálculos se ajustam à sua escolha.</p>${gallery}</div></details></section>`;
 }

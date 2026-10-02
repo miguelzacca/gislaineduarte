@@ -25,6 +25,8 @@ export function buildLlms() {
     `- [Atendimentos](${site.url}/atendimentos): consulta individual e ciclos de acompanhamento.`,
     ...services.map((service) => `- [${service.title}](${site.url}${service.href}): ${service.summary}`),
     `- [Contato](${site.url}/contato): canais oficiais para informações e orçamento.`,
+    `- [Livro de receitas](${site.url}/livro-de-receitas): coleção geral e condições de acesso.`,
+    `- [Receitas GLP-1](${site.url}/receitas-glp-1): coleção específica e disponibilidade.`,
     `- [Privacidade](${site.url}/privacidade): informações sobre o funcionamento deste site.`,
     '',
     '## Escopo',

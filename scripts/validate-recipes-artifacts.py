@@ -8,7 +8,15 @@ from pypdf import PdfReader
 
 
 ROOT = Path(__file__).resolve().parents[1]
-for name in ["7-receitas-para-ajudar-voce-a-desinflamar", "receitas-glp1"]:
+editions = json.loads((ROOT / "artifacts/recipes/editions.json").read_text(encoding="utf-8"))
+for edition in editions:
+    name = edition["name"]
+    if not edition["available"]:
+        assert edition["recipeCount"] == 0
+        assert not (ROOT / f"artifacts/recipes/{name}-offline.html").exists()
+        assert not (ROOT / f"artifacts/recipes/{name}.pdf").exists()
+        print(f"{name}: em preparação, sem arquivos de receitas não revisadas.")
+        continue
     html = (ROOT / f"artifacts/recipes/{name}-offline.html").read_text(encoding="utf-8")
     data = json.loads(re.search(r'<script id="product-data" type="application/json">(.*?)</script>', html, re.S).group(1))
     reader = PdfReader(str(ROOT / f"artifacts/recipes/{name}.pdf"))

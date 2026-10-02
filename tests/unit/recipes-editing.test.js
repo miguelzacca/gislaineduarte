@@ -37,7 +37,7 @@ test('PostgreSQL recipe editing preserves drafts, versions, purchases and curren
       const initial = await (await call('GET')).json();
       assert.equal(initial.recipes.length, 38);
       const recipe = initial.recipes.find(item => item.id === 'brigadeiro-banana');
-      const response = await call('PATCH', { ...recipe, title: 'Brigadeiro revisado', preparationText: 'Amasse a banana.\nCozinhe os ingredientes até firmar.\nDeixe esfriar antes de modelar.', imageAuthor: 'Crédito revisado', servings: 4, nutrition: { kcal: 50, protein: 2, carbs: 7, fat: 1, source: 'Ficha de cálculo da profissional' } });
+      const response = await call('PATCH', { ...recipe, reviewConfirmed: true, title: 'Brigadeiro revisado', preparationText: 'Amasse a banana.\nCozinhe os ingredientes até firmar.\nDeixe esfriar antes de modelar.', imageAuthor: 'Crédito revisado', servings: 4, nutrition: { kcal: 50, protein: 2, carbs: 7, fat: 1, source: 'Ficha de cálculo da profissional' } });
       assert.equal(response.status, 200); edited = (await response.json()).recipe;
       assert.equal(edited.revision, 2); assert.equal(edited.imageAuthor, 'Crédito revisado');
       assert.equal((await call('PATCH', { ...recipe, title: 'Edição antiga' })).status, 409);
@@ -77,6 +77,11 @@ test('PostgreSQL recipe editing preserves drafts, versions, purchases and curren
       const listing = await (await handleAdminProductsRequest(request('GET'), { env, store: db })).json();
       const product = listing.products.find(item => item.id === GLP_RECIPES_PRODUCT_ID);
       const body = { ...product, title: 'Receitas GLP-1 revisadas', priceCents: 3900, published: true };
+      assert.equal((await readRecipeProduct(db, GLP_RECIPES_PRODUCT_ID)).recipes.length, 0, 'exemplos gerados não são material GLP-1 aprovado');
+      assert.equal((await handleAdminProductsRequest(request('PATCH', body), { env, store: db })).status, 400, 'livro sem receitas aprovadas permanece indisponível');
+      const initialRecipes = await (await call('GET')).json();
+      const reviewed = initialRecipes.recipes.find(item => item.id === 'glp-iogurte-mamao');
+      assert.equal((await call('PATCH', { ...reviewed, published: true, reviewConfirmed: true, editorialSource: 'Receita selecionada pela profissional para este teste', editorialContext: 'Receita educativa revisada no teste.' })).status, 200);
       assert.equal((await handleAdminProductsRequest(request('PATCH', body), { env, store: db })).status, 200);
       assert.equal((await handleAdminProductsRequest(request('PATCH', body), { env, store: db })).status, 409);
       const editor = await (await call('GET')).json();
@@ -88,6 +93,29 @@ test('PostgreSQL recipe editing preserves drafts, versions, purchases and curren
 
 test('recipe edits reject unsafe photos and nutrition without a declared source', () => {
   const draft = { title: 'Receita de teste', productIds: [RECIPES_PRODUCT_ID], imageUrl: '/images/foods/apple.jpg', published: false };
+  assert.equal(normalizeRecipeEdit({ ...draft, imageUrl: '', ingredientsText: '', preparationText: '' }).published, false, 'rascunhos podem ser preservados antes de completar o conteúdo');
   for (const imageUrl of ['https://127.0.0.1/private', '/images/../../secrets.jpg', 'javascript:alert(1)', 'https://images.pexels.com@127.0.0.1/image.jpg']) assert.throws(() => normalizeRecipeEdit({ ...draft, imageUrl }), /fotografia/);
   assert.throws(() => normalizeRecipeEdit({ ...draft, servings: 1, nutrition: { kcal: 200, protein: 10, carbs: 20, fat: 7 } }), /fonte/);
+  assert.throws(() => normalizeRecipeEdit({ ...draft, servings: 1, nutrition: { kcal: 200, protein: null, carbs: 20, fat: 7, source: 'Ficha' } }), /campos vazios/);
+  assert.throws(() => normalizeRecipeEdit({ ...draft, published: true, ingredientsText: '1 maçã', preparationText: 'Lave e corte.', imageAlt: 'Maçã' }), /revisão/);
+  assert.throws(() => normalizeRecipeEdit({ ...draft, published: true, reviewConfirmed: true, ingredientsText: '1 maçã', preparationText: 'Lave e corte.', imageAlt: 'Maçã' }), /autoria/);
+});
+
+test('editorial reseed corrects untouched invented GLP recipes without changing professional work', async t => {
+  const pg = await PGlite.create();
+  t.after(() => pg.close());
+  await initializeRecipeContent(pg);
+  const original = (await readRecipeRecords(pg)).find(item => item.id === 'glp-iogurte-mamao');
+  const legacy = { ...original, published: true, validation: { status: 'source-transcribed', source: 'Referências fornecidas pela profissional em 01/10/2026.' } };
+  delete legacy.seedVersion;
+  await pg.query('UPDATE recipe_content SET data = $2::jsonb, revision = 1 WHERE id = $1', [legacy.id, JSON.stringify(legacy)]);
+  await initializeRecipeContent(pg);
+  const corrected = (await readRecipeRecords(pg)).find(item => item.id === legacy.id);
+  assert.equal(corrected.published, false);
+  assert.match(corrected.validation.source, /gerado pelo sistema/);
+  assert.equal(corrected.revision, 2);
+  const changed = { ...corrected, published: true, name: 'Preparação revisada', validation: { status: 'professional-reviewed', source: 'Cadastro profissional' } };
+  await pg.query('UPDATE recipe_content SET data = $2::jsonb WHERE id = $1', [changed.id, JSON.stringify(changed)]);
+  await initializeRecipeContent(pg);
+  assert.equal((await readRecipeRecords(pg)).find(item => item.id === changed.id).name, changed.name);
 });

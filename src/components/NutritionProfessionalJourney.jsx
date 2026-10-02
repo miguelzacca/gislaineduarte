@@ -12,6 +12,15 @@ const calculationNumber = value => Number.isFinite(value) ? value.toLocaleString
 const foodNames = ids => (ids || []).map(id => foodById[id]?.name).filter(Boolean).join(', ');
 const moduleTypes = [['recipe', 'Receita'], ['food', 'Sugestão de alimento'], ['seasoning', 'Tempero'], ['tea', 'Chá'], ['supplement', 'Suplemento']];
 
+export function WhatsAppShare({ url, name, phone }) {
+  const [destination, setDestination] = useState(phone || '');
+  const [message, setMessage] = useState(`Olá, ${String(name || '').split(' ')[0]}! Seu acompanhamento nutricional com Gislaine Duarte está disponível neste link privado: ${url}`);
+  const digits = destination.replace(/\D/g, '');
+  const valid = /^\d{10,15}$/.test(digits) && Boolean(message.trim());
+  const phoneNumber = digits.length <= 11 ? `55${digits}` : digits;
+  return <div className="nw-form"><label>Destino no WhatsApp<input type="tel" value={destination} onChange={event => setDestination(event.target.value)} maxLength="24" /></label><p className="nw-fine">Confira o número e o DDD. Telefones com 10 ou 11 dígitos usam o código do Brasil (+55); para outros países, informe o código completo.</p><label>Mensagem para conferir e editar<textarea value={message} onChange={event => setMessage(event.target.value)} rows="5" maxLength="3000" /></label>{valid ? <a className="nw-button" href={`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">Abrir conversa no WhatsApp ↗</a> : <p className="nw-fine">Informe um telefone com DDD e uma mensagem para abrir a conversa.</p>}<p className="nw-fine">A conversa abre com esta mensagem preparada. Confira o contato e confirme o envio no WhatsApp.</p></div>;
+}
+
 export function PatientBrief({ intake, onOpen }) {
   const rows = [
     ['Alergias', (intake.allergies || []).map(id => allergies.find(item => item.id === id)?.label).filter(Boolean).join(', ') || 'Nenhuma informada', intake.allergyNotes],
@@ -19,6 +28,7 @@ export function PatientBrief({ intake, onOpen }) {
     ['Excluir do plano', foodNames(intake.excludedFoodIds) || 'Nenhum alimento selecionado', [intake.foodExclusionNotes, intake.seasoningExclusions && 'Temperos: ' + intake.seasoningExclusions].filter(Boolean).join(' · ')],
     ['Medicamentos e substâncias', intake.medications || 'Não informados', intake.glp1Details],
     ['Chás na rotina', ({ daily: 'Toma diariamente', sometimes: 'Toma às vezes', interested: 'Gostaria de incluir', dislike: 'Não gosta de chá' })[intake.teaHabit] || 'Não informado', [intake.teasUsed, intake.teaPreferences, intake.teaAvoidances && 'Evitar: ' + intake.teaAvoidances].filter(Boolean).join(' · ')],
+    ['Rotina e acesso aos alimentos', intake.routine || 'Rotina não informada', [intake.occupation, intake.budget].filter(Boolean).join(' · ')],
   ];
   return <section className="nj-brief" aria-label="Dados e restrições do atendimento">
     <div className="nj-section-heading"><div><p className="admin-label">O ponto de partida é a pessoa</p><h3>{goalOptions.find(item => item.id === intake.goal)?.label || 'Cuidado individualizado'}</h3></div><button type="button" className="nw-button nw-button--quiet" onClick={onOpen}>Ver anamnese completa ↗</button></div>

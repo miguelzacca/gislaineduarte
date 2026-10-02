@@ -31,7 +31,10 @@ export function validOffer(offer) {
     (offer.followupDays === null || Number.isInteger(offer.followupDays) && offer.followupDays >= 0 && offer.followupDays <= 365) &&
     (!offer.published || offer.priceCents !== null && offer.deliveryDays !== null && offer.followupDays !== null);
 }
-export async function readOffer(db) { return (await db.query('SELECT offer FROM nutrition_settings WHERE id = 1')).rows[0].offer; }
+export async function readOffer(db) {
+  const row = (await db.query('SELECT offer, offer_revision FROM nutrition_settings WHERE id = 1')).rows[0];
+  return { ...row.offer, revision: row.offer_revision };
+}
 export function publicOffer(offer) {
   if (!offer) return null;
   return Object.fromEntries(['title', 'description', 'priceCents', 'deliveryDays', 'followupDays', 'published', 'bristolReviewed'].map(key => [key, key === 'bristolReviewed' ? offer[key] === true : offer[key]]));

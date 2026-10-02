@@ -3,7 +3,10 @@
 export function initializeOfflinePlan(config) {
   'use strict';
   const { key, days, foods } = config;
-  const byId = id => document.getElementById(id);
+  // The offline document contains the entire week and its photo galleries.
+  // Index fixed nodes once instead of repeatedly scanning that large document.
+  const elements = new Map([...document.querySelectorAll('[id]')].map(element => [element.id, element]));
+  const byId = id => elements.get(id);
   const each = (selector, visit) => document.querySelectorAll(selector).forEach(visit);
   const number = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
   const object = value => value && !Array.isArray(value) && typeof value === 'object' ? value : {};
@@ -103,6 +106,8 @@ export function initializeOfflinePlan(config) {
           const card = byId('food-' + itemKey);
           card.querySelector('use').setAttribute('href', '#photo-' + option.foodId);
           card.querySelector('svg').setAttribute('aria-label', 'Fotografia de ' + food.name);
+          const photoNote = card.querySelector('[data-photo-note]');
+          if (photoNote) { photoNote.textContent = food.photoNote || ''; photoNote.hidden = !food.photoNote; }
           card.querySelector('[data-food-name]').textContent = food.name;
           card.querySelector('[data-food-grams]').textContent = number(option.grams) + ' g';
           card.querySelector('[data-food-portion]').textContent = option.portionText;
@@ -175,6 +180,9 @@ export function initializeOfflinePlan(config) {
       const photo = byId('food-' + itemKey).querySelector('svg').cloneNode(true); photo.setAttribute('class', 'swap-image'); photo.setAttribute('aria-hidden', 'true'); photo.removeAttribute('aria-label'); photo.removeAttribute('role'); photo.querySelector('use').setAttribute('href', '#photo-' + option.foodId);
       const name = document.createElement('span'); name.textContent = foods[option.foodId].name;
       const quantity = document.createElement('small'); quantity.textContent = option.portionText + (index === 0 ? ' · principal' : ''); name.append(quantity);
+      if (foods[option.foodId].photoNote) {
+        const note = document.createElement('small'); note.className = 'photo-note'; note.textContent = foods[option.foodId].photoNote; name.append(note);
+      }
       label.append(radio, photo, name); fieldset.append(label);
     });
     container.replaceChildren(fieldset);

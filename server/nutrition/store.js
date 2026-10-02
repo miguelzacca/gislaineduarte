@@ -31,6 +31,7 @@ export async function getNutritionStore(env = process.env, injectedStore) {
       await client.query('INSERT INTO nutrition_settings (id, offer) VALUES (1, $1) ON CONFLICT (id) DO NOTHING', [JSON.stringify(defaultOffer)]);
       await client.query('ALTER TABLE nutrition_settings ADD COLUMN IF NOT EXISTS curated_library jsonb');
       await client.query('ALTER TABLE nutrition_settings ADD COLUMN IF NOT EXISTS library_revision integer NOT NULL DEFAULT 0');
+      await client.query('ALTER TABLE nutrition_settings ADD COLUMN IF NOT EXISTS offer_revision integer NOT NULL DEFAULT 0');
       await client.query(`CREATE TABLE IF NOT EXISTS nutrition_requests (
         id uuid PRIMARY KEY, intake_encrypted text NOT NULL, consent_version text NOT NULL, consent_at timestamptz NOT NULL DEFAULT now(),
         access_hash text NOT NULL UNIQUE, access_expires_at timestamptz NOT NULL DEFAULT now() + interval '90 days',

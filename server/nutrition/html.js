@@ -13,6 +13,7 @@ import { curatedImageBuffer, curatedImageCredit } from './assets.js';
 import { clinicalMarkup, weeklyMarkup, alternativesMarkup, plateReferenceMarkup } from './html-sections.js';
 import { editorialStyles } from './html-styles.js';
 import { plateReferenceForPlan } from './plate-reference.js';
+import { foodPhotoNote } from './photo-labels.js';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const decimal = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
@@ -54,7 +55,7 @@ export async function buildPlanHtml({ plan, patientName, id, revision, approvedA
     const stats = [['kcal', 'kcal estimadas'], ['protein', 'proteínas'], ['carbs', 'carboidratos'], ['fat', 'gorduras'], ['fiber', 'fibras']].map(([key, label]) => `<span><strong id="total-${d}-${key}">${decimal(total[key])}${key === 'kcal' ? '' : ' g'}</strong>${label}</span>`).join('');
     return `<section class="day" id="day-${d}" aria-labelledby="title-${d}"><div class="day-heading"><div><p class="eyebrow">Seu ritmo, um dia de cada vez</p><h2 id="title-${d}">${escape(day.label)}</h2></div><div class="stats">${stats}</div></div>${day.meals.map((meal, m) => `<article class="meal"><div class="meal-top"><div><span class="time">${escape(meal.time)}</span><h3>${escape(meal.name)}</h3><span class="meal-kcal" id="meal-energy-${d}-${m}">${decimal(sumItems(meal.items).kcal)} kcal</span></div><label class="complete"><input type="checkbox" data-meal="${d}-${m}">Refeição feita</label></div>${visualMarkup(meal.items, `${d}-${m}`, plan.plateGuide)}<div class="foods">${meal.items.map((item, i) => {
       const food = foodById[item.foodId]; const values = sumItems([item]); const itemKey = `${d}-${m}-${i}`;
-      return `<div class="food" id="food-${itemKey}">${foodImage(item.foodId)}<strong data-food-name>${escape(food.name)}</strong><p data-food-grams>${decimal(item.grams)} g</p><small data-food-portion>${escape(formatFoodPortion(item.foodId, item.grams))}</small><small data-food-nutrients>${decimal(values.kcal)} kcal · Proteínas ${decimal(values.protein)} g · Carboidratos ${decimal(values.carbs)} g · Gorduras ${decimal(values.fat)} g</small>${item.alternatives.length ? `<details><summary>Minhas trocas aprovadas</summary><div data-choices="${itemKey}"></div><noscript><p>${item.alternatives.map(option => `${escape(foodById[option.foodId].name)}: ${escape(formatFoodPortion(option.foodId, option.grams))}`).join(' ou ')}</p></noscript></details>` : ''}</div>`;
+      return `<div class="food" id="food-${itemKey}">${foodImage(item.foodId)}<small data-photo-note${foodPhotoNote(food) ? '' : ' hidden'}>${escape(foodPhotoNote(food))}</small><strong data-food-name>${escape(food.name)}</strong><p data-food-grams>${decimal(item.grams)} g</p><small data-food-portion>${escape(formatFoodPortion(item.foodId, item.grams))}</small><small data-food-nutrients>${decimal(values.kcal)} kcal · Proteínas ${decimal(values.protein)} g · Carboidratos ${decimal(values.carbs)} g · Gorduras ${decimal(values.fat)} g</small>${item.alternatives.length ? `<details><summary>Minhas trocas aprovadas</summary><div data-choices="${itemKey}"></div><noscript><p>${item.alternatives.map(option => `${escape(foodById[option.foodId].name)}: ${escape(formatFoodPortion(option.foodId, option.grams))}`).join(' ou ')}</p></noscript></details>` : ''}</div>`;
     }).join('')}</div>${meal.note ? `<p class="note">${paragraphs(meal.note)}</p>` : ''}</article>`).join('')}</section>`;
   }).join('');
   let group = '';
@@ -64,7 +65,7 @@ export async function buildPlanHtml({ plan, patientName, id, revision, approvedA
   }).join('');
   const config = { key: `gd-plan-${id}-${revision}`, plateGuide: plan.plateGuide || null, waterTarget: plan.targets.water || null,
     days: plan.days.map(day => ({ label: day.label, meals: day.meals.map(meal => ({ items: meal.items.map(item => ({ options: [item, ...item.alternatives].map(option => ({ foodId: option.foodId, grams: option.grams, portionText: formatFoodPortion(option.foodId, option.grams) })) })) })) })),
-    foods: Object.fromEntries(uniqueIds.map(foodId => { const food = foodById[foodId]; return [foodId, { plateGroup: plateFoodGroup(food), ...Object.fromEntries(['name', 'group', 'portionGrams', 'portionLabel', 'kcal', 'protein', 'carbs', 'fat', 'fiber'].map(key => [key, food[key]])) }]; })) };
+    foods: Object.fromEntries(uniqueIds.map(foodId => { const food = foodById[foodId]; return [foodId, { photoNote: foodPhotoNote(food), plateGroup: plateFoodGroup(food), ...Object.fromEntries(['name', 'group', 'portionGrams', 'portionLabel', 'kcal', 'protein', 'carbs', 'fat', 'fiber'].map(key => [key, food[key]])) }]; })) };
   const script = `(${initializeOfflinePlan.toString()})(${json(config)});`.replace(/\r\n/g, '\n');
   const scriptHash = createHash('sha256').update(script).digest('base64');
   const credits = uniqueIds.filter(foodId => foodById[foodId].photo).map(foodId => {

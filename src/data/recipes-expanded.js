@@ -46,4 +46,9 @@ export const glpRecipes = [
   make('glp-arroz-frango-cenoura', 'Arroz macio com frango e cenoura', 'salgada', 'rice', ['70 g de arroz já cozido', '60 g de frango cozido e desfiado', '40 g de cenoura cozida picada', '30 ml de água potável'], ['Reúna os ingredientes em uma panela.', 'Aqueça completamente com a água, mexendo até obter textura macia.', 'Sirva em uma pequena tigela.']),
   make('glp-lentilha-legumes', 'Lentilha macia com legumes', 'salgada', 'lentils', ['80 g de lentilha bem cozida', '40 g de abobrinha cozida', '40 g de cenoura cozida', '1 colher de chá de azeite'], ['Misture lentilha e legumes em panela.', 'Aqueça completamente e amasse levemente, se desejado.', 'Finalize com azeite.']),
   make('glp-banana-iogurte', 'Creme de banana com iogurte', 'doce', 'yogurt', ['60 g de banana madura', '100 g de iogurte natural'], ['Amasse a banana até obter um creme.', 'Misture ao iogurte e sirva imediatamente.'], ['milk']),
-].map(recipe => ({ ...recipe, productIds: ['receitas-glp1'], servings: 1, yield: '1 porção culinária', notes: ['Porção culinária de referência: a quantidade efetivamente indicada depende do plano individual e da tolerância.'], editorialContext: 'Receitas educativas para discutir com a nutricionista durante o acompanhamento de quem utiliza GLP-1. Não orientam início, dose ou ajuste de medicamentos. Não há garantia de tolerância individual.' }));
+].map(recipe => ({
+  ...recipe, productIds: ['receitas-glp1'], published: false, servings: 1, yield: '1 porção culinária',
+  notes: ['Exemplo elaborado pelo sistema, sem material GLP-1 fornecido pela nutricionista. A seleção para esta coleção, ingredientes, preparo e porções precisam de revisão profissional.'],
+  editorialContext: 'Rascunho gerado pelo sistema. Não constitui material fornecido ou aprovado pela nutricionista para a coleção GLP-1.',
+  validation: { status: 'generated-draft-pending-review', source: 'Exemplo gerado pelo sistema. Nenhuma referência fornecida identifica esta receita como parte da coleção GLP-1.', inferredFields: ['Ingredientes, quantidades, preparo, rendimento e associação à coleção GLP-1.'] },
+}));

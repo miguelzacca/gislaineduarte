@@ -19,7 +19,8 @@ test('service prices persist, remain private until published and reject stale or
   assert.equal(initial.offers.length, 3);
   assert.equal(initial.offers[2].billing, 'person');
   assert.equal(initial.offers[2].priceCents, 19700);
-  const changed = { ...initial, offers: initial.offers.map((offer, index) => ({ ...offer, published: index !== 1, priceCents: index === 0 ? 30000 : offer.priceCents })) };
+  assert.equal((await (await publicRead()).json()).offers.length, 0, 'valores de referência não são ofertas vigentes');
+  const changed = { ...initial, offers: initial.offers.map((offer, index) => ({ ...offer, billing: offer.billing === 'person' ? 'person-month' : offer.billing, published: index !== 1, priceCents: index === 0 ? 30000 : offer.priceCents })) };
   assert.equal((await admin(changed, { origin: 'https://other.invalid' })).status, 403);
   assert.equal((await admin(changed)).status, 200);
   const saved = await (await admin()).json();
@@ -27,6 +28,7 @@ test('service prices persist, remain private until published and reject stale or
   assert.equal(saved.offers[0].priceCents, 30000);
   assert.equal((await admin(initial)).status, 409);
   assert.equal((await admin({ ...saved, offers: [{ ...saved.offers[0], priceCents: -100 }] })).status, 400);
+  assert.equal((await admin({ ...saved, offers: [{ ...saved.offers[2], billing: 'person', published: true }] })).status, 400);
   const response = await publicRead();
   assert.match(response.headers.get('cache-control'), /no-store/);
   const visible = await response.json();

@@ -49,7 +49,7 @@ test('nutrition: all 60 bases and combinations of restrictions yield compatible 
   }
 });
 test('nutrition: culinary library produces a practical shopping basket and genuinely different weekly assemblies', () => {
-  assert.equal(mealModules.length, 43);
+  assert.ok(mealModules.length >= 49);
   assert.equal(new Set(mealModules.map(module => module.id)).size, mealModules.length);
   for (const module of mealModules) for (const [id, grams] of module.items) {
     assert.ok(foodById[id], `${module.id}: ${id}`); assert.ok(grams > 0 && grams <= 300);
@@ -68,6 +68,23 @@ test('nutrition: culinary library produces a practical shopping basket and genui
   assert.equal(divided.targets.energy, null); assert.equal(divided.clinicalNotes, '');
   assert.notDeepEqual(practical.days, generatePlan(intake, 'cardiovascular-pratica').days);
   assert.equal(recommendedTemplate({ ...intake, conditions: ['oncology'], symptoms: ['nausea'] }), 'oncology-fracionada');
+});
+test('nutrition: the 60 bases differ in culinary content, not only their title, day order or fruit rotation', () => {
+  const repertoires = new Map();
+  for (const template of planTemplates) {
+    const plan = generatePlan(intake, template.id);
+    // A new title, different portions or shuffled days cannot make a duplicate
+    // pass. Ignore produce, too: each base must change its staple combinations.
+    const meals = plan.days.flatMap(day => day.meals.map(meal => meal.items
+      .filter(item => ['Cereais e raízes', 'Proteínas', 'Leguminosas', 'Laticínios'].includes(foodById[item.foodId].group))
+      .map(item => item.foodId).sort().join('|')));
+    const signature = JSON.stringify([...new Set(meals)].sort());
+    assert.equal(repertoires.has(signature), false, `${template.id} duplicates ${repertoires.get(signature)}`);
+    repertoires.set(signature, template.id);
+    assert.deepEqual(validatePlan(plan, intake), []);
+    assert.ok(plan.days.every(day => dayTotals(day).kcal > 0));
+  }
+  assert.equal(repertoires.size, 60);
 });
 test('nutrition: automatic exchanges retain culinary role, preparation and nutrient equivalence', () => {
   assert.equal(foodExchangeRole('avocado'), 'avocado');
@@ -120,6 +137,15 @@ test('nutrition: clinical review catches renal/oncology/GLP-1, severe symptoms a
   const plan = generatePlan(intake); plan.targets.energy = 3000; plan.targets.water = 2000;
   const ids = clinicalAlerts({ ...intake, conditions: ['renal', 'oncology', 'glp1'], symptoms: ['severe-pain'] }, plan).map(alert => alert.id);
   for (const id of ['individual', 'renal', 'oncology', 'glp1', 'fluid', 'symptoms', 'energy']) assert.ok(ids.includes(id));
+});
+test('nutrition: contradictory manually entered macro targets require their own approval review', () => {
+  const plan = generatePlan(intake);
+  Object.assign(plan.targets, { energy: 1000, protein: 300, carbs: null, fat: null });
+  assert.ok(clinicalAlerts(intake, plan).some(alert => alert.id === 'macro-energy'));
+  Object.assign(plan.targets, { energy: 1800, protein: 100, carbs: 215, fat: 60 });
+  assert.equal(clinicalAlerts(intake, plan).some(alert => alert.id === 'macro-energy'), false);
+  Object.assign(plan.targets, { protein: 10, carbs: 15, fat: 5 });
+  assert.ok(clinicalAlerts(intake, plan).some(alert => alert.id === 'macro-energy'));
 });
 test('nutrition: the selected template cannot bypass its own clinical review and defined protein target', () => {
   const renal = generatePlan(intake, 'renal-pratica');

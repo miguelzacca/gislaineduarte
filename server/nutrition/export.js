@@ -6,12 +6,13 @@ import { foodById, foodSource } from '../../src/data/nutrition.js';
 import { dayTotals, shoppingList, sumItems } from '../../src/lib/nutrition.js';
 import { site } from '../../src/data/site.js';
 import { formatFoodPortion } from '../../src/lib/nutrition-journey.js';
-import { assessmentHighlights, assessmentSections, mealVisualData, plateGroupLabels, targetLabels } from './presentation.js';
+import { assessmentHighlights, assessmentSections, plateGroupLabels, targetLabels } from './presentation.js';
 import { curatedImageBuffer, curatedImageCredit } from './assets.js';
 import { patientVisuals } from './patient-visuals.js';
 import { createPdfLayout, pdfColors as color } from './pdf-layout.js';
 import { plateReferenceForPlan } from './plate-reference.js';
 import { patientSwapExamples } from './swap-comparisons.js';
+import { foodPhotoNote } from './photo-labels.js';
 
 export { buildPlanHtml } from './html.js';
 const decimal = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
@@ -48,16 +49,24 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
 
   // The contents page is filled after final pagination. Its links and the PDF
   // outline make the full record easy to navigate without shrinking the type.
+  let coverTitleSize = 43;
+  while (coverTitleSize > 30 && measure(plan.title, coverTitleSize, width, 'Editorial', 1) > 180) coverTitleSize -= 1;
+  const titleHeight = measure(plan.title, coverTitleSize, width, 'Editorial', 1);
+  const patientLabel = `Preparado para ${patientName}`;
+  const patientTop = Math.max(247, 113 + titleHeight + 20);
+  const coverBottom = Math.max(330, patientTop + measure(patientLabel, 16, width, 'Body', 3) + 24);
   doc.rect(0, 0, doc.page.width, doc.page.height).fill(color.ivory);
-  doc.rect(0, 0, doc.page.width, 330).fill(color.forest);
+  doc.rect(0, 0, doc.page.width, coverBottom).fill(color.forest);
   at('GISLAINE DUARTE', left, 45, { size: 12, font: 'Strong', color: '#e7c98b' });
   at('NUTRIÇÃO & CUIDADO', left, 65, { size: 10.5, color: '#e7c98b' });
-  const titleEnd = at(plan.title, left, 113, { size: 43, font: 'Editorial', color: '#fffdf7', lineGap: 1 });
-  at(`Preparado para ${patientName}`, left, Math.max(247, titleEnd + 20), { size: 16, color: '#fffdf7', lineGap: 3 });
+  at(plan.title, left, 113, { size: coverTitleSize, font: 'Editorial', color: '#fffdf7', lineGap: 1 });
+  at(patientLabel, left, patientTop, { size: 16, color: '#fffdf7', lineGap: 3 });
   const coverIds = [...mainIds].slice(0, 3);
   const photoWidth = (width - 20) / 3;
-  for (const [index, foodId] of coverIds.entries()) layout.image(await pdfImage(foodId), left + index * (photoWidth + 10), 360, photoWidth, 144, 14);
-  layout.y = 536;
+  const coverPhotoTop = coverBottom + 26;
+  const coverPhotoHeight = Math.min(144, Math.max(80, 507 - coverPhotoTop));
+  for (const [index, foodId] of coverIds.entries()) layout.image(await pdfImage(foodId), left + index * (photoWidth + 10), coverPhotoTop, photoWidth, coverPhotoHeight, 14);
+  layout.y = coverPhotoTop + coverPhotoHeight + 27;
   layout.heading('Seu plano. Seu ritmo.', { size: 28 });
   layout.paragraph('Um guia para consultar, escolher e colocar em prática. As quantidades e as trocas foram organizadas para acompanhar a sua rotina.', { size: 13 });
   layout.paragraph(`${site.fullName} · ${site.registration}\nVersão ${revision}${approvedAt ? ` · ${new Date(approvedAt).toLocaleDateString('pt-BR')}` : ''}`, { size: 11.5, color: color.muted });
@@ -115,7 +124,7 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
     layout.paragraph('Referência: Bristol Stool Chart · NHS England', { size: 11.5, link: clinical.bristolSource.url, underline: true });
   }
 
-  const swapExamples = patientSwapExamples(plan, 4);
+  const swapExamples = patientSwapExamples(plan, 3);
   if (swapExamples.length) {
     layout.page('Substituições inteligentes', { eyebrow: '03 · Escolhas para o seu dia', toc: true, anchor: 'smart-swaps' });
     layout.paragraph('Exemplos das trocas registradas. Substituem a opção principal; não são acréscimos. Valem apenas para a refeição indicada.', { size: 12, gap: 16 });
@@ -131,7 +140,8 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
         const name = foodById[item.foodId].name;
         const detailHeight = measure(name, 12, pairWidth - 80, 'Strong', 1) + measure(`${decimal(item.grams)} g`, 16, pairWidth - 80, 'Strong', 0) + 5;
         const portion = household(item.foodId, item.grams);
-        return { ...item, name, portion, mainHeight: Math.max(52, detailHeight), portionHeight: measure(portion, 11.5, pairWidth - 20, 'Body', 1) };
+        const photoNote = foodPhotoNote(foodById[item.foodId]);
+        return { ...item, name, portion, photoNote, mainHeight: Math.max(52, detailHeight), portionHeight: measure(portion, 11.5, pairWidth - 20, 'Body', 1) + (photoNote ? measure(photoNote, 10.5, pairWidth - 20, 'Body', 1) + 5 : 0) };
       });
       const cardHeight = Math.max(...options.map(option => option.mainHeight + option.portionHeight + 25));
       const origin = `${example.dayLabel} · ${example.mealName} · Ver refeição`;
@@ -144,7 +154,8 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
         layout.image(await pdfImage(option.foodId), x + 10, top + 10, 52, 52, 7);
         const nameEnd = at(option.name, x + 70, top + 10, { size: 12, font: 'Strong', area: pairWidth - 80, lineGap: 1 });
         at(`${decimal(option.grams)} g`, x + 70, nameEnd + 5, { size: 16, font: 'Strong', area: pairWidth - 80, lineGap: 0 });
-        at(option.portion, x + 10, top + option.mainHeight + 17, { size: 11.5, area: pairWidth - 20, lineGap: 1 });
+        const portionEnd = at(option.portion, x + 10, top + option.mainHeight + 17, { size: 11.5, area: pairWidth - 20, lineGap: 1 });
+        if (option.photoNote) at(option.photoNote, x + 10, portionEnd + 5, { size: 10.5, area: pairWidth - 20, color: color.muted, lineGap: 1 });
       }
       const arrowX = left + pairWidth + pairGap / 2, arrowY = top + cardHeight / 2;
       doc.moveTo(arrowX - 6, arrowY).lineTo(arrowX + 6, arrowY).lineWidth(1.5).strokeColor(color.gold).stroke();
@@ -215,35 +226,38 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
     const swap = swaps.get(key); swap.occurrences.push({ label: `${day.label} · ${meal.name}`, destination: `meal-${dayIndex}-${mealIndex}` });
   }
   const swapFor = item => swaps.get(JSON.stringify([item.foodId, item.grams, item.alternatives]));
-  const cardWidth = (width - 12) / 2;
+  // One readable row per food lets breakfast/snacks share a page. Previously
+  // the two-column cards forced almost every meal onto its own mostly empty page.
   const foodCardMetrics = item => {
     const food = foodById[item.foodId], values = sumItems([item]);
-    const textWidth = cardWidth - 104;
-    const foodHeight = measure(food.name, 12, textWidth, 'Strong', 1);
-    const portionHeight = measure(household(item.foodId, item.grams), 11.5, cardWidth - 24, 'Body', 1);
-    const nutrients = `${decimal(values.kcal)} kcal · P ${decimal(values.protein)} · C ${decimal(values.carbs)} · G ${decimal(values.fat)}`;
-    const nutrientsHeight = measure(nutrients, 12, cardWidth - 24, 'Body', 1);
+    const textWidth = width - 112;
+    const foodHeight = Math.max(measure(food.name, 12.5, textWidth - 156, 'Strong', 1), measure(`${decimal(item.grams)} g`, 15, 78, 'Strong', 0));
+    const portionWidth = (textWidth - 12) / 2;
+    const portionHeight = measure(household(item.foodId, item.grams), 11.5, portionWidth, 'Body', 1);
+    const nutrients = `${decimal(values.kcal)} kcal · P ${decimal(values.protein)} g · C ${decimal(values.carbs)} g · G ${decimal(values.fat)} g`;
+    const nutrientsHeight = measure(nutrients, 10.5, portionWidth, 'Body', 1);
     const swap = swapFor(item);
-    const mainHeight = Math.max(80, foodHeight + measure(`${decimal(item.grams)} g`, 20, textWidth, 'Strong', 0) + 6);
-    const height = mainHeight + portionHeight + nutrientsHeight + 28 + (swap ? 20 : 0);
-    return { food, textWidth, nutrients, height, swap, mainHeight };
+    const note = foodPhotoNote(food, { compact: true });
+    const noteHeight = note ? measure(note, 10.5, textWidth, 'Body', 1) + 3 : 0;
+    const detailsHeight = Math.max(portionHeight, nutrientsHeight);
+    const height = Math.max(52, foodHeight + detailsHeight + noteHeight + 2) + 10;
+    return { food, textWidth, portionWidth, foodHeight, detailsHeight, nutrients, height, swap, note };
   };
-  const foodRow = async (items, continuation) => {
-    const metrics = items.map(foodCardMetrics), height = Math.max(...metrics.map(item => item.height));
-    if (layout.ensure(height + 12)) continuation();
+  const foodRow = async (item, continuation, keep = 0) => {
+    const { food, textWidth, portionWidth, foodHeight, detailsHeight, nutrients, height, swap, note } = foodCardMetrics(item);
+    if (layout.ensure(height + 6 + keep)) continuation();
     const y = layout.y;
-    for (const [index, item] of items.entries()) {
-      const { food, textWidth, nutrients, swap, mainHeight } = metrics[index];
-      const x = left + index * (cardWidth + 12);
-      doc.roundedRect(x, y, cardWidth, height, 11).fill(color.white);
-      layout.image(await pdfImage(item.foodId), x + 12, y + 10, 80, 80, 9);
-      let ty = at(food.name, x + 100, y + 10, { size: 12, font: 'Strong', area: textWidth, lineGap: 1 });
-      at(`${decimal(item.grams)} g`, x + 100, ty + 6, { size: 20, font: 'Strong', area: textWidth, lineGap: 0 });
-      ty = at(household(item.foodId, item.grams), x + 12, y + mainHeight + 17, { size: 11.5, area: cardWidth - 24, lineGap: 1 }) + 4;
-      ty = at(nutrients, x + 12, ty, { size: 12, area: cardWidth - 24, color: color.muted, lineGap: 1 });
-      if (swap) { at(`Ver trocas ${swap.code}`, x + 12, ty + 5, { size: 11.5, font: 'Strong', area: cardWidth - 24, color: color.gold, lineGap: 1 }); doc.goTo(x + 8, ty + 3, cardWidth - 16, 22, `swap-${swap.code}`); }
-    }
-    layout.y = y + height + 12;
+    doc.roundedRect(left, y, width, height, 11).fill(color.white);
+    layout.image(await pdfImage(item.foodId), left + 10, y + 5, 72, 52, 9);
+    const tx = left + 98;
+    at(food.name, tx, y + 5, { size: 12.5, font: 'Strong', area: textWidth - 156, lineGap: 1 });
+    at(`${decimal(item.grams)} g`, left + width - 90, y + 5, { size: 15, font: 'Strong', area: 78, align: 'right', lineGap: 0 });
+    const ty = y + 5 + foodHeight + 2;
+    at(household(item.foodId, item.grams), tx, ty, { size: 11.5, area: portionWidth, lineGap: 1 });
+    at(nutrients, tx + portionWidth + 12, ty, { size: 10.5, area: portionWidth, color: color.muted, lineGap: 1 });
+    if (note) at(note, tx, ty + detailsHeight + 3, { size: 10.5, area: textWidth, color: color.muted, lineGap: 1 });
+    if (swap) { at(`Trocas ${swap.code}`, left + width - 160, y + 8, { size: 10.5, font: 'Strong', area: 64, align: 'right', color: color.gold, lineGap: 1 }); doc.goTo(left + width - 164, y + 4, 68, 22, `swap-${swap.code}`); }
+    layout.y = y + height + 6;
   };
 
   for (const [dayIndex, day] of plan.days.entries()) {
@@ -252,23 +266,29 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
     layout.chips([`${decimal(total.kcal)} kcal`, `P ${decimal(total.protein)} g`, `C ${decimal(total.carbs)} g`, `G ${decimal(total.fat)} g`, `Fibras ${decimal(total.fiber)} g`], { size: 11.5 });
     for (const [mealIndex, meal] of day.meals.entries()) {
       const values = sumItems(meal.items);
-      const mealHeading = (continued = false) => layout.heading(`${meal.time} · ${meal.name}${continued ? ' · continuação' : ''}`, { size: continued ? 18 : 22, keep: 10 });
-      const rows = []; for (let start = 0; start < meal.items.length; start += 2) rows.push(meal.items.slice(start, start + 2));
-      const cardsHeight = rows.reduce((sum, row) => sum + Math.max(...row.map(item => foodCardMetrics(item).height)) + 12, 0);
-      const noteHeight = meal.note ? measure(meal.note, 12, width, 'Body', 3) + 22 : 0;
-      const headingHeight = measure(`${meal.time} · ${meal.name}`, 22, width, 'Strong', 1) + 12;
-      const mealHeight = cardsHeight + noteHeight + headingHeight + 68;
-      let mealInTitle = false;
-      if (mealIndex && layout.y + Math.min(mealHeight, 610) > layout.bottom) { layout.page(`${day.label} · ${meal.name}`, { eyebrow: `04 · Suas refeições · ${meal.time}` }); mealInTitle = true; }
-      else layout.ensure(headingHeight + 70 + Math.max(...rows[0].map(item => foodCardMetrics(item).height)));
-      doc.addNamedDestination(`meal-${dayIndex}-${mealIndex}`, 'XYZ', left, mealInTitle ? 40 : layout.y - 8, null);
-      if (!mealInTitle) mealHeading();
-      layout.chips([`${decimal(values.kcal)} kcal`, `P ${decimal(values.protein)} g`, `C ${decimal(values.carbs)} g`, `G ${decimal(values.fat)} g`], { size: 11.5, height: 32 });
-      for (const row of rows) await foodRow(row, () => mealHeading(true));
-      const guide = mealVisualData(meal.items, plan.plateGuide).plateGuide;
-      if (guide) layout.paragraph(Object.entries(plateGroupLabels).map(([key, label]) => `${decimal(guide[key])}% ${label}`).join(' · '), { size: 11.5, color: color.gold, gap: 8 });
+      const mealHeading = (continued = false) => layout.heading(`${meal.time} · ${meal.name}${continued ? ' · continuação' : ''}`, { size: continued ? 18 : 20, gap: 8, keep: 10 });
+      const headingHeight = measure(`${meal.time} · ${meal.name}`, 20, width, 'Strong', 1) + 8;
+      // Keep the heading with the same opening rows that the row renderer keeps
+      // together, including a short meal note. This avoids an orphan meal title.
+      const tailHeight = meal.note ? Math.min(180, measure(meal.note, 12, width, 'Body', 3) + 9) : 0;
+      const firstItemsHeight = meal.items.slice(0, meal.items.length <= 2 ? 2 : 1).reduce((sum, item) => sum + foodCardMetrics(item).height + 6, 0) + (meal.items.length <= 2 ? tailHeight : 0);
+      const mealHeight = headingHeight + 27 + meal.items.reduce((sum, item) => sum + foodCardMetrics(item).height + 6, 0) + tailHeight;
+      const freshPageStart = 56 + measure(day.label, 32, width, 'Editorial', 1) + 13;
+      // A meal that fits on a fresh page stays together. Only unusually long
+      // meals continue, with their heading repeated by foodRow.
+      const keepMeal = mealHeight <= layout.bottom - freshPageStart && layout.y + mealHeight > layout.bottom;
+      if (mealIndex && (keepMeal || layout.y + headingHeight + 27 + firstItemsHeight > layout.bottom)) { layout.page(day.label, { eyebrow: '04 · Suas refeições' }); }
+      else layout.ensure(headingHeight + 27 + firstItemsHeight, day.label);
+      doc.addNamedDestination(`meal-${dayIndex}-${mealIndex}`, 'XYZ', left, layout.y - 8, null);
+      mealHeading();
+      layout.paragraph(`${decimal(values.kcal)} kcal · P ${decimal(values.protein)} g · C ${decimal(values.carbs)} g · G ${decimal(values.fat)} g`, { size: 11.5, color: color.muted, lineGap: 1, gap: 6 });
+      for (const [index, item] of meal.items.entries()) {
+        const remaining = meal.items.length - index - 1;
+        const keep = remaining === 0 ? tailHeight : remaining === 1 ? foodCardMetrics(meal.items[index + 1]).height + 6 + tailHeight : 0;
+        await foodRow(item, () => mealHeading(true), keep);
+      }
       if (meal.note) layout.paragraph(meal.note, { size: 12, gap: 9, lineGap: 3 });
-      layout.y += 9;
+      layout.y += 5;
     }
   }
 
@@ -307,50 +327,76 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
 
   if (swaps.size) {
     layout.page('Suas trocas aprovadas', { eyebrow: '07 · Escolhas para variar', toc: true, anchor: 'swaps' });
-    layout.paragraph('Encontre o código indicado no cartão do alimento e escolha uma das alternativas abaixo. Use a quantidade da alternativa escolhida. Os totais podem mudar com a troca.');
-    for (const { code, item, occurrences } of swaps.values()) {
-      const title = `${code} · ${foodById[item.foodId].name} · ${decimal(item.grams)} g`;
-      const headerHeight = measure(title, 13, width - 28, 'Strong', 2);
-      const cellWidth = (width - 28 - (item.alternatives.length - 1) * 14) / item.alternatives.length;
-      const optionHeight = Math.max(...item.alternatives.map(option => measure(foodById[option.foodId].name, 12, cellWidth, 'Strong', 2) + measure(`${decimal(option.grams)} g · ${household(option.foodId, option.grams)}`, 12, cellWidth, 'Body', 2) + 6));
-      const returns = occurrences.map(occurrence => ({ ...occurrence, text: `Voltar: ${occurrence.label}`, height: measure(`Voltar: ${occurrence.label}`, 11.5, width - 28, 'Body', 1) + 4 }));
-      const returnsHeight = returns.reduce((sum, occurrence) => sum + occurrence.height, 0);
-      const height = headerHeight + optionHeight + 46 + returnsHeight;
-      layout.ensure(height + 13); const top = layout.y;
-      doc.addNamedDestination(`swap-${code}`, 'XYZ', left, top - 8, null);
-      doc.roundedRect(left, top, width, height, 10).fill(color.sand);
-      at(title, left + 14, top + 12, { size: 13, font: 'Strong', area: width - 28, lineGap: 2 });
-      item.alternatives.forEach((option, index) => {
-        const x = left + 14 + index * (cellWidth + 14);
-        const end = at(foodById[option.foodId].name, x, top + headerHeight + 25, { size: 12, font: 'Strong', area: cellWidth, lineGap: 2 });
-        at(`${decimal(option.grams)} g · ${household(option.foodId, option.grams)}`, x, end + 6, { size: 12, area: cellWidth, lineGap: 2 });
-      });
-      let returnY = top + headerHeight + optionHeight + 34;
-      for (const occurrence of returns) {
-        at(occurrence.text, left + 14, returnY, { size: 11.5, area: width - 28, color: color.muted, lineGap: 1, underline: true });
-        doc.goTo(left + 12, returnY - 1, width - 24, occurrence.height, occurrence.destination);
-        returnY += occurrence.height;
-      }
-      layout.y += height + 13;
+    layout.paragraph('Encontre o código indicado na refeição. Escolha apenas uma alternativa, na quantidade da mesma linha. A troca substitui a opção principal. Os nutrientes podem variar.');
+    // Reuse each photographed comparison, preserving distinct portions and links.
+    const families = new Map();
+    for (const swap of swaps.values()) {
+      const key = JSON.stringify([swap.item.foodId, swap.item.alternatives.map(option => option.foodId)]);
+      if (!families.has(key)) families.set(key, []);
+      families.get(key).push(swap);
     }
-  }
-
-  const extraIds = allIds.filter(foodId => !mainIds.has(foodId));
-  if (extraIds.length) {
-    layout.page('Conheça suas opções de troca', { eyebrow: '07 · Fotografias de referência', toc: true, anchor: 'food-gallery' });
-    layout.paragraph('Estas opções aparecem nas trocas aprovadas. Consulte as quantidades pelo código indicado no cartão da refeição.');
-    const cardWidth = (width - 24) / 3;
-    for (let start = 0; start < extraIds.length; start += 3) {
-      const row = extraIds.slice(start, start + 3);
-      const h = 115 + Math.max(...row.map(foodId => measure(foodById[foodId].name, 12, cardWidth - 20, 'Strong', 2))) + 18;
-      layout.ensure(h + 12); const y = layout.y;
-      for (const [index, foodId] of row.entries()) {
-        const x = left + index * (cardWidth + 12);
-        doc.roundedRect(x, y, cardWidth, h, 10).fill(color.white);
-        layout.image(await pdfImage(foodId), x, y, cardWidth, 105, 10);
-        at(foodById[foodId].name, x + 10, y + 117, { size: 12, font: 'Strong', area: cardWidth - 20, lineGap: 2 });
+    for (const variants of families.values()) {
+      const first = variants[0].item;
+      const ids = [first.foodId, ...first.alternatives.map(option => option.foodId)];
+      const gap = 12, cellWidth = (width - (ids.length - 1) * gap) / ids.length;
+      const area = cellWidth - 14, photoSize = Math.min(72, area);
+      const nameHeight = Math.max(...ids.map(id => measure(foodById[id].name, 12, area, 'Strong', 1)));
+      const notes = ids.map(id => foodPhotoNote(foodById[id], { compact: true }));
+      const noteHeight = Math.max(0, ...notes.map(note => note ? measure(note, 10.5, area, 'Body', 1) + 5 : 0));
+      const headerHeight = photoSize + nameHeight + noteHeight + 39;
+      const optionData = option => {
+        const totals = sumItems([option]);
+        const portion = household(option.foodId, option.grams);
+        const nutrients = `${decimal(totals.kcal)} kcal · P ${decimal(totals.protein)} g · C ${decimal(totals.carbs)} g · G ${decimal(totals.fat)} g`;
+        return { ...option, portion, nutrients,
+          height: measure(`${decimal(option.grams)} g`, 13, area, 'Strong', 1) + measure(portion, 11.5, area, 'Body', 1) + measure(nutrients, 10.5, area, 'Body', 1) + 17 };
+      };
+      const rowData = variant => {
+        const options = [variant.item, ...variant.item.alternatives].map(optionData);
+        const links = variant.occurrences.map(occurrence => ({ ...occurrence,
+          text: `${variant.code} · ${occurrence.label}`,
+          height: measure(`${variant.code} · ${occurrence.label}`, 11.5, width - 16, 'Strong', 1) + 4 }));
+        return { options, links, height: Math.max(...options.map(option => option.height)) + links.reduce((sum, link) => sum + link.height, 0) + 21 };
+      };
+      const header = async (continued = false) => {
+        const top = layout.y;
+        for (const [index, id] of ids.entries()) {
+          const x = left + index * (cellWidth + gap) + 7;
+          at(index ? `ALTERNATIVA ${index}` : 'OPÇÃO DO PLANO', x, top, { size: 9.5, font: 'Strong', area, color: color.gold, lineGap: 1 });
+          if (!continued) layout.image(await pdfImage(id), x, top + 20, photoSize, photoSize, 8);
+          const y = at(foodById[id].name, x, top + (continued ? 23 : 28 + photoSize), { size: 12, font: 'Strong', area, lineGap: 1 });
+          if (!continued && notes[index]) at(notes[index], x, y + 5, { size: 10.5, area, color: color.muted, lineGap: 1 });
+        }
+        layout.y = top + (continued ? nameHeight + 32 : headerHeight);
+      };
+      const firstRow = rowData(variants[0]);
+      layout.ensure(headerHeight + Math.min(firstRow.height, 280) + 6);
+      await header();
+      for (const variant of variants) {
+        const row = rowData(variant);
+        const amountsHeight = Math.max(...row.options.map(option => option.height)) + 8;
+        // Keep the first context link with the portions; additional occurrences
+        // can continue without allowing a long list to overflow the page.
+        if (layout.ensure(amountsHeight + row.links[0].height + 14)) await header(true);
+        const top = layout.y;
+        doc.addNamedDestination(`swap-${variant.code}`, 'XYZ', left, top - 8, null);
+        doc.roundedRect(left, top, width, amountsHeight, 8).fill(color.sand);
+        row.options.forEach((option, index) => {
+          const x = left + index * (cellWidth + gap) + 7;
+          let y = at(`${decimal(option.grams)} g`, x, top + 8, { size: 13, font: 'Strong', area, lineGap: 1 });
+          y = at(option.portion, x, y + 4, { size: 11.5, area, lineGap: 1 });
+          at(option.nutrients, x, y + 5, { size: 10.5, area, color: color.muted, lineGap: 1 });
+        });
+        layout.y = top + amountsHeight + 4;
+        for (const link of row.links) {
+          layout.ensure(link.height + 4);
+          at(link.text, left + 7, layout.y, { size: 11.5, font: 'Strong', area: width - 16, color: color.muted, lineGap: 1, underline: true });
+          doc.goTo(left, layout.y - 1, width, link.height, link.destination);
+          layout.y += link.height;
+        }
+        layout.y += 9;
       }
-      layout.y += h + 13;
+      layout.y += 16;
     }
   }
 

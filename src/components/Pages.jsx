@@ -97,6 +97,30 @@ export function HomePage() {
       </section>
 
       <NutritionHomeSection />
+      <section id="livros" className="section books-section" aria-labelledby="books-title">
+        <div className="shell">
+          <div className="section-heading">
+            <div><p className="eyebrow eyebrow--gold">Livros digitais</p><h2 id="books-title">Ideias para levar<br /><em>à sua mesa.</em></h2></div>
+            <p>Conheça cada coleção e consulte os conteúdos e a disponibilidade na página do livro.</p>
+          </div>
+          <div className="books-grid">
+            <article className="book-discovery">
+              <div className="book-discovery__number" aria-hidden="true">01</div>
+              <p className="eyebrow">Variedade no dia a dia</p>
+              <h3>Livro de receitas</h3>
+              <p>Uma coleção de preparações doces, salgadas e bebidas, com ingredientes e modo de preparo para consultar com calma.</p>
+              <TextLink href="/livro-de-receitas">Conhecer o livro de receitas</TextLink>
+            </article>
+            <article className="book-discovery book-discovery--glp">
+              <div className="book-discovery__number" aria-hidden="true">02</div>
+              <p className="eyebrow">Coleção específica</p>
+              <h3>Receitas GLP-1</h3>
+              <p>Um livro pensado para complementar o acompanhamento nutricional de quem utiliza GLP-1, com seleção própria de receitas.</p>
+              <TextLink href="/receitas-glp-1">Conhecer a coleção GLP-1</TextLink>
+            </article>
+          </div>
+        </div>
+      </section>
       <section id="abordagem" className="section approach" aria-labelledby="approach-title">
         <div className="shell">
           <div className="section-top">

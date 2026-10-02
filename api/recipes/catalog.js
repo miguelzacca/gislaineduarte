@@ -11,7 +11,8 @@ export async function handleCatalogRequest(request, { env = process.env, store }
     const commerceReady = readCommerceConfig(env).ready;
     const db = store || await getStore(env);
     const result = await db.query('SELECT price_cents FROM recipe_products WHERE id = $1 AND published = true AND price_cents IS NOT NULL', [product.id]);
-    return Response.json({ available: commerceReady && Boolean(result.rowCount), priceCents: result.rows[0]?.price_cents || null, currency: 'BRL', product: await readRecipeProduct(db, product.id, { publicPreview: true }) }, { headers: productAccessHeaders() });
+    const preview = await readRecipeProduct(db, product.id, { publicPreview: true });
+    return Response.json({ available: commerceReady && Boolean(result.rowCount) && preview.recipes.length > 0, priceCents: preview.recipes.length ? result.rows[0]?.price_cents || null : null, currency: 'BRL', product: preview }, { headers: productAccessHeaders() });
   } catch {
     return Response.json({ available: false, priceCents: null, currency: 'BRL' }, { headers: productAccessHeaders() });
   }

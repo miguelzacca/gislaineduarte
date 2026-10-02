@@ -1,5 +1,7 @@
 # Auditoria da experiência de planos alimentares
 
+> Revisão de 2 de outubro de 2026: a [auditoria atual do briefing](auditoria-briefing-2026-10-02.md) corrige e delimita conclusões deste registro. O texto abaixo preserva a execução anterior; suas contagens e verificações não comprovam o estado atual.
+
 A primeira versão tinha lacunas concretas: fotografias substituídas por ilustrações, pouca diversidade real entre bases, trocas que compartilhavam um grupo nutricional mas não a função na refeição e acompanhamento offline que não recalculava compras. Esta revisão corrige esses pontos e verifica o fluxo existente.
 
 | Pedido | Resultado desta revisão | Evidência |

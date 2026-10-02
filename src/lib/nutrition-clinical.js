@@ -1,7 +1,7 @@
 // Shared clinical display and validation. Classification uses unrounded values;
 // presentation rounding never moves a person across a clinical threshold.
 export const clinicalSources = {
-  bmi: { title: 'Ministério da Saúde · Classificação do IMC em adultos', url: 'https://linhasdecuidado.saude.gov.br/portal/obesidade-no-adulto/unidade-de-atencao-primaria/rastreamento-diagnostico/' },
+  bmi: { title: 'Ministério da Saúde · PCDT de Sobrepeso e Obesidade em Adultos', url: 'https://www.gov.br/saude/pt-br/assuntos/pcdt/s/sobrepeso-e-obesidade-em-adultos/view' },
   olderBmi: { title: 'Ministério da Saúde · Guia de Vigilância Alimentar e Nutricional, quadro 30', url: 'https://bvsms.saude.gov.br/bvs/publicacoes/guia_organizacao_vigilancia_alimentar_nutricional.pdf' },
   mifflin: { title: 'Mifflin et al., 1990 · equação de gasto em repouso', url: 'https://pubmed.ncbi.nlm.nih.gov/2305711/' },
   femaleSkinfold: { title: 'Jackson, Pollock & Ward, 1980', url: 'https://pubmed.ncbi.nlm.nih.gov/7402053/' },
@@ -11,6 +11,12 @@ export const clinicalSources = {
 const present = value => value !== '' && value !== null && value !== undefined;
 const valid = (value, min, max) => present(value) && typeof value !== 'boolean' && Number.isFinite(Number(value)) && Number(value) >= min && Number(value) <= max;
 const rounded = (value, decimals = 1) => Math.round(value * 10 ** decimals) / 10 ** decimals;
+
+export function validMeasurementDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T12:00:00Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
 
 export function bmiInterpretation(input = {}) {
   if (!valid(input.weight, 25, 350) || !valid(input.height, 120, 230)) return null;
@@ -34,8 +40,7 @@ export function skinfoldInputErrors(input = {}) {
   if (!['female', 'male'].includes(input.sex)) errors.push('Informe o parâmetro sexual da equação de dobras.');
   if (!valid(input.age, 18, input.sex === 'female' ? 55 : 61)) errors.push('O método de 3 dobras admite mulheres de 18 a 55 anos e homens de 18 a 61 anos.');
   if (input.pregnant === true) errors.push('A equação de dobras não será aplicada na gestação/amamentação.');
-  const date = new Date(`${input.measurementDate}T12:00:00Z`);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.measurementDate || '') || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== input.measurementDate) errors.push('Registre uma data válida da avaliação de dobras.');
+  if (!validMeasurementDate(input.measurementDate)) errors.push('Registre uma data válida da avaliação de dobras.');
   const sites = input.sex === 'female' ? ['triceps', 'suprailiac', 'thigh'] : ['chest', 'abdomen', 'thigh'];
   for (const site of sites) if (!valid(input.skinfolds?.[site], 1, 80)) errors.push(`Registre a média das leituras de ${skinfoldLabels[site]} entre 1 e 80 mm.`);
   return errors;

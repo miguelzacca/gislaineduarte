@@ -42,8 +42,16 @@ test('nutrition flow: isolated PostgreSQL intake → checkout → confirmation �
     await t.test('offer not sold until doctor configures all commercial terms', async () => {
       assert.equal((await (await request('offer')).json()).available, false);
       assert.equal((await request('settings', { offer: { ...offer, priceCents: null } }, { adminRequest: true })).status, 400);
-      assert.equal((await request('settings', { offer }, { adminRequest: true })).status, 200);
+      assert.equal((await request('settings', { revision: 0, offer }, { adminRequest: true })).status, 200);
       assert.equal((await (await request('offer')).json()).offer.priceCents, 25900);
+    });
+    await t.test('offer revision protects price and conditions from stale tabs', async () => {
+      const stale = await request('settings', { revision: 0, offer: { ...offer, priceCents: 19900 } }, { adminRequest: true });
+      assert.equal(stale.status, 409);
+      assert.equal((await request('settings', { offer }, { adminRequest: true })).status, 409);
+      const list = await (await request('list', null, { adminRequest: true })).json();
+      assert.equal(list.offer.revision, 1); assert.equal(list.offer.priceCents, 25900);
+      assert.equal((await (await request('offer')).json()).offer.revision, undefined);
     });
     await t.test('consent required, intake encrypted and cookie bound to one request', async () => {
       const bad = await request('intake', { intake: { ...person, consent: false }, idempotencyKey: randomUUID() }); assert.equal(bad.status, 400);
@@ -57,7 +65,7 @@ test('nutrition flow: isolated PostgreSQL intake → checkout → confirmation �
       const status = await (await request('status')).json(); assert.equal(status.ready, false); assert.equal(status.whatsappUrl, null); assert.ok(!JSON.stringify(status).includes(person.email));
     });
     await t.test('checkout retry reuses link and immutable offer snapshot', async () => {
-      await request('settings', { offer: { ...offer, priceCents: 50000, deliveryDays: 9 } }, { adminRequest: true });
+      assert.equal((await request('settings', { revision: 1, offer: { ...offer, priceCents: 50000, deliveryDays: 9 } }, { adminRequest: true })).status, 200);
       assert.equal((await request('checkout', {})).status, 200); assert.equal((await request('checkout', {})).status, 200); assert.equal(linkCalls, 1);
       const status = await (await request('status')).json(); assert.equal(status.amountCents, 25900); assert.equal(status.offer.deliveryDays, 4);
     });
@@ -81,11 +89,13 @@ test('nutrition flow: isolated PostgreSQL intake → checkout → confirmation �
       assert.equal((await request('download')).status, 403);
       const detail = await (await request('detail', null, { adminRequest: true, query: `&id=${rowId}` })).json();
       assert.equal(detail.revision, 1); assert.equal(detail.stage, 'draft'); assert.deepEqual(validatePlan(detail.plan, detail.intake), []);
+      assert.ok(detail.deliveryWarnings.some(warning => warning.includes('proporções do prato')));
     });
     await t.test('clinical review and goal checks cannot be bypassed; stale revision rejected', async () => {
       const detail = await (await request('detail', null, { adminRequest: true, query: `&id=${rowId}` })).json();
       assert.equal((await request('approve', { id: rowId, revision: 1, reviewed: [] }, { adminRequest: true })).status, 422);
       const plan = detail.plan; plan.targets.energy = 1800; plan.targets.protein = 80; plan.clinicalNotes = 'Avaliação fictícia de teste. Metas e restrições conferidas.';
+      plan.plateGuide = { protein: 30, carbs: 25, vegetables: 45 };
       plan.assessment = { summary: 'Seu plano considera a rotina e as exclusões informadas.', criteria: 'Metas definidas profissionalmente para este exemplo. Conferidos horários e porções.', calculationInput: { weight: 80, height: 175, age: 38, sex: 'male', activity: 1.2, proteinRatio: 1 }, calculations: [{ id: 'protein', value: 999 }], dataSnapshot: { email: 'forged@example.com' } };
       assert.equal((await request('save', { id: rowId, revision: 0, plan }, { adminRequest: true })).status, 409);
       assert.equal((await request('save', { id: rowId, revision: 1, plan }, { adminRequest: true })).status, 200);
@@ -176,6 +186,7 @@ test('nutrition flow: isolated PostgreSQL intake → checkout → confirmation �
       const response = await request('generate', { id: rowId, revision: before.revision, templateId: before.plan.templateId, variation: 12, preserveAssessment: true }, { adminRequest: true });
       assert.equal(response.status, 200); const result = await response.json();
       assert.deepEqual(result.plan.targets, before.plan.targets); assert.equal(result.plan.clinicalNotes, before.plan.clinicalNotes);
+      assert.deepEqual(result.plan.plateGuide, before.plan.plateGuide); assert.deepEqual(result.plan.plateGuide, { protein: 30, carbs: 25, vegetables: 45 });
       assert.equal(result.plan.guidance, before.plan.guidance); assert.deepEqual(result.plan.review, {}); assert.equal(result.stage, 'draft');
       const changedBase = await request('generate', { id: rowId, revision: result.revision, templateId: 'balanced-variada', variation: 0, preserveAssessment: true }, { adminRequest: true });
       assert.equal(changedBase.status, 200); const changed = await changedBase.json();
@@ -192,7 +203,7 @@ test('nutrition flow: isolated PostgreSQL intake → checkout → confirmation �
       const template = list.templates.find(template => template.title === 'Modelo renal de teste');
       const savedTemplate = unseal((await store.query('SELECT plan_encrypted FROM nutrition_templates WHERE id=$1', [template.id])).rows[0].plan_encrypted, env);
       assert.ok(!JSON.stringify(savedTemplate).includes('PERSONAL_'));
-      assert.equal(savedTemplate.assessment, undefined); assert.deepEqual(savedTemplate.curatedModules, []);
+      assert.deepEqual(savedTemplate.assessment, { summary: '', criteria: '', calculationInput: null }); assert.deepEqual(savedTemplate.curatedModules, []);
       const response = await request('generate', { id: rowId, revision: detail.revision, templateId: template.id }, { adminRequest: true });
       assert.equal(response.status, 200); const result = await response.json();
       assert.equal(result.plan.templateId, 'renal-pratica');
