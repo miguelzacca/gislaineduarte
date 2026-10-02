@@ -16,7 +16,7 @@ A seleção automática considera objetivos e restrições; a assistência da NV
 
 ## Livros de receitas
 
-O nome público passa a ser Livro de receitas. O identificador e o caminho antigos permanecem para preservar compras e links existentes. A coleção GLP-1 tem produto e autorização de acesso próprios. O conteúdo editorial pode ser criado, revisado, ocultado e atualizado no painel; os downloads são gerados a partir da versão publicada.
+O nome público passa a ser Livro de receitas, em `/livro-de-receitas`. O caminho antigo redireciona para essa URL, preservando os parâmetros, e o identificador interno permanece para preservar compras existentes. A coleção GLP-1 tem produto e autorização de acesso próprios. O conteúdo editorial pode ser criado, revisado, ocultado e atualizado no painel; os downloads são gerados a partir da versão publicada.
 
 Receitas incompletas nas imagens fornecidas ficam em rascunho com observação editorial. Não foram inventadas etapas ausentes do vídeo nem temperaturas, tempos ou medidas não informados. Fotos reais de ingredientes são identificadas como referência quando não mostram o prato pronto. Créditos ficam em `public/images/foods`, `public/images/teas` e `public/images/recipes-real`.
 

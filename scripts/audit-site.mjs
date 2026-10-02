@@ -12,7 +12,7 @@ const configuredInstagram = process.env.PUBLIC_INSTAGRAM?.trim() || null;
 const expectedRoutes = [
   '/', '/sobre', '/atendimentos', '/atendimentos/consulta-nutricional',
   '/atendimentos/ciclos-de-acompanhamento', '/contato',
-  '/7-receitas-para-ajudar-voce-a-desinflamar', '/privacidade', '/plano-alimentar',
+  '/livro-de-receitas', '/privacidade', '/plano-alimentar',
 ];
 const errors = [];
 const warnings = [];
@@ -209,7 +209,7 @@ async function main() {
     const footerIdentity = normalize($('.site-footer .professional-identity').text());
     if (route !== '/painel') check(footerIdentity.includes(site.fullName) && footerIdentity.includes(site.registration) && footerIdentity.includes(site.profession), `${route}: identificação profissional incompleta no rodapé`);
     check(!/\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/.test(page.html), `${route}: documento pessoal exposto no HTML`);
-    if (route === '/7-receitas-para-ajudar-voce-a-desinflamar') {
+    if (route === '/livro-de-receitas') {
       // The current checkout verifies session and availability before showing any email form.
       check($('.product-checkout-button[type="button"]').length > 0, `${route}: abertura de checkout ausente`);
       check($('.product-checkout-dialog [role="status"]').length === 1, `${route}: consulta inicial de acesso ausente`);

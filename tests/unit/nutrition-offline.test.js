@@ -3,7 +3,7 @@ import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import { createHash } from 'node:crypto';
 import { parseHTML } from 'linkedom';
-import { buildPlanHtml } from '../../server/nutrition/export.js';
+import { buildPlanHtml } from '../../server/nutrition/html.js';
 import { generatePlan, dayTotals } from '../../src/lib/nutrition.js';
 import { foodById, foods } from '../../src/data/nutrition.js';
 
@@ -21,8 +21,10 @@ function openOffline(html, { storage = new Map(), storageBlocked = false } = {})
   }
   const downloads = [];
   let printCount = 0;
+  const printStates = [];
+  const windowEvents = new Map();
   const context = { document, Intl, Date, Blob,
-    window: { print: () => { printCount++; }, confirm: () => true },
+    window: { print: () => { printCount++; printStates.push([...document.querySelectorAll('details')].every(element => element.open)); }, confirm: () => true, addEventListener: (type, listener) => windowEvents.set(type, listener) },
     localStorage: { getItem: key => { if (storageBlocked) throw new Error('Storage blocked'); return storage.get(key) || null; }, setItem: (key, value) => { if (storageBlocked) throw new Error('Storage blocked'); storage.set(key, value); } },
     URL: { createObjectURL: blob => { downloads.push(blob); return 'blob:offline-test'; }, revokeObjectURL: () => {} },
     setTimeout: callback => { callback(); },
@@ -31,7 +33,8 @@ function openOffline(html, { storage = new Map(), storageBlocked = false } = {})
   const csp = document.querySelector('meta[http-equiv="Content-Security-Policy"]').content;
   assert.ok(csp.includes(`sha256-${createHash('sha256').update(script).digest('base64')}`));
   runInNewContext(script, context, { timeout: 10000 });
-  return { document, downloads, storage, printCount: () => printCount,
+  return { document, downloads, storage, printCount: () => printCount, printStates,
+    fireWindow: type => windowEvents.get(type)?.(),
     click: selector => document.querySelector(selector).dispatchEvent(new Event('click')),
     change: (selector, value, property = 'value') => { const node = document.querySelector(selector); node[property] = value; node.dispatchEvent(new Event('change')); },
     input: (selector, value) => { const node = document.querySelector(selector); node.value = value; node.dispatchEvent(new Event('input')); },
@@ -58,6 +61,12 @@ test('nutrition offline: approved choice updates photograph, quantities, macros,
   const expected = initial - foodById[original.foodId].kcal * original.grams / 100 + foodById[option.foodId].kcal * 1.23;
   const actual = Number(app.document.getElementById('total-0-kcal').textContent.replace(/\./g, '').replace(',', '.'));
   assert.ok(Math.abs(actual - expected) < .2);
+  assert.equal(app.document.getElementById('week-0-kcal').textContent, app.document.getElementById('total-0-kcal').textContent);
+  const weeklyExpected = (plan.days.reduce((sum, day) => sum + dayTotals(day).kcal, 0) + expected - initial) / plan.days.length;
+  const weeklyActual = Number(app.document.getElementById('week-average-kcal').textContent.replace(' kcal', '').replace(/\./g, '').replace(',', '.'));
+  assert.ok(Math.abs(weeklyActual - weeklyExpected) < .2, 'weekly average reflects the selected portion');
+  const scale = Math.max(500, Math.ceil(Math.max(...plan.days.map((day, index) => index === 0 ? expected : dayTotals(day).kcal)) / 500) * 500);
+  assert.ok(Math.abs(parseFloat(app.document.getElementById('week-bar-0').style.width) - expected / scale * 100) < .1);
   app.change('#shopping-scope', '0');
   const expectedGrams = plan.days[0].meals.flatMap(meal => meal.items).filter(item => item.foodId === option.foodId).reduce((total, item) => total + item.grams, 123);
   assert.equal(app.document.querySelector(`[data-shop="${option.foodId}"]`).parentElement.querySelector('small').textContent, new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(expectedGrams) + ' g');
@@ -98,6 +107,30 @@ test('nutrition offline: corrupted storage cannot break the plan and out-of-rang
   assert.equal(app.document.getElementById('day-0').hidden, false);
   assert.equal(app.document.querySelector('#food-0-0-0 [data-food-name]').textContent, foodById[plan.days[0].meals[0].items[0].foodId].name);
   app.click('#print'); assert.equal(app.printCount(), 1);
+  assert.deepEqual(app.printStates, [true], 'print includes all clinical data and swap galleries');
+});
+
+test('nutrition offline: contents and gallery anchors reveal their destinations; browser printing restores collapsed details', async () => {
+  const { html } = await createHtml(); const app = openOffline(html);
+  const identifiers = [...app.document.querySelectorAll('[id]')].map(element => element.id);
+  assert.equal(new Set(identifiers).size, identifiers.length, 'wide and compact clinical graphics must keep unique SVG references');
+  for (const link of app.document.querySelectorAll('.quicklinks a')) assert.ok(app.document.querySelector(link.getAttribute('href')), 'every contents entry has a destination');
+  assert.equal(app.document.getElementById('day-6').hidden, true);
+  app.click('#week a[href="#day-6"]');
+  assert.equal(app.document.getElementById('day-6').hidden, false);
+  const galleryLink = app.document.querySelector('#swaps a[href^="#food-0-"]');
+  assert.ok(galleryLink);
+  app.click('#swaps a[href="' + galleryLink.getAttribute('href') + '"]');
+  const destination = app.document.querySelector(galleryLink.getAttribute('href'));
+  assert.equal(app.document.getElementById('day-0').hidden, false);
+  assert.equal(destination.querySelector('details').open, true);
+  const shopping = app.document.getElementById('shopping'); shopping.open = false;
+  app.click('.quicklinks a[href="#shopping"]'); assert.equal(shopping.open, true);
+  const technical = app.document.querySelector('.technical-section'); technical.open = false;
+  app.fireWindow('beforeprint');
+  assert.ok([...app.document.querySelectorAll('details')].every(details => details.open));
+  app.fireWindow('afterprint'); assert.equal(technical.open, false);
+  assert.equal(shopping.open, true);
 });
 
 test('nutrition offline: all photographs and maximum permitted plan content fit the serverless download limit', async () => {

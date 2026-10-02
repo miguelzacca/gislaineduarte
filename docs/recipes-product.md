@@ -2,7 +2,7 @@
 
 O site permanece em Vite + React + JavaScript/JSX. A landing é pública e mostra somente a prévia. Ingredientes, preparo e alertas completos não entram no bundle público; `/minhas-receitas` é um shell estático, e o conteúdo completo é servido por `/api/recipes/content` somente após autorização no servidor. O painel permite editar e publicar receitas no Postgres. `/api/recipes/download` exige uma sessão autorizada para o produto e gera PDF ou HTML offline a partir do conteúdo publicado atual. Cópias para verificação do build ficam em `artifacts/recipes/`, fora de `public/` e `dist/`. Como qualquer arquivo baixado, os documentos podem ser copiados pelo comprador depois do download.
 
-O caminho e o ID históricos com “7 receitas” são preservados para manter links e compras existentes. `?product=receitas-glp1` seleciona o segundo produto, com preço, publicação, compra e titularidade independentes. A coleção GLP-1 só fica à venda quando a profissional define o preço e a publica. Detalhes da migração editorial estão em [nutrition-editorial-upgrade.md](nutrition-editorial-upgrade.md).
+A URL pública é `/livro-de-receitas`, sem quantidade fixa no endereço. O caminho antigo `/7-receitas-para-ajudar-voce-a-desinflamar` redireciona permanentemente para ela, preservando os parâmetros da URL. O ID interno histórico `7-receitas-desinflamar` permanece para manter compras e permissões existentes. `?product=receitas-glp1` seleciona o segundo produto, com preço, publicação, compra e titularidade independentes. A coleção GLP-1 só fica à venda quando a profissional define o preço e a publica. Detalhes da migração editorial estão em [nutrition-editorial-upgrade.md](nutrition-editorial-upgrade.md).
 
 ## Compra e acesso
 

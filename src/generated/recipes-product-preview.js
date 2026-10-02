@@ -6,7 +6,7 @@ export const recipesProductPreview = Object.freeze({
   "subtitle": "Uma seleção prática de receitas doces e salgadas para trazer mais variedade, sabor e intenção à sua rotina.",
   "description": "Uma coleção digital interativa criada para apoiar uma alimentação equilibrada com preparações possíveis, organização e cuidado no dia a dia.",
   "positioning": "Coleção digital de receitas",
-  "publicPath": "/7-receitas-para-ajudar-voce-a-desinflamar",
+  "publicPath": "/livro-de-receitas",
   "experiencePath": "/minhas-receitas",
   "educationalNotice": "Este material possui caráter educativo e não substitui avaliação ou acompanhamento nutricional individualizado. Adapte ingredientes às suas necessidades, alergias e orientações profissionais.",
   "commerce": {
@@ -569,7 +569,7 @@ export const glpRecipesProductPreview = Object.freeze({
   "subtitle": "Preparações em pequenas porções para apoiar a conversa com sua nutricionista durante o acompanhamento.",
   "description": "Livro educativo com preparações simples, texturas variadas, ingredientes e cuidados para personalizar durante o acompanhamento nutricional de quem utiliza GLP-1.",
   "positioning": "Coleção digital de receitas",
-  "publicPath": "/7-receitas-para-ajudar-voce-a-desinflamar?product=receitas-glp1",
+  "publicPath": "/livro-de-receitas?product=receitas-glp1",
   "experiencePath": "/minhas-receitas?product=receitas-glp1",
   "educationalNotice": "Material educativo. A tolerância, a porção e as necessidades nutricionais variam. As receitas não substituem acompanhamento e não orientam doses ou ajustes de medicamentos GLP-1.",
   "commerce": {

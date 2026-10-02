@@ -52,7 +52,7 @@ export function initializeOfflinePlan(config) {
   const selectDay = day => {
     state.day = day;
     each('.day', (element, index) => { element.hidden = index !== day; });
-    each('[data-day]', (element, index) => { element.setAttribute('aria-pressed', String(index === day)); });
+    each('[data-day]', element => { element.setAttribute('aria-pressed', String(Number(element.dataset.day) === day)); });
     byId('previous-day').disabled = day === 0;
     byId('next-day').disabled = day === days.length - 1;
     byId('day-position').textContent = `Dia ${day + 1} de ${days.length}`;
@@ -90,6 +90,7 @@ export function initializeOfflinePlan(config) {
     });
   };
   const renderChoices = () => {
+    const weeklyTotals = [];
     days.forEach((day, d) => {
       const total = { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
       day.meals.forEach((meal, m) => {
@@ -143,8 +144,30 @@ export function initializeOfflinePlan(config) {
           for (const [group, label] of Object.entries(labels)) { const line = document.createElement('span'); const value = document.createElement('b'); value.textContent = number(config.plateGuide[group]) + '%'; line.append(value, ' ' + label); targets.append(line); }
         }
       });
-      for (const [nutrient, value] of Object.entries(total)) byId('total-' + d + '-' + nutrient).textContent = number(value) + (nutrient === 'kcal' ? '' : ' g');
+      for (const [nutrient, value] of Object.entries(total)) {
+        byId('total-' + d + '-' + nutrient).textContent = number(value) + (nutrient === 'kcal' ? '' : ' g');
+        const weeklyCell = byId('week-' + d + '-' + nutrient);
+        if (weeklyCell) weeklyCell.textContent = number(value);
+      }
+      // Match dayTotals: round each day's total once before averaging the week.
+      weeklyTotals.push(Object.fromEntries(Object.entries(total).map(([nutrient, value]) => [nutrient, Math.round(value * 10) / 10])));
     });
+    const maximum = Math.max(500, Math.ceil(Math.max(...weeklyTotals.map(total => total.kcal)) / 500) * 500);
+    weeklyTotals.forEach((total, d) => {
+      const bar = byId('week-bar-' + d); const label = byId('week-energy-' + d);
+      if (bar) bar.style.width = total.kcal / maximum * 100 + '%';
+      if (label) label.textContent = number(total.kcal) + ' kcal';
+    });
+    for (const nutrient of ['kcal', 'protein', 'carbs', 'fat', 'fiber']) {
+      const average = byId('week-average-' + nutrient);
+      if (average) {
+        const value = number(weeklyTotals.reduce((sum, total) => sum + total[nutrient], 0) / weeklyTotals.length);
+        const unit = document.createElement('small'); unit.textContent = nutrient === 'kcal' ? 'kcal' : 'g';
+        average.replaceChildren(value + ' ', unit);
+      }
+    }
+    const scale = byId('week-scale');
+    if (scale) scale.textContent = 'Mesma escala: 0 a ' + number(maximum) + ' kcal por dia.';
     renderShopping();
   };
   // Build repeated choice controls from the compact approved data. Photographs
@@ -165,10 +188,22 @@ export function initializeOfflinePlan(config) {
     container.replaceChildren(fieldset);
   });
   each('[data-day]', element => element.addEventListener('click', () => selectDay(Number(element.dataset.day))));
+  each('[data-plan-anchor]', element => element.addEventListener('click', () => {
+    const target = byId(element.getAttribute('href').slice(1));
+    if (!target) return;
+    const day = target.closest('.day');
+    if (day) selectDay(Number(day.id.slice(4)));
+    // Reveal destinations before the browser performs its normal hash scroll.
+    // A gallery link opens the actual selector of that specific meal.
+    if (target.matches('details')) target.open = true;
+    if (target.matches('.food')) target.querySelectorAll('details').forEach(details => { details.open = true; });
+    let ancestor = target.parentElement;
+    while (ancestor) { if (ancestor.matches('details')) ancestor.open = true; ancestor = ancestor.parentElement; }
+  }));
   each('[data-meal]', element => element.addEventListener('change', () => { state.checks[mealKey(element)] = element.checked; progress(); save(); }));
   each('[data-choice]', element => element.addEventListener('change', () => {
     state.choices[element.dataset.choice] = Number(element.value); renderChoices(); save();
-    byId('choice-status').textContent = 'Opção atualizada. Os totais do dia e a lista de compras já refletem a sua escolha.';
+    byId('choice-status').textContent = 'Opção atualizada. Os totais do dia, o resumo da semana e a lista de compras já refletem a sua escolha.';
   }));
   date.addEventListener('change', () => { if (date.value) refresh(); });
   byId('previous-day').addEventListener('click', () => selectDay(Math.max(0, state.day - 1)));
@@ -204,11 +239,21 @@ export function initializeOfflinePlan(config) {
     lines.push('', 'Quantidades conforme o alimento descrito no plano, sem ajuste de rendimento. Incluem as trocas selecionadas.');
     download(lines.join('\n'), 'text/plain;charset=utf-8', 'minha-lista-de-compras.txt');
   });
-  byId('print').addEventListener('click', () => {
-    const details = [...document.querySelectorAll('details')];
-    const previous = details.map(element => element.open); details.forEach(element => { element.open = true; });
-    window.print(); details.forEach((element, index) => { element.open = previous[index]; });
-  });
+  let printDetails = null;
+  const preparePrint = () => {
+    if (printDetails) return;
+    printDetails = [...document.querySelectorAll('details')].map(element => ({ element, open: element.open }));
+    printDetails.forEach(({ element }) => { element.open = true; });
+  };
+  const finishPrint = () => {
+    printDetails?.forEach(({ element, open }) => { element.open = open; });
+    printDetails = null;
+  };
+  if (typeof window.addEventListener === 'function') {
+    window.addEventListener('beforeprint', preparePrint);
+    window.addEventListener('afterprint', finishPrint);
+  }
+  byId('print').addEventListener('click', () => { preparePrint(); window.print(); finishPrint(); });
   byId('clear').addEventListener('click', () => {
     if (!window.confirm('Apagar escolhas, marcações, compras e anotações deste plano neste navegador? Cópias já baixadas permanecem com seus dados.')) return;
     state = cleanState({}); document.body.removeAttribute('data-progress'); notes.value = ''; renderChoices(); selectDay(0); save();

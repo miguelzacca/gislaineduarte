@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import { handleProductApiRequest } from '../server/recipes/node-adapter.js';
+import deploymentConfig from '../vercel.json' with { type: 'json' };
 
 const root = resolve('dist');
 const port = Number(process.env.RECIPES_PRODUCT_DEV_PORT || '4325');
@@ -24,6 +25,12 @@ const types = {
 const server = createServer(async (request, response) => {
   try {
     const url = new URL(request.url, `http://127.0.0.1:${port}`);
+    const redirect = deploymentConfig.redirects.find(rule => rule.source === url.pathname);
+    if (redirect) {
+      response.writeHead(redirect.permanent ? 308 : 307, { Location: `${redirect.destination}${url.search}` });
+      response.end();
+      return;
+    }
     if (url.pathname !== '/' && url.pathname.endsWith('/')) {
       response.writeHead(308, { Location: `${url.pathname.replace(/\/+$/, '') || '/'}${url.search}` });
       response.end();

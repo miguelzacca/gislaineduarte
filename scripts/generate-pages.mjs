@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { createServer } from 'vite';
 import { buildRobots, buildSitemap, buildLlms } from '../src/lib/discovery.js';
@@ -6,6 +6,8 @@ import { generateRecipesPreview } from './generate-recipes-preview.mjs';
 
 process.env.NODE_ENV ||= 'production';
 await generateRecipesPreview();
+// Remove a landing antiga de builds locais incrementais após a migração da URL.
+await rm(resolve('.site/7-receitas-para-ajudar-voce-a-desinflamar/index.html'), { force: true });
 const renderer = await createServer({ mode: 'production', logLevel: 'error', server: { middlewareMode: true, watch: null }, appType: 'custom', optimizeDeps: { noDiscovery: true } });
 try {
 const { renderPages } = await renderer.ssrLoadModule('/src/entry-server.jsx');

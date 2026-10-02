@@ -7,9 +7,14 @@ const request = (path, options = {}) => {
   return fetch(url, { redirect: 'manual', ...options });
 };
 
-const landing = await request('/7-receitas-para-ajudar-voce-a-desinflamar');
+const landing = await request('/livro-de-receitas');
 assert.equal(landing.status, 200);
-assert.match(await landing.text(), /7 receitas para ajudar você a desinflamar!/);
+assert.match(await landing.text(), /Livro de receitas/);
+
+const legacy = await request('/7-receitas-para-ajudar-voce-a-desinflamar?product=receitas-glp1&utm_source=link-antigo');
+assert.equal(legacy.status, 308);
+assert.equal(new URL(legacy.headers.get('location'), origin).pathname, '/livro-de-receitas');
+assert.equal(new URL(legacy.headers.get('location'), origin).search, '?product=receitas-glp1&utm_source=link-antigo');
 
 for (const path of ['/api/recipes/content', '/api/recipes/download?format=html', '/api/recipes/download?format=pdf']) {
   const denied = await request(path);

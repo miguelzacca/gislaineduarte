@@ -5,6 +5,9 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/7-receitas-para-ajudar-voce-a-desinflamar", "destination": "/livro-de-receitas", "permanent": true }
+  ],
   "functions": {
     "api/nutrition/return.js": { "maxDuration": 30 },
     "api/nutrition/index.js": {

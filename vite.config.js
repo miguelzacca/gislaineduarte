@@ -5,6 +5,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { execFile } from 'node:child_process';
 import { handleProductApiRequest } from './server/recipes/node-adapter.js';
+import deploymentConfig from './vercel.json' with { type: 'json' };
 
 const root = process.cwd();
 const generated = resolve(root, '.site');
@@ -16,6 +17,12 @@ async function htmlEntries(dir) {
 function cleanPageUrls(directory) {
   return (request, response, next) => {
     const url = new URL(request.url, 'http://localhost');
+    const redirect = deploymentConfig.redirects.find(rule => rule.source === url.pathname);
+    if (redirect) {
+      response.writeHead(redirect.permanent ? 308 : 307, { Location: `${redirect.destination}${url.search}` });
+      response.end();
+      return;
+    }
     if (url.pathname !== '/' && url.pathname.endsWith('/')) {
       response.writeHead(308, { Location: `${url.pathname.replace(/\/+$/, '') || '/'}${url.search}` });
       response.end();

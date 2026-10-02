@@ -67,7 +67,7 @@ test('HTML offline é autocontido e contém exatamente as receitas publicadas', 
 });
 
 test('landing e shell protegido não entregam o preparo; sitemap omite área adquirida', async () => {
-  const landing = await readFile('dist/7-receitas-para-ajudar-voce-a-desinflamar/index.html', 'utf8');
+  const landing = await readFile('dist/livro-de-receitas/index.html', 'utf8');
   const protectedPage = await readFile('dist/minhas-receitas/index.html', 'utf8');
   const sitemap = await readFile('dist/sitemap.xml', 'utf8');
   assert.match(landing, /Livro de receitas/);
@@ -75,7 +75,11 @@ test('landing e shell protegido não entregam o preparo; sitemap omite área adq
   assert.equal(protectedPage.includes('Misture todos os ingredientes até obter uma massa uniforme.'), false);
   assert.match(protectedPage, /noindex, nofollow/);
   assert.equal(sitemap.includes('/minhas-receitas'), false);
-  assert.equal(sitemap.includes('/7-receitas-para-ajudar-voce-a-desinflamar'), true);
+  assert.equal(sitemap.includes('/livro-de-receitas'), true);
+  assert.equal(sitemap.includes('/7-receitas-para-ajudar-voce-a-desinflamar'), false);
+  const $ = load(landing);
+  assert.equal($('link[rel="canonical"]').attr('href'), 'https://gislaineduarte.com.br/livro-de-receitas');
+  assert.equal($('a[href*="7-receitas-para-ajudar-voce-a-desinflamar"]').length, 0);
   const bundles = (await readdir('dist/assets')).filter((file) => file.endsWith('.js'));
   for (const bundle of bundles) {
     const source = await readFile(`dist/assets/${bundle}`, 'utf8');
