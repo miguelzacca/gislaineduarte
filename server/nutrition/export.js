@@ -10,6 +10,8 @@ import { assessmentHighlights, assessmentSections, mealVisualData, plateGroupLab
 import { curatedImageBuffer, curatedImageCredit } from './assets.js';
 import { patientVisuals } from './patient-visuals.js';
 import { createPdfLayout, pdfColors as color } from './pdf-layout.js';
+import { plateReferenceForPlan } from './plate-reference.js';
+import { patientSwapExamples } from './swap-comparisons.js';
 
 export { buildPlanHtml } from './html.js';
 const decimal = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
@@ -113,6 +115,46 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
     layout.paragraph('Referência: Bristol Stool Chart · NHS England', { size: 11.5, link: clinical.bristolSource.url, underline: true });
   }
 
+  const swapExamples = patientSwapExamples(plan, 4);
+  if (swapExamples.length) {
+    layout.page('Substituições inteligentes', { eyebrow: '03 · Escolhas para o seu dia', toc: true, anchor: 'smart-swaps' });
+    layout.paragraph('Exemplos das trocas registradas. Substituem a opção principal; não são acréscimos. Valem apenas para a refeição indicada.', { size: 12, gap: 16 });
+    const pairGap = 22, pairWidth = (width - pairGap) / 2;
+    const headers = () => {
+      at('OPÇÃO PRINCIPAL', left + 10, layout.y, { size: 10.5, font: 'Strong', color: color.gold, area: pairWidth - 20, lineGap: 1 });
+      at('UMA TROCA APROVADA', left + pairWidth + pairGap + 10, layout.y, { size: 10.5, font: 'Strong', color: color.gold, area: pairWidth - 20, lineGap: 1 });
+      layout.y += 24;
+    };
+    headers();
+    for (const example of swapExamples) {
+      const options = [example.from, example.to].map(item => {
+        const name = foodById[item.foodId].name;
+        const detailHeight = measure(name, 12, pairWidth - 80, 'Strong', 1) + measure(`${decimal(item.grams)} g`, 16, pairWidth - 80, 'Strong', 0) + 5;
+        const portion = household(item.foodId, item.grams);
+        return { ...item, name, portion, mainHeight: Math.max(52, detailHeight), portionHeight: measure(portion, 11.5, pairWidth - 20, 'Body', 1) };
+      });
+      const cardHeight = Math.max(...options.map(option => option.mainHeight + option.portionHeight + 25));
+      const origin = `${example.dayLabel} · ${example.mealName} · Ver refeição`;
+      const originHeight = measure(origin, 11.5, width - 20, 'Body', 1);
+      if (layout.ensure(cardHeight + originHeight + 27)) headers();
+      const top = layout.y;
+      for (const [index, option] of options.entries()) {
+        const x = left + index * (pairWidth + pairGap);
+        doc.roundedRect(x, top, pairWidth, cardHeight, 10).fill(index ? color.sage : color.white);
+        layout.image(await pdfImage(option.foodId), x + 10, top + 10, 52, 52, 7);
+        const nameEnd = at(option.name, x + 70, top + 10, { size: 12, font: 'Strong', area: pairWidth - 80, lineGap: 1 });
+        at(`${decimal(option.grams)} g`, x + 70, nameEnd + 5, { size: 16, font: 'Strong', area: pairWidth - 80, lineGap: 0 });
+        at(option.portion, x + 10, top + option.mainHeight + 17, { size: 11.5, area: pairWidth - 20, lineGap: 1 });
+      }
+      const arrowX = left + pairWidth + pairGap / 2, arrowY = top + cardHeight / 2;
+      doc.moveTo(arrowX - 6, arrowY).lineTo(arrowX + 6, arrowY).lineWidth(1.5).strokeColor(color.gold).stroke();
+      doc.moveTo(arrowX + 2, arrowY - 4).lineTo(arrowX + 6, arrowY).lineTo(arrowX + 2, arrowY + 4).stroke();
+      at(origin, left + 10, top + cardHeight + 5, { size: 11.5, area: width - 20, color: color.muted, lineGap: 1, underline: true });
+      doc.goTo(left, top + cardHeight + 2, width, originHeight + 9, `meal-${example.dayIndex}-${example.mealIndex}`);
+      layout.y = top + cardHeight + originHeight + 21;
+    }
+  }
+
   layout.page('Sua semana em um olhar', { eyebrow: '03 · Organização das refeições', toc: true, anchor: 'week' });
   layout.paragraph('Os totais abaixo consideram as opções principais. As trocas aprovadas podem alterar a composição da refeição.');
   layout.paragraph('P: proteínas · C: carboidratos · G: gorduras · Fibras. Todos em gramas.', { size: 12, gap: 10 });
@@ -135,23 +177,32 @@ export async function buildPlanPdf({ plan, patientName, revision, approvedAt, dr
     layout.chips([`${decimal(averages.kcal)} kcal`, `P ${decimal(averages.protein)} g`, `C ${decimal(averages.carbs)} g`, `G ${decimal(averages.fat)} g`, `Fibras ${decimal(averages.fiber)} g`], { size: 11.5 });
   }
   if (plan.plateGuide) {
-    layout.page('Um prato para visualizar', { eyebrow: '03 · Organização das refeições' });
-    const plateMeals = plan.days.flatMap(day => day.meals).filter(meal => mealVisualData(meal.items, plan.plateGuide).plateGuide);
-    const plateMeal = plateMeals.find(meal => meal.items.some(item => item.foodId === 'grilled-chicken')) || plateMeals[0];
-    if (plateMeal) {
-      const plate = mealVisualData(plateMeal.items, plan.plateGuide);
-      const diameter = 290, cx = left + width / 2, cy = layout.y + 148, scale = diameter / 200;
-      doc.circle(cx, cy, diameter / 2 + 7).fill('#e3e6dc'); doc.circle(cx, cy, diameter / 2).fill('#ffffff');
-      doc.circle(cx, cy, diameter / 2 - 12).lineWidth(1).strokeColor(color.line).stroke();
-      for (const portion of plate.portions) {
-        const px = cx + (portion.x - 100) * scale, py = cy + (portion.y - 100) * scale, radius = portion.radius * scale;
-        doc.save().circle(px, py, radius).clip(); doc.image(await pdfImage(portion.foodId), px - radius, py - radius, { cover: [radius * 2, radius * 2], align: 'center', valign: 'center' }); doc.restore();
-        doc.circle(px, py, radius).lineWidth(2.5).strokeColor('#ffffff').stroke();
+    layout.page('Como montar seu prato', { eyebrow: '03 · Organização das refeições', toc: true, anchor: 'plate' });
+    const reference = await plateReferenceForPlan(plan);
+    if (reference?.photo) {
+      const { photo } = reference;
+      const photoTop = layout.y, photoWidth = width * .53, photoHeight = 350;
+      doc.image(photo.buffer, left, photoTop, { fit: [photoWidth, photoHeight], align: 'center', valign: 'center' });
+      const groups = reference.groups || [];
+      if (groups.length) {
+        const groupX = left + photoWidth + 20, groupWidth = width - photoWidth - 20;
+        let groupY = at('Reconheça os grupos\nna fotografia', groupX, photoTop + 10, { size: 18, font: 'Strong', area: groupWidth, lineGap: 2 }) + 18;
+        for (const [index, group] of groups.entries()) {
+          const examples = Array.isArray(group.examples) ? group.examples.join(', ') : group.examples;
+          const groupHeight = measure(group.label, 13, groupWidth - 26, 'Strong', 1) + measure(examples, 12, groupWidth - 26, 'Body', 1) + 37;
+          doc.roundedRect(groupX, groupY, groupWidth, groupHeight, 9).fill(index === 2 ? color.sage : color.white);
+          const end = at(group.label, groupX + 13, groupY + 14, { size: 13, font: 'Strong', area: groupWidth - 26, lineGap: 1 });
+          at(examples, groupX + 13, end + 9, { size: 12, area: groupWidth - 26, lineGap: 1 });
+          groupY += groupHeight + 12;
+        }
+        layout.y = Math.max(photoTop + photoHeight, groupY) + 18;
+      } else {
+        layout.y = photoTop + photoHeight + 18;
       }
-      layout.y += 316;
-      layout.paragraph(`Montagem ilustrativa com alimentos de ${plateMeal.name}: ${plate.portions.map(item => item.name).join(', ')}.`, { size: 12 });
+      if (reference.note) layout.paragraph(reference.note, { size: 11.5, color: color.muted, gap: 11 });
+      moduleCredits.push({ title: 'Fotografia do prato de referência', author: photo.author, sourceUrl: photo.sourceUrl, license: photo.license, licenseUrl: photo.licenseUrl, caption: 'Fotografia preservada inteira, redimensionada para este guia.' });
     }
-    layout.heading('A orientação visual do seu prato', { size: 23 });
+    layout.heading('A orientação combinada para você', { size: 21 });
     layout.chips(Object.entries(plateGroupLabels).map(([key, label]) => `${decimal(plan.plateGuide[key])}%\n${label}`), { size: 12, fill: color.sand });
     layout.paragraph('Esses percentuais orientam grupos de alimentos. Não representam percentuais de macronutrientes nem substituem os pesos prescritos.', { size: 11.5, color: color.muted });
   }

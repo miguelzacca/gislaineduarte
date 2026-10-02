@@ -3,6 +3,8 @@ import { dayTotals, sumItems } from '../../src/lib/nutrition.js';
 import { formatFoodPortion } from '../../src/lib/nutrition-journey.js';
 import { assessmentHighlights, assessmentSections, targetLabels } from './presentation.js';
 import { patientVisuals } from './patient-visuals.js';
+import { patientSwapExamples } from './swap-comparisons.js';
+import { plateGroupLabels } from './presentation.js';
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const decimal = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
@@ -65,9 +67,22 @@ export function alternativesMarkup(plan, foodImage) {
     groups.get(key).occurrences.push({ d, m, i, label: day.label, meal: meal.name });
   })));
   if (!groups.size) return '';
+  const comparisons = patientSwapExamples(plan).map(({ from, to, dayIndex, mealIndex, itemIndex, dayLabel, mealName }) => {
+    const option = (item, className, label) => `<div class="${className}">${foodImage(item.foodId)}<span class="eyebrow">${label}</span><h4>${escape(foodById[item.foodId].name)}</h4><p><strong>${decimal(item.grams)} g</strong><br>${escape(formatFoodPortion(item.foodId, item.grams))}</p></div>`;
+    return `<article class="smart-swap"><div class="smart-swap-pair">${option(from, 'from', 'Opção do plano')}<span class="smart-swap-arrow" aria-hidden="true">→</span>${option(to, 'to', 'Pode substituir por')}</div><a href="#food-${dayIndex}-${mealIndex}-${itemIndex}" data-plan-anchor>${escape(dayLabel)} · ${escape(mealName)} · Ver na refeição</a></article>`;
+  }).join('');
   const gallery = [...groups.values()].map(({ options, occurrences }) => `<details class="swap-group"><summary><span>${escape(foodById[options[0].foodId].name)} · ${decimal(options[0].grams)} g</span><small>${options.length - 1} ${options.length === 2 ? 'troca aprovada' : 'trocas aprovadas'}</small></summary><div><div class="swap-gallery">${options.map((item, index) => {
     const values = sumItems([item]);
     return `<article>${foodImage(item.foodId)}<span class="eyebrow">${index === 0 ? 'Opção principal' : `Alternativa ${index}`}</span><h4>${escape(foodById[item.foodId].name)}</h4><p><strong>${decimal(item.grams)} g</strong> · ${escape(formatFoodPortion(item.foodId, item.grams))}</p><p class="fine">${decimal(values.kcal)} kcal · P ${decimal(values.protein)} g · C ${decimal(values.carbs)} g · G ${decimal(values.fat)} g</p></article>`;
   }).join('')}</div><p class="fine">Disponível nestas refeições:</p><div class="swap-occurrences">${occurrences.map(({ d, m, i, label, meal }) => `<a href="#food-${d}-${m}-${i}" data-plan-anchor>${escape(label)} · ${escape(meal)}</a>`).join('')}</div></div></details>`).join('');
-  return `<section class="panel alternatives-guide" id="swaps"><p class="eyebrow">Flexibilidade já revisada</p><h2>Uma galeria de possibilidades.</h2><p>Veja as fotografias, as porções e os nutrientes das opções aprovadas. Escolha uma opção por alimento, na refeição correspondente; ela substitui a principal. Os links levam diretamente ao seletor.</p><p class="fine">Cada grupo vale apenas para as refeições indicadas. Alternativas não precisam ter valores nutricionais idênticos; os cálculos se ajustam à sua escolha.</p>${gallery}</section>`;
+  return `<section class="panel alternatives-guide" id="swaps"><p class="eyebrow">Flexibilidade no seu plano</p><h2>Substituições inteligentes</h2><p>Estes são exemplos das trocas registradas no seu plano. Cada comparação vale somente para a refeição indicada: a alternativa substitui o alimento principal, não se soma a ele. Siga a quantidade de cada opção.</p><div class="smart-swaps">${comparisons}</div><details class="technical-section all-swaps"><summary>Todas as suas opções de troca · ${groups.size} grupos</summary><div><p>Veja as fotografias, as porções e os nutrientes das opções aprovadas. Escolha uma opção por alimento, na refeição correspondente. Os links levam diretamente ao seletor.</p><p class="fine">Cada grupo vale apenas para as refeições indicadas. Alternativas não precisam ter valores nutricionais idênticos; os cálculos se ajustam à sua escolha.</p>${gallery}</div></details></section>`;
+}
+
+export function plateReferenceMarkup(reference, guide) {
+  if (!guide) return '';
+  const prescription = `<div class="plate-prescription"><h3>Orientação do seu plano</h3><div>${Object.entries(plateGroupLabels).map(([group, label]) => `<p><strong>${decimal(guide[group])}%</strong><span>${escape(label)}</span></p>`).join('')}</div><p class="fine">Proporções dos grupos alimentares definidas pela nutricionista. Confira os alimentos e as quantidades em cada refeição.</p></div>`;
+  const heading = '<p class="eyebrow">Da orientação para a mesa</p><h2>Como montar seu prato</h2>';
+  if (!reference) return `<section class="panel plate-reference" id="plate">${heading}${prescription}<p class="fine plate-reference-note">Esses percentuais orientam grupos de alimentos. Não representam percentuais de macronutrientes nem substituem os pesos prescritos.</p></section>`;
+  const { photo, groups, note } = reference;
+  return `<section class="panel plate-reference" id="plate">${heading}<div class="plate-reference-layout"><figure><img class="real-plate-photo" src="data:image/jpeg;base64,${photo.buffer.toString('base64')}" width="960" height="1280" alt="${escape(photo.alt)}"><figcaption>Fotografia: <a href="${escape(photo.sourceUrl)}" target="_blank" rel="noreferrer">${escape(photo.author)}</a> · <a href="${escape(photo.licenseUrl)}" target="_blank" rel="noreferrer">${escape(photo.license)}</a>.</figcaption></figure><div class="plate-reference-guide"><p class="eyebrow">Reconheça os grupos nesta foto</p>${groups.map(({ label, examples }, index) => `<article><span class="plate-group-number" aria-hidden="true">${index + 1}</span><div><h3>${escape(label)}</h3><p>${escape(Array.isArray(examples) ? examples.join(', ') : examples)}</p></div></article>`).join('')}${prescription}</div></div><p class="fine plate-reference-note">${escape(note)}</p></section>`;
 }

@@ -6,7 +6,6 @@ export function initializeOfflinePlan(config) {
   const byId = id => document.getElementById(id);
   const each = (selector, visit) => document.querySelectorAll(selector).forEach(visit);
   const number = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
-  const svgNamespace = document.querySelector('.plate-photo').namespaceURI;
   const object = value => value && !Array.isArray(value) && typeof value === 'object' ? value : {};
   const cleanState = raw => {
     const input = object(raw);
@@ -124,17 +123,10 @@ export function initializeOfflinePlan(config) {
           visual.querySelector('[data-macro-bar="' + nutrient + '"]').style.width = value / maximum * 100 + '%';
         }
         visual.querySelector('[data-macro-scale]').textContent = 'Mesma escala: 0 a ' + number(maximum) + ' g de nutriente.';
-        const chart = visual.querySelector('[data-food-plate]'); const legend = visual.querySelector('[data-mass-legend]');
-        chart.replaceChildren(); legend.replaceChildren();
+        const legend = visual.querySelector('[data-mass-legend]');
+        legend.replaceChildren();
         const colors = ['#315e49', '#b38d45', '#9b6557', '#668092', '#879747', '#77648b', '#477b73'];
         selectedItems.forEach((item, index) => {
-          const count = selectedItems.length; const angle = -Math.PI / 2 + index * Math.PI * 2 / count;
-          const distance = count === 1 ? 0 : count === 2 ? 30 : 39;
-          const photo = document.createElementNS(svgNamespace, 'svg');
-          photo.setAttribute('class', 'plate-photo'); photo.setAttribute('viewBox', '0 0 384 288'); photo.setAttribute('aria-hidden', 'true');
-          photo.style.left = (100 + Math.cos(angle) * distance) / 2 + '%'; photo.style.top = (100 + Math.sin(angle) * distance) / 2 + '%';
-          photo.style.width = photo.style.height = (count <= 2 ? 43 : count <= 4 ? 35 : 29) + '%';
-          const image = document.createElementNS(svgNamespace, 'use'); image.setAttribute('href', '#photo-' + item.foodId); photo.append(image); chart.append(photo);
           const row = document.createElement('li'); const dot = document.createElement('i'); dot.style.background = colors[index % colors.length]; dot.setAttribute('aria-hidden', 'true');
           row.append(dot, item.name + ': ' + number(item.grams) + ' g'); legend.append(row);
         });

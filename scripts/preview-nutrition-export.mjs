@@ -13,7 +13,7 @@ plan.plateGuide = { protein: 25, carbs: 25, vegetables: 50 };
 plan.assessment = { summary: 'Marina tem 35 anos. Este exemplo reúne medidas corporais, uma semana de refeições e alternativas para mostrar a experiência do paciente.', criteria: 'As metas desta demonstração são ilustrativas. O painel diferencia o gasto estimado das metas registradas e mostra como cada valor foi calculado.', calculationInput: { weight: 70, height: 165, age: 35, sex: 'female', activity: 1.4, waist: 80, hip: 100, skinfoldMethod: 'jackson-pollock-3', skinfolds: { triceps: 20, suprailiac: 18, thigh: 25 }, measurementDate: '2026-10-01', energy: 1800, proteinRatio: 1.4, waterRatio: 30 } };
 plan.assessment = buildAssessment({ bristolType: 3, bowelFrequency: 'Relato fictício: uma vez ao dia.', teaHabit: 'sometimes', teaPreferences: 'Camomila' }, plan, '2026-10-01T15:00:00.000Z');
 plan.curatedModules = [{ id: 'example-tea', type: 'tea', title: 'Seu momento de pausa', content: 'Exemplo editorial para revisar a apresentação de um chá. O conteúdo definitivo deve registrar a planta, a finalidade e a orientação individual aprovada em consulta.', image: '/images/teas/chamomile.jpg', foodIds: [], allergens: [], reviewed: true }];
-const options = { plan, patientName: 'Marina · exemplo fictício', id: 'demo-visual', revision: 2, draft: true };
+const options = { plan, patientName: 'Marina · exemplo fictício', id: 'demo-visual', revision: 3, draft: true };
 await mkdir('tmp/nutrition', { recursive: true });
 await mkdir('output/pdf', { recursive: true });
 await mkdir('output/html', { recursive: true });

@@ -1,0 +1,22 @@
+{
+  "photos": [
+    {
+      "id": "chicken-vegetables",
+      "file": "/images/plates/chicken-vegetables.jpg",
+      "sourceUrl": "https://www.pexels.com/photo/delicious-grilled-chicken-with-vegetables-on-plate-36351896/",
+      "imageUrl": "https://images.pexels.com/photos/36351896/pexels-photo-36351896.jpeg?auto=compress&cs=srgb&w=960",
+      "author": "Masuma Rahaman",
+      "license": "Pexels License",
+      "licenseUrl": "https://www.pexels.com/license/",
+      "caption": "Fotografia real de uma refeição montada com frango grelhado, batata, brócolis e cenoura. Referência de apresentação; as quantidades da foto não representam a porção prescrita no plano.",
+      "requiredFoodIds": ["grilled-chicken", "potato", "broccoli", "carrot"],
+      "groups": [
+        { "label": "Proteína", "examples": "Frango grelhado" },
+        { "label": "Cereais e raízes", "examples": "Batata" },
+        { "label": "Vegetais", "examples": "Brócolis e cenoura" }
+      ],
+      "capture": { "camera": "Xiaomi 14 Ultra", "date": "2026-02-27" },
+      "changes": "Versão redimensionada pelo CDN da Pexels para largura de 960 pixels, preservando a proporção e todo o enquadramento original. Sem recorte, montagem ou geração por IA."
+    }
+  ]
+}
