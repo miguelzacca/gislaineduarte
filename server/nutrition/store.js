@@ -47,6 +47,8 @@ export async function getNutritionStore(env = process.env, injectedStore) {
       )`);
       await client.query('ALTER TABLE nutrition_requests ADD COLUMN IF NOT EXISTS first_delivered_at timestamptz');
       await client.query('ALTER TABLE nutrition_requests ADD COLUMN IF NOT EXISTS analysis_encrypted text');
+      await client.query('CREATE TABLE IF NOT EXISTS nutrition_ai_limit (id integer PRIMARY KEY CHECK (id=1), blocked_until timestamptz NOT NULL DEFAULT now())');
+      await client.query('INSERT INTO nutrition_ai_limit (id) VALUES (1) ON CONFLICT (id) DO NOTHING');
       await client.query(`CREATE TABLE IF NOT EXISTS nutrition_events (
         id bigserial PRIMARY KEY, request_id uuid NOT NULL REFERENCES nutrition_requests(id) ON DELETE CASCADE,
         type text NOT NULL, actor text NOT NULL, created_at timestamptz NOT NULL DEFAULT now()
@@ -71,6 +73,7 @@ export async function getNutritionStore(env = process.env, injectedStore) {
       await client.query('CREATE INDEX IF NOT EXISTS nutrition_requests_created_idx ON nutrition_requests(created_at DESC)');
       await client.query('CREATE INDEX IF NOT EXISTS nutrition_requests_ip_idx ON nutrition_requests(ip_hash, created_at)');
       await client.query('CREATE INDEX IF NOT EXISTS nutrition_events_request_idx ON nutrition_events(request_id, created_at DESC)');
+      await client.query("CREATE INDEX IF NOT EXISTS nutrition_events_ai_idx ON nutrition_events(created_at) WHERE type='ai_requested'");
       await client.query('CREATE INDEX IF NOT EXISTS nutrition_checkins_request_idx ON nutrition_checkins(request_id, created_at DESC)');
     });
     initialized.set(db, setup); setup.catch(() => initialized.delete(db));

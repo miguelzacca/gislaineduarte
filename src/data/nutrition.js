@@ -45,12 +45,21 @@ const variants = [
   { id: 'vegetal', name: 'Mesa vegetal', description: 'Combinações com leguminosas, cereais e hortaliças, sem ingredientes de origem animal.', pattern: 3, diet: 'vegan' },
   { id: 'caseira', name: 'Cozinha de casa', description: 'Cuscuz, raízes, preparos cozidos e combinações brasileiras para a semana.', pattern: 4 },
 ];
-export const planTemplates = clinicalProfiles.flatMap((profile, repertoireIndex) => variants.map(variant => ({
+const goalTemplates = [
+  { id: 'muscle', name: 'Hipertrofia e ganho de massa muscular', focus: 'Distribuir fontes de proteína e organizar as refeições em torno da rotina de treino. Porções e metas são definidas na avaliação.' },
+  { id: 'weight-management', name: 'Emagrecimento e controle de peso', focus: 'Organizar refeições completas, preferências e variedade. Não aplica déficit calórico automático.' },
+  { id: 'weight-gain', name: 'Ganho de peso', focus: 'Organizar oportunidades de alimentação, apetite e tolerância. Energia, porções e necessidade de superávit são avaliadas individualmente.' },
+].flatMap((goal, index) => variants.map(variant => ({
+  id: `${goal.id}-${variant.id}`, goal: goal.id, profile: 'balanced', name: `${goal.name} · ${variant.name}`,
+  description: `${variant.description} ${goal.focus}`, pattern: variant.pattern, diet: variant.diet,
+  repertoireIndex: clinicalProfiles.length + index, meals: variant.pattern === 2 ? 6 : 5, goals: [goal.id], tags: [goal.name, variant.name],
+})));
+export const planTemplates = [...goalTemplates, ...clinicalProfiles.flatMap((profile, repertoireIndex) => variants.map(variant => ({
   id: `${profile.id}-${variant.id}`, profile: profile.id, name: `${profile.name} · ${variant.name}`,
   description: `${variant.description} ${profile.focus}`, pattern: variant.pattern, diet: variant.diet, repertoireIndex, meals: variant.pattern === 2 ? 6 : 5,
-  goals: ['balanced', 'diabetes', 'glp1'].includes(profile.id) ? goalOptions.map(goal => goal.id) : ['renal', 'oncology'].includes(profile.id) ? ['clinical'] : ['clinical', 'wellbeing', 'weight-management'],
+  goals: ['renal', 'oncology'].includes(profile.id) ? ['clinical'] : goalOptions.map(goal => goal.id),
   tags: [profile.name, variant.name, ...(profile.id === 'balanced' ? goalOptions.filter(goal => goal.id !== 'clinical').map(goal => goal.label) : ['Contexto clínico', profile.id === 'glp1' ? 'GLP-1' : profile.name])],
-})));
+})))];
 
 // Culinary modules are draft assemblies, not disease prescriptions. All weights refer
 // to the preparation named in the TACO catalogue. Clinical goals stay unset.

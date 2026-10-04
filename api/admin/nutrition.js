@@ -4,11 +4,13 @@ import { productAccessHeaders, randomToken, tokenHash } from '../../server/recip
 import { readCommerceConfig } from '../../server/recipes/config.js';
 import { transaction } from '../../server/recipes/store.js';
 import { clinicalProfiles } from '../../src/data/nutrition.js';
+import { goalOptions } from '../../src/data/nutrition-journey.js';
 import { clinicalAlerts, generatePlan, validatePlan } from '../../src/lib/nutrition.js';
 import { assessmentApprovalErrors, buildAssessment } from '../../src/lib/nutrition-journey.js';
 import { commerceReady, followupStatus, NutritionError, readBody, readOffer, validOffer } from '../../server/nutrition/service.js';
 import { archivePlan, event, getNutritionStore, seal, unseal } from '../../server/nutrition/store.js';
-import { analyzeWithNim, suggestWithNim } from '../../server/nutrition/ai.js';
+import { analyzeWithNim, draftWithNim, nimModel, nimRequestsPerMinute, suggestWithNim } from '../../server/nutrition/ai.js';
+import { blockNimRequests, reserveNimRequest } from '../../server/nutrition/ai-rate-limit.js';
 import { buildPlanHtml, buildPlanPdf } from '../../server/nutrition/export.js';
 import { plateReferenceForPlan } from '../../server/nutrition/plate-reference.js';
 import { readContentLibrary, readTemplates, reusablePlan, saveContentLibrary, saveTemplate, templateDetail } from '../../server/nutrition/library.js';
@@ -59,7 +61,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
           COALESCE(sum(amount_cents) FILTER (WHERE payment_status='paid'),0)::bigint AS revenue FROM nutrition_requests`);
         const templates = await readTemplates(db, env);
         return json({ patients: result.rows.map(row => { const intake = unseal(row.intake_encrypted, env); return { id: row.id, name: intake.name, conditions: intake.conditions, payment: row.payment_status, stage: row.stage, amountCents: row.amount_cents, createdAt: row.created_at, revision: row.revision, checkins: row.checkins }; }), stats: stats.rows[0], offer: await readOffer(db), templates, page,
-          integrations: { checkout: commerceReady(env), ai: Boolean(env.NVIDIA_NIM_API_KEY), model: env.NVIDIA_NIM_MODEL || 'nvidia/nemotron-3-super-120b-a12b' } });
+          integrations: { checkout: commerceReady(env), ai: Boolean(env.NVIDIA_NIM_API_KEY), model: nimModel(env), aiRequestsPerMinute: nimRequestsPerMinute } });
       }
       const id = url.searchParams.get('id'); if (!isId(id)) throw new NutritionError('Atendimento inválido.');
       const row = (await db.query('SELECT * FROM nutrition_requests WHERE id=$1', [id])).rows[0];
@@ -112,7 +114,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
     if (!row) throw new NutritionError('Atendimento não encontrado.', 404);
     const intake = unseal(row.intake_encrypted, env); const plan = unseal(row.plan_encrypted, env);
     if (!Number.isInteger(body.revision) || body.revision !== row.revision) throw new NutritionError('O atendimento mudou. Recarregue para usar a versão atual.', 409);
-    if (['generate', 'save', 'ai', 'analyze', 'restore'].includes(action) && row.stage === 'approved') throw new NutritionError('Reabra o plano para iniciar uma nova revisão.', 409);
+    if (['generate', 'save', 'ai', 'ai-draft', 'analyze', 'restore'].includes(action) && row.stage === 'approved') throw new NutritionError('Reabra o plano para iniciar uma nova revisão.', 409);
     if (action === 'restore') {
       if (!Number.isInteger(body.sourceRevision) || !['draft', 'approved'].includes(body.sourceStage)) throw new NutritionError('Escolha uma versão salva deste atendimento.');
       const previous = (await db.query('SELECT plan_encrypted FROM nutrition_plan_versions WHERE request_id=$1 AND revision=$2 AND stage=$3', [row.id, body.sourceRevision, body.sourceStage])).rows[0];
@@ -137,23 +139,50 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
       return json(await savePlan(db, row, candidate, env, body.revision, 'plan_generated'));
     }
     if (action === 'save') return json(await savePlan(db, row, body.plan, env, body.revision, 'plan_saved'));
-    if (action === 'ai' || action === 'analyze') {
+    if (['ai', 'ai-draft', 'analyze'].includes(action)) {
       if (!intake.aiConsent) throw new NutritionError('Esta pessoa não autorizou o uso opcional de IA.', 403);
       if (!env.NVIDIA_NIM_API_KEY) throw new NutritionError('A chave NVIDIA NIM ainda não foi configurada no servidor.', 503);
-      if (action === 'ai' && !plan) throw new NutritionError('Crie um rascunho antes de pedir variações.');
-      await transaction(db, async client => {
-        await client.query('SELECT pg_advisory_xact_lock(71020260927)');
-        const recent = await client.query("SELECT count(*)::integer AS count FROM nutrition_events WHERE type='ai_requested' AND created_at > now()-interval '1 minute'");
-        if (recent.rows[0].count >= 4) throw new NutritionError('Aguarde um minuto entre as solicitações de IA.', 429);
-        await event(client, row.id, 'ai_requested');
-      });
+      if (body.goal !== undefined && !goalOptions.some(goal => goal.id === body.goal)) throw new NutritionError('Confira o objetivo selecionado para a assistente.');
+      if (body.professionalRequest !== undefined && (typeof body.professionalRequest !== 'string' || body.professionalRequest.length > 800)) throw new NutritionError('Use até 800 caracteres para orientar a montagem.');
+      const context = { ...intake, goal: body.goal || intake.goal };
+      const options = { env, fetcher, professionalRequest: body.professionalRequest?.trim() || '', beforeRequest: () => reserveNimRequest(db, row.id), onRateLimited: seconds => blockNimRequests(db, seconds) };
+      const ensureCurrent = async () => {
+        const current = (await db.query('SELECT revision,stage,intake_encrypted FROM nutrition_requests WHERE id=$1', [row.id])).rows[0];
+        if (!current || current.revision !== row.revision || current.stage === 'approved' || current.intake_encrypted !== row.intake_encrypted) throw new NutritionError('O atendimento ou a autorização mudou durante a consulta. Recarregue antes de usar a sugestão.', 409);
+      };
       if (action === 'analyze') {
-        const analysis = await analyzeWithNim(intake, { env, fetcher, customTemplates: await readTemplates(db, env) });
-        const cached = await db.query('UPDATE nutrition_requests SET analysis_encrypted=$1 WHERE id=$2 AND intake_encrypted=$3 RETURNING id', [seal(analysis, env), row.id, row.intake_encrypted]);
+        const analysis = await analyzeWithNim(context, { ...options, customTemplates: await readTemplates(db, env) });
+        const cached = await db.query("UPDATE nutrition_requests SET analysis_encrypted=$1 WHERE id=$2 AND intake_encrypted=$3 AND revision=$4 AND stage<>'approved' RETURNING id", [seal(analysis, env), row.id, row.intake_encrypted, row.revision]);
         if (!cached.rowCount) throw new NutritionError('A anamnese ou a autorização mudou. Recarregue o atendimento.', 409);
         return json({ analysis });
       }
-      const candidate = await suggestWithNim(intake, plan, { env, fetcher });
+      const source = body.plan || plan;
+      if (body.plan) {
+        const errors = validatePlan(body.plan, intake);
+        if (errors.length) throw new NutritionError(`Confira o rascunho antes de consultar a IA: ${errors[0]}`, 422);
+      }
+      if (action === 'ai-draft') {
+        const selected = body.templateId || source?.templateId;
+        if (typeof selected !== 'string' || !selected) throw new NutritionError('Escolha uma base para a montagem.');
+        let base;
+        if (source?.templateId === selected) base = structuredClone(source);
+        else {
+          const detail = await templateDetail(db, selected, env);
+          base = detail.builtin ? generatePlan(context, selected) : structuredClone(detail.plan);
+          // Professional work is carried into a reviewable suggestion, never saved
+          // or approved automatically when selecting a new base.
+          if (source) for (const key of ['title', 'targets', 'clinicalNotes', 'guidance', 'assessment', 'curatedModules', 'plateGuide']) {
+            if (source[key] !== undefined) base[key] = structuredClone(source[key]);
+          }
+          base.review = {};
+        }
+        const result = await draftWithNim(context, base, options);
+        await ensureCurrent();
+        return json({ ...result, revision: row.revision, selectedTemplateId: selected });
+      }
+      if (!source) throw new NutritionError('Crie um rascunho antes de pedir variações.');
+      const candidate = await suggestWithNim(context, source, options);
+      await ensureCurrent();
       // Suggestions are reviewable before replacing any saved draft.
       return json({ suggestion: candidate, revision: row.revision });
     }
@@ -200,7 +229,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
     if (action === 'template') {
       if (!plan || typeof body.title !== 'string' || body.title.trim().length < 3 || body.title.length > 120 || !clinicalProfiles.some(profile => profile.id === body.profile)) throw new NutritionError('Informe nome e categoria para o modelo.');
       const goals = body.goals || []; const tags = body.tags || [];
-      if (!Array.isArray(goals) || goals.length > 4 || goals.some(goal => !['wellbeing', 'weight-management', 'muscle', 'clinical'].includes(goal)) || !Array.isArray(tags) || tags.length > 12 || tags.some(tag => typeof tag !== 'string' || tag.length > 60)) throw new NutritionError('Confira objetivos e palavras-chave do modelo.');
+      if (!Array.isArray(goals) || goals.length > goalOptions.length || goals.some(goal => !goalOptions.some(option => option.id === goal)) || !Array.isArray(tags) || tags.length > 12 || tags.some(tag => typeof tag !== 'string' || tag.length > 60)) throw new NutritionError('Confira objetivos e palavras-chave do modelo.');
       const template = reusablePlan(plan, body.profile, { fromPatient: true });
       const templateErrors = validatePlan(template, intake);
       if (templateErrors.length) throw new NutritionError(`Revise o modelo para a categoria escolhida: ${templateErrors[0]}`, 422);
@@ -210,7 +239,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
     throw new NutritionError('Ação não encontrada.', 404);
   } catch (error) {
     if (!(error instanceof NutritionError)) console.error('nutrition_admin_failed', { action, code: error.code || error.name });
-    return json({ error: error instanceof NutritionError ? error.message : 'Não foi possível concluir. Confira as configurações e tente novamente.' }, error.status || 503);
+    return json({ error: error instanceof NutritionError ? error.message : 'Não foi possível concluir. Confira as configurações e tente novamente.', ...(error.retryAfter ? { retryAfter: error.retryAfter } : {}) }, error.status || 503, error.retryAfter ? { 'Retry-After': String(error.retryAfter) } : {});
   }
 }
 export function GET(request) { return handleAdminNutritionRequest(request); }

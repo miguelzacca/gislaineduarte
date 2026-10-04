@@ -13,6 +13,8 @@ npm run dev
 
 Abra `http://127.0.0.1:4321`. No PowerShell com scripts bloqueados, use `npm.cmd` e `npx.cmd`.
 
+Para usar `vercel dev` em `http://localhost:3000`, configure as variáveis privadas das Functions no arquivo `.env` da raiz. O Vercel CLI instalado não carregou essas variáveis a partir de `.env.local`; isso impedia o login no painel. `npm run dev` carrega ambos os arquivos. Eles são ignorados pelo Git; mantenha as configurações de backend sincronizadas ao alterar credenciais ou o modelo da IA.
+
 ```sh
 npm run check          # lint + build + auditoria HTML/SEO/links
 npm run test:unit      # regras, APIs, autorização, persistência e fluxos isolados

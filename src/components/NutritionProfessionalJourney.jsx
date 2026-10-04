@@ -2,7 +2,7 @@ import { useEffect, useId, useState } from 'react';
 import { allergies, clinicalProfiles, conditions, foodById, foods, planTemplates } from '../data/nutrition.js';
 import { curatedContentIdeas, goalOptions } from '../data/nutrition-journey.js';
 import { createCalculationRecords, curatedModuleAllowed, formatFoodPortion, moduleEligibility, searchPlanTemplates } from '../lib/nutrition-journey.js';
-import { foodAllowed, sumItems } from '../lib/nutrition.js';
+import { foodAllowed, recommendedTemplate, sumItems } from '../lib/nutrition.js';
 import { nutritionApi } from './NutritionPublic.jsx';
 import { teaIdeas } from '../data/nutrition-teas.js';
 import '../styles/nutrition-professional-upgrade.css';
@@ -40,7 +40,10 @@ export function PatientBrief({ intake, onOpen }) {
 }
 
 export function TemplateFinder({ value, custom = [], onChange, disabled, intake }) {
-  const [query, setQuery] = useState(''); const [goal, setGoal] = useState('all'); const [profile, setProfile] = useState('all');
+  const initialProfile = intake ? planTemplates.find(item => item.id === recommendedTemplate(intake))?.profile || 'balanced' : 'all';
+  const contextGoal = intake?.goal && planTemplates.some(item => item.profile === initialProfile && item.goals.includes(intake.goal)) ? intake.goal : 'all';
+  const [query, setQuery] = useState(''); const [goal, setGoal] = useState(contextGoal); const [profile, setProfile] = useState(initialProfile);
+  useEffect(() => { setGoal(contextGoal); }, [contextGoal]);
   const catalogue = [...planTemplates, ...custom.map(item => ({ ...item, name: item.title, custom: true }))];
   const results = searchPlanTemplates(catalogue.filter(item => profile !== 'custom' || item.custom), { query, goal, profile: profile === 'custom' ? 'all' : profile });
   const selected = catalogue.find(item => item.id === value);

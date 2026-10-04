@@ -22,6 +22,7 @@ export const intolerances = [
 export const goalOptions = [
   { id: 'wellbeing', label: 'Bem-estar e rotina' },
   { id: 'weight-management', label: 'Emagrecimento e controle de peso' },
+  { id: 'weight-gain', label: 'Ganho de peso' },
   { id: 'muscle', label: 'Hipertrofia e ganho de massa muscular' },
   { id: 'clinical', label: 'Cuidado clínico individualizado' },
 ];

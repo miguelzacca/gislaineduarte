@@ -43,13 +43,15 @@ As calculadoras incluem IMC, repouso por Mifflin–St Jeor, gasto com fator de a
 
 ## NVIDIA NIM
 
-- Modelo configurado: `nvidia/nemotron-3-super-120b-a12b`, com inferência no servidor, timeout e limite de solicitações.
-- **Analisar com IA:** resume categorias estruturadas, sugere até três modelos e perguntas/pontos de personalização.
-- **Sugerir variações:** usa resposta JSON com esquema para selecionar trocas em alimentos permitidos, da mesma família culinária. O servidor valida IDs, posições, repetição, porções e restrições; calcula as quantidades por energia usando a TACO. O painel compara o plano atual com a sugestão lado a lado, mostrando alimentos, porções, energia e proteína de cada dia. A candidata pode ser descartada ou aplicada ao rascunho antes de salvar.
-- Nome, contato, idade/medidas exatas, medicamentos, textos livres e registro clínico não são enviados. Mesmo sem IA, editor, modelos, cálculos e exportações funcionam.
+- Modelo padrão: `nvidia/nemotron-3-ultra-550b-a55b`. Sob sobrecarga ou falha de conexão, há uma única tentativa no endpoint gratuito `nvidia/nemotron-3-super-120b-a12b`, dentro do prazo total de 45 segundos. `NVIDIA_NIM_MODEL` permite configurar o modelo principal; atualize essa variável no ambiente que executar a aplicação.
+- **Indicar modelos com IA:** considera o objetivo explícito, condições, dieta, alergias, intolerâncias e alimentos preferidos/excluídos. Explica até três escolhas. Contextos clínicos ausentes, como GLP-1 sem uso informado, não entram no catálogo enviado.
+- **Montar semana com IA:** organiza todas as refeições dos sete dias com preparações cadastradas e permitidas. A aplicação calcula porções e alternativas e, quando houver meta energética profissional, ajusta a semana a ela. Título, metas, cálculos, orientações e registro profissional existentes são preservados. A montagem também aceita o rascunho ainda em edição, sem exigir salvamento prévio.
+- **Sugerir trocas com IA:** varia alimentos da mesma função culinária. Ambas as ações mostram uma comparação antes de aplicar ao editor. Aplicar marca o rascunho como não salvo; nenhuma sugestão é aprovada ou entregue automaticamente.
+- O limite compartilhado é de **40 requisições reais por janela móvel de 60 segundos**, com reserva transacional no PostgreSQL antes de cada chamada. A alternativa conta como outra requisição. HTTP 429 não provoca nova tentativa: o `Retry-After` é propagado ao painel e pausa consultas em todas as instâncias, sem impedir a edição local.
+- Nome, contato, idade/medidas exatas, nomes de medicamentos, fotografias, textos livres da anamnese e registro clínico não são enviados. O campo opcional escrito pela profissional orienta a montagem e deve omitir identificação. Mesmo sem IA, bases por objetivo, editor, cálculos e exportações funcionam. Respostas recebidas após mudança da revisão ou da autorização são descartadas.
 - A disponibilidade gratuita é sujeita à conta e aos termos do serviço de prototipagem NVIDIA. Não há garantia de gratuidade ilimitada em produção. Erros ou respostas inválidas preservam o plano salvo.
 
-Referências: [API do modelo](https://docs.api.nvidia.com/nim/reference/nvidia-nemotron-3-super-120b-a12b-infer), [model card e termos](https://docs.api.nvidia.com/nim/reference/nvidia-nemotron-3-super-120b-a12b), [NVIDIA NIM](https://developer.nvidia.com/nim).
+Referências: [endpoint gratuito Nemotron Ultra](https://build.nvidia.com/nvidia/nemotron-3-ultra-550b-a55b), [API do modelo](https://docs.api.nvidia.com/nim/reference/nvidia-nemotron-3-ultra-550b-a55b-infer), [alternativa Nemotron Super](https://build.nvidia.com/nvidia/nemotron-3-super-120b-a12b), [NVIDIA NIM](https://developer.nvidia.com/nim).
 
 ## Arquivos de entrega
 

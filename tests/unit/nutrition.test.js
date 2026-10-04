@@ -34,8 +34,8 @@ test('nutrition: intake requires consent and valid structured health input, with
   assert.ok(intakeErrors({ ...intake, allergies: ['milk'] }).allergyNotes);
   assert.ok(intakeErrors({ ...intake, name: '<'.repeat(101) }).name);
 });
-test('nutrition: all 60 bases and combinations of restrictions yield compatible drafts', () => {
-  assert.equal(planTemplates.length, 60);
+test('nutrition: all bases and combinations of restrictions yield compatible drafts', () => {
+  assert.equal(planTemplates.length, 75);
   for (const template of planTemplates) for (const diet of ['omnivore', 'vegan', 'vegetarian']) {
     const person = { ...intake, diet, conditions: ['celiac', 'lactose', template.profile], allergies: ['nuts', 'fish'], excludedFoodIds: ['banana'] };
     const plan = generatePlan(person, template.id);
@@ -69,7 +69,7 @@ test('nutrition: culinary library produces a practical shopping basket and genui
   assert.notDeepEqual(practical.days, generatePlan(intake, 'cardiovascular-pratica').days);
   assert.equal(recommendedTemplate({ ...intake, conditions: ['oncology'], symptoms: ['nausea'] }), 'oncology-fracionada');
 });
-test('nutrition: the 60 bases differ in culinary content, not only their title, day order or fruit rotation', () => {
+test('nutrition: the bases differ in culinary content, not only their title, day order or fruit rotation', () => {
   const repertoires = new Map();
   for (const template of planTemplates) {
     const plan = generatePlan(intake, template.id);
@@ -84,7 +84,7 @@ test('nutrition: the 60 bases differ in culinary content, not only their title, 
     assert.deepEqual(validatePlan(plan, intake), []);
     assert.ok(plan.days.every(day => dayTotals(day).kcal > 0));
   }
-  assert.equal(repertoires.size, 60);
+  assert.equal(repertoires.size, planTemplates.length);
 });
 test('nutrition: automatic exchanges retain culinary role, preparation and nutrient equivalence', () => {
   assert.equal(foodExchangeRole('avocado'), 'avocado');
@@ -174,7 +174,7 @@ test('nutrition: NIM minimizes patient data, honors consent and rejects unsafe/i
   for (const sensitive of [person.name, person.email, person.phone, person.medications, person.routine]) assert.ok(!JSON.stringify(sent).includes(sensitive));
   assert.equal(sent.chat_template_kwargs.enable_thinking, false);
   await assert.rejects(suggestWithNim({ ...person, aiConsent: false }, plan, { env, fetcher }), /não autorizou/);
-  await assert.rejects(suggestWithNim(person, plan, { env, fetcher: async () => new Response('limited', { status: 429 }) }), /limite/);
+  await assert.rejects(suggestWithNim(person, plan, { env, fetcher: async () => new Response('limited', { status: 429 }) }), /limite/i);
   for (const foodId of ['hallucinated-food', 'chicken', 'papaya', 'avocado']) {
     await assert.rejects(suggestWithNim(person, plan, { env, fetcher: async () => Response.json({ choices: [{ message: { content: JSON.stringify({ swaps: [{ day: 0, meal: 0, item: 2, foodId }] }) } }] }) }), /descartada/);
   }

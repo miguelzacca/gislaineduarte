@@ -1,6 +1,6 @@
 import { extraIntakeErrors, sanitizeExtraIntake } from '../data/nutrition-intake-fields.js';
 import { activityLevels, allergies, conditions, foodById, foods, mealModules, nutrients, planTemplates, symptoms } from '../data/nutrition.js';
-import { intolerances } from '../data/nutrition-journey.js';
+import { goalOptions, intolerances } from '../data/nutrition-journey.js';
 import { journeyPlanErrors } from './nutrition-journey.js';
 
 export const round = (value, digits = 1) => Math.round(value * 10 ** digits) / 10 ** digits;
@@ -30,7 +30,7 @@ export function intakeErrors(input) {
   if (!['female', 'male', 'unspecified'].includes(input?.sex)) errors.sex = 'Selecione uma opção.';
   for (const [key, min, max] of [['weight', 25, 350], ['height', 120, 230]]) if (!Number.isFinite(Number(input?.[key])) || Number(input[key]) < min || Number(input[key]) > max) errors[key] = key === 'weight' ? 'Informe o peso em kg, entre 25 e 350.' : 'Informe a altura em cm, entre 120 e 230.';
   if (!activityLevels.some(level => level.value === Number(input?.activity))) errors.activity = 'Selecione seu nível de atividade.';
-  if (!['wellbeing', 'weight-management', 'muscle', 'clinical'].includes(input?.goal)) errors.goal = 'Selecione seu objetivo.';
+  if (!goalOptions.some(goal => goal.id === input?.goal)) errors.goal = 'Selecione seu objetivo.';
   if (!['omnivore', 'vegetarian', 'vegan'].includes(input?.diet)) errors.diet = 'Selecione seu padrão alimentar.';
   for (const [key, options] of [['conditions', conditions], ['allergies', allergies], ['symptoms', symptoms]]) {
     if (!Array.isArray(input?.[key]) || input[key].length > options.length || input[key].some(value => !options.some(option => option.id === value))) errors[key] = 'Confira as opções selecionadas.';
@@ -172,7 +172,9 @@ export function scalePlanEnergy(plan, energy) {
 
 export function recommendedTemplate(intake = {}) {
   const profile = ['renal', 'oncology', 'glp1', 'celiac', 'diabetes', 'hypertension', 'cardiovascular', 'lactose', 'ibs', 'hpylori', 'gastric'].find(id => intake.conditions?.includes(id)) || 'balanced';
-  return `${profile}-${intake.symptoms?.some(id => ['early-satiety', 'nausea'].includes(id)) || profile === 'glp1' ? 'fracionada' : 'pratica'}`;
+  const base = profile === 'balanced' && ['muscle', 'weight-management', 'weight-gain'].includes(intake.goal) ? intake.goal : profile;
+  const divided = intake.symptoms?.some(id => ['early-satiety', 'nausea'].includes(id)) || profile === 'glp1' || intake.goal === 'weight-gain';
+  return `${base}-${intake.diet === 'vegan' && !divided ? 'vegetal' : divided ? 'fracionada' : 'pratica'}`;
 }
 
 // Pick an actual subset of culinary preparations, not just a different starting
@@ -203,6 +205,7 @@ export function generatePlan(intake, templateId = recommendedTemplate(intake), v
   if (!template) throw new Error('Selecione uma base válida.');
   const profileIntake = { ...intake, ...(template.diet ? { diet: template.diet } : {}), conditions: [...new Set([...(intake.conditions || []), template.profile])] };
   const divided = template.pattern === 2;
+  const goal = template.goal || intake.goal;
   const seed = Number.isInteger(variation) ? Math.abs(variation % 97) : 0;
   const profileTags = {
     balanced: [], diabetes: ['wholegrain'], cardiovascular: ['wholegrain', 'fish', 'plant'],
@@ -219,7 +222,7 @@ export function generatePlan(intake, templateId = recommendedTemplate(intake), v
   ];
   const pools = Object.fromEntries([...new Set(slots.map(([type]) => type))].map(type => [type,
     mealModules.filter(module => module.type === type && module.items.every(([id]) => foodAllowed(foodById[id], profileIntake)))
-      .map((module, index) => ({ module, index, score: module.tags.filter(tag => preferredTags.includes(tag)).length * 3 + (template.pattern === 0 && module.tags.includes('practical') ? 1 : 0) + module.items.filter(([id]) => intake.likedFoodIds?.includes(id)).length * 2 }))
+      .map((module, index) => ({ module, index, score: module.tags.filter(tag => preferredTags.includes(tag)).length * 3 + (template.pattern === 0 && module.tags.includes('practical') ? 1 : 0) + module.items.filter(([id]) => intake.likedFoodIds?.includes(id)).length * 2 + (goal === 'muscle' && module.items.some(([id]) => foodById[id].protein >= 8) ? 4 : 0) }))
       .sort((a, b) => b.score - a.score || a.index - b.index).map(entry => entry.module),
   ]));
   const usedModules = new Map();

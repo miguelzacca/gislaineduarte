@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { clinicalProfiles, foodById, planTemplates } from '../../src/data/nutrition.js';
-import { curatedContentIdeas } from '../../src/data/nutrition-journey.js';
+import { curatedContentIdeas, goalOptions } from '../../src/data/nutrition-journey.js';
 import { teaIdeas } from '../../src/data/nutrition-teas.js';
 import { dayTotals, generatePlan, validatePlan } from '../../src/lib/nutrition.js';
 import { curatedImageAllowed } from '../../src/lib/nutrition-clinical.js';
@@ -8,7 +8,7 @@ import { NutritionError } from './service.js';
 import { seal, unseal } from './store.js';
 
 const emptyIntake = { conditions: [], allergies: [], excludedFoodIds: [], diet: 'omnivore', symptoms: [] };
-const allowedGoals = ['wellbeing', 'weight-management', 'muscle', 'clinical'];
+const allowedGoals = goalOptions.map(goal => goal.id);
 export function reusablePlan(plan, profile, { fromPatient = false } = {}) {
   // Editorial models retain reusable labels; patient-derived models retain no free text.
   return { title: 'Seu plano alimentar', templateId: `${profile}-pratica`,
@@ -39,7 +39,7 @@ export async function templateDetail(db, id, env) {
 }
 export async function saveTemplate(db, input, env) {
   if (typeof input.title !== 'string' || input.title.trim().length < 3 || input.title.length > 120 || !clinicalProfiles.some(item => item.id === input.profile)) throw new NutritionError('Informe nome e contexto do modelo.');
-  if (!Array.isArray(input.goals) || input.goals.length > 4 || input.goals.some(goal => !allowedGoals.includes(goal))) throw new NutritionError('Confira os objetivos do modelo.');
+  if (!Array.isArray(input.goals) || input.goals.length > allowedGoals.length || input.goals.some(goal => !allowedGoals.includes(goal))) throw new NutritionError('Confira os objetivos do modelo.');
   const errors = validatePlan(input.plan, emptyIntake);
   if (errors.length) throw new NutritionError(errors[0], 422);
   const plan = reusablePlan(input.plan, input.profile);
