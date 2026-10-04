@@ -15,7 +15,7 @@ const pages = { home: HomePage, about: AboutPage, services: ServicesPage, servic
 
 export default function App({ path }) {
   const route = resolveRoute(path);
-  return <NutritionCopilotProvider initialPage={{ scope: route.page === 'admin' ? 'professional' : 'intake', view: route.page, label: route.page === 'nutrition-landing' ? 'Plano alimentar e anamnese' : route.page === 'nutrition-status' ? 'Acompanhamento do plano' : 'Site da Gi', visible: route.page !== 'admin' }}><AppContent path={path} /></NutritionCopilotProvider>;
+  return <NutritionCopilotProvider initialPage={{ scope: route.page === 'admin' ? 'professional' : 'intake', view: route.page, label: route.page === 'nutrition-landing' ? 'Plano alimentar e anamnese' : route.page === 'nutrition-status' ? 'Acompanhamento do plano' : 'Site da Gi', visible: false }}><AppContent path={path} /></NutritionCopilotProvider>;
 }
 
 function AppContent({ path }) {

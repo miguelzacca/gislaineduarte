@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createElement, act } from 'react';
 import { parseHTML } from 'linkedom';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -54,6 +55,39 @@ test('floating assistant opens, uses current page context, exposes explicit acti
       await type('Como preencher a saúde?'); await submit();
       assert.equal(payload.page.step, 2); assert.equal(payload.page.requestId, undefined); assert.match(document.querySelector('.nutrition-copilot__context').textContent, /Saúde/); assert.equal(document.querySelectorAll('.nutrition-copilot__actions button').length, 0);
       await render({ visible: false }); assert.equal(document.querySelector('.nutrition-copilot'), null);
+    });
+    await t.test('public pages render without an intake assistant before the person reaches the form', async () => {
+      const { default: App } = await server.ssrLoadModule('/src/App.jsx');
+      for (const path of ['/', '/atendimentos', '/plano-alimentar', '/meu-plano']) {
+        const html = renderToStaticMarkup(createElement(App, { path }));
+        assert.ok(!html.includes('nutrition-copilot__launcher'), path);
+      }
+      await act(async () => root.render(createElement(NutritionCopilotProvider, { key: 'public-landing', initialPage: { scope: 'intake', view: 'nutrition-landing', visible: true } }, createElement('p', null, 'Landing page'))));
+      assert.equal(document.querySelector('.nutrition-copilot'), null);
+    });
+    await t.test('the real mounted intake form activates help only on arrival or interaction and hides it when returning to the landing', async () => {
+      const { IntakeForm } = await server.ssrLoadModule('/src/components/NutritionPublic.jsx');
+      let intersection; let observed; let disconnected = false;
+      window.IntersectionObserver = class {
+        constructor(callback) { intersection = callback; }
+        observe(element) { observed = element; }
+        disconnect() { disconnected = true; }
+      };
+      globalThis.fetch = async () => assert.fail('Viewing the intake must not make an AI request');
+      await act(async () => root.render(createElement(NutritionCopilotProvider, { key: 'actual-intake', initialPage: { scope: 'intake', view: 'nutrition-landing', visible: false } }, createElement(IntakeForm, { offer: { title: 'Plano fictício', priceCents: 10000, deliveryDays: 3, followupDays: 0 } }))));
+      assert.ok(document.querySelector('#intake-name')); assert.equal(observed, document.querySelector('.nutrition-form'));
+      assert.equal(document.querySelector('.nutrition-copilot'), null, 'mounting a form below the landing does not expose its assistant');
+      await act(async () => intersection([{ isIntersecting: false }])); assert.equal(document.querySelector('.nutrition-copilot'), null);
+      await act(async () => intersection([{ isIntersecting: true }])); assert.ok(document.querySelector('.nutrition-copilot__launcher')); assert.equal(document.querySelector('[role=dialog]'), null);
+      await act(async () => intersection([{ isIntersecting: false }])); assert.equal(document.querySelector('.nutrition-copilot'), null);
+      await act(async () => document.querySelector('#intake-name').dispatchEvent(new window.Event('focusin', { bubbles: true })));
+      assert.ok(document.querySelector('.nutrition-copilot__launcher'), 'keyboard use activates the assistant');
+      await act(async () => intersection([{ isIntersecting: false }]));
+      await click([...document.querySelectorAll('button')].find(item => item.textContent.includes('Pedir ajuda ao assistente')));
+      assert.ok(document.querySelector('[role=dialog]')); assert.match(document.querySelector('#nutrition-copilot-input').value, /Me ajude a preencher a etapa/);
+      await act(async () => root.render(createElement('p', null, 'Outra página')));
+      assert.equal(disconnected, true); assert.equal(document.querySelector('.nutrition-copilot'), null);
+      delete window.IntersectionObserver;
     });
   } finally {
     await act(async () => root.unmount()); await server.close();

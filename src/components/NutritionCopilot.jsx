@@ -14,7 +14,8 @@ export function NutritionCopilotProvider({ children, initialPage }) {
   const open = useCallback(text => { setPrompt(text || ''); setOpened(true); }, []);
   const registration = useMemo(() => ({ publish, remove, open }), [publish, remove, open]);
   const page = Object.values(entries).sort((a, b) => b.priority - a.priority)[0] || { data: initialPage, handlers: { current: {} } };
-  return <Registration.Provider value={registration}><ActivePage.Provider value={page}>{children}{page.data?.visible !== false && <NutritionCopilot key={`${page.data.scope}:${page.data.requestId || 'general'}`} page={page} opened={opened} onOpen={open} onClose={() => setOpened(false)} prompt={prompt} />}</ActivePage.Provider></Registration.Provider>;
+  const visible = page.data?.scope === 'professional' ? page.data.visible !== false : page.data?.view === 'intake' && page.data.visible === true;
+  return <Registration.Provider value={registration}><ActivePage.Provider value={page}>{children}{visible && <NutritionCopilot key={`${page.data.scope}:${page.data.requestId || 'general'}`} page={page} opened={opened} onOpen={open} onClose={() => setOpened(false)} prompt={prompt} />}</ActivePage.Provider></Registration.Provider>;
 }
 
 // Optional outside the provider, so small existing component tests remain isolated.

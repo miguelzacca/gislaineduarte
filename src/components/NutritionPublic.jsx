@@ -56,11 +56,32 @@ function ChoiceGroup({ legend, options, value, onChange, error, id }) {
 export function IntakeForm({ offer: initialOffer }) {
   const [offer, setOffer] = useState(initialOffer);
   const [intake, setIntake] = useState(initialIntake); const [step, setStep] = useState(0);
+  const [intakeActive, setIntakeActive] = useState(false);
   const openAssistant = useOpenNutritionAssistant();
-  useNutritionAssistantPage({ scope: 'intake', view: 'intake', label: `Anamnese · ${steps[step].title}`, step, intake: assistantContext(intake) }, {}, 10);
+  useNutritionAssistantPage({ scope: 'intake', view: 'intake', label: `Anamnese · ${steps[step].title}`, step, intake: assistantContext(intake), visible: intakeActive }, {}, 10);
   const [errors, setErrors] = useState({}); const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false); const [photoBusy, setPhotoBusy] = useState(false);
   const [rememberDraft, setRememberDraft] = useState(false); const [savedDraft, setSavedDraft] = useState(null); const [draftMessage, setDraftMessage] = useState('');
   const formRef = useRef(null); const headingRef = useRef(null); const keyRef = useRef(null); const submittedRef = useRef(false);
+  useEffect(() => {
+    const form = formRef.current;
+    const focus = () => setIntakeActive(true);
+    form.addEventListener('focusin', focus);
+    if (window.IntersectionObserver) {
+      // The mounted form is below the landing content. Mounting alone must not
+      // show the patient's assistant before the person reaches the form.
+      const observer = new window.IntersectionObserver(([entry]) => setIntakeActive(entry.isIntersecting), { rootMargin: '0px 0px -20% 0px', threshold: 0 });
+      observer.observe(form);
+      return () => { observer.disconnect(); form.removeEventListener('focusin', focus); };
+    }
+    const update = () => {
+      const bounds = form.getBoundingClientRect?.();
+      if (bounds) setIntakeActive(bounds.top < window.innerHeight * .8 && bounds.bottom > 0);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => { window.removeEventListener('scroll', update); window.removeEventListener('resize', update); form.removeEventListener('focusin', focus); };
+  }, []);
   const updateMany = changes => { setIntake(current => ({ ...current, ...changes })); setErrors(current => ({ ...current, ...Object.fromEntries(Object.keys(changes).map(key => [key, null])) })); };
   const update = (key, value) => updateMany({ [key]: value });
   useEffect(() => {
@@ -147,7 +168,7 @@ export function IntakeForm({ offer: initialOffer }) {
     ...(offer.bristolReviewed ? [['Escala de Bristol', intake.bristolType ? `Tipo ${intake.bristolType}` : 'Sem resposta (opcional)', 3]] : []),
     ['Fotos opcionais', intake.photos.length ? `${intake.photos.length} foto(s) de refeição ou rotina; uso somente no atendimento` : 'Nenhuma foto anexada', 3],
   ];
-  return <div className="nutrition-intake" id="anamnese"><aside className="nutrition-intake__aside"><p className="eyebrow eyebrow--gold">Seu primeiro passo</p><h2>Antes do plano,<br /><em>vem você.</em></h2><p>Uma conversa com calma sobre o que importa para o seu cuidado.</p><ol>{steps.map((item, index) => <li key={item.short} aria-current={index === step ? 'step' : undefined}><span>{index < step ? '✓' : `0${index + 1}`}</span>{item.short}</li>)}</ol><small>Suas respostas ajudam a Gi a entender o que cabe na sua vida. As recomendações passam por revisão profissional antes da entrega.</small></aside><form ref={formRef} className="nutrition-form" noValidate onSubmit={submit} aria-busy={locked}><div className="nutrition-form__progress"><span>Etapa {step + 1} de {steps.length}</span><span>{Math.round((step + 1) / steps.length * 100)}%</span></div><progress max={steps.length} value={step + 1} aria-label="Progresso da anamnese" /><h2 ref={headingRef} tabIndex="-1">{steps[step].title}</h2><button type="button" className="nutrition-link-button" onClick={() => openAssistant(`Me ajude a preencher a etapa: ${steps[step].title}.`)}>✦ Pedir ajuda ao assistente</button>
+  return <div className="nutrition-intake" id="anamnese"><aside className="nutrition-intake__aside"><p className="eyebrow eyebrow--gold">Seu primeiro passo</p><h2>Antes do plano,<br /><em>vem você.</em></h2><p>Uma conversa com calma sobre o que importa para o seu cuidado.</p><ol>{steps.map((item, index) => <li key={item.short} aria-current={index === step ? 'step' : undefined}><span>{index < step ? '✓' : `0${index + 1}`}</span>{item.short}</li>)}</ol><small>Suas respostas ajudam a Gi a entender o que cabe na sua vida. As recomendações passam por revisão profissional antes da entrega.</small></aside><form ref={formRef} className="nutrition-form" noValidate onSubmit={submit} aria-busy={locked}><div className="nutrition-form__progress"><span>Etapa {step + 1} de {steps.length}</span><span>{Math.round((step + 1) / steps.length * 100)}%</span></div><progress max={steps.length} value={step + 1} aria-label="Progresso da anamnese" /><h2 ref={headingRef} tabIndex="-1">{steps[step].title}</h2><button type="button" className="nutrition-link-button" onClick={() => { setIntakeActive(true); openAssistant(`Me ajude a preencher a etapa: ${steps[step].title}.`); }}>✦ Pedir ajuda ao assistente</button>
     {savedDraft && <div className="nutrition-draft-notice" role="status"><strong>Você tem um rascunho nesta aba.</strong><p>Continue de onde parou ou comece uma nova anamnese.</p><div><button type="button" className="nutrition-button" onClick={restoreDraft}>Continuar meu rascunho</button><button type="button" className="nutrition-link-button" onClick={discardDraft}>Descartar rascunho</button></div></div>}
     <fieldset className="nutrition-form-fields" disabled={busy}>
       {step === 0 && <><p>Assim a Gi pode conhecer você e acompanhar sua solicitação. Os campos desta etapa são necessários para o atendimento.</p><IntakeSection number="01" title="Muito prazer, você." description="Seus dados de contato e a melhor forma de encontrar você."><div className="nutrition-form-grid">{field('name', 'Nome completo', { autoComplete: 'name', maxLength: 100, required: true })}{field('age', 'Idade (anos)', { type: 'number', min: 18, max: 100, inputMode: 'numeric', required: true })}{field('email', 'E-mail', { type: 'email', autoComplete: 'email', maxLength: 254, required: true })}{field('phone', 'WhatsApp com DDD', { type: 'tel', autoComplete: 'tel', maxLength: 22, required: true })}</div>{field('occupation', 'Sua profissão e rotina de trabalho (opcional)', { maxLength: 200, placeholder: 'Ex.: trabalho sentado, turnos alternados, trabalho em pé…' })}<p className="nutrition-fine">Para crianças, adolescentes e pessoas com mais de 100 anos, <a href={contactLink()}>combine o atendimento diretamente com Gislaine</a>.</p></IntakeSection><div className="ni-review-note"><p>Seu plano vai reunir refeições e porções, possibilidades de troca e um resumo do que orientou as escolhas. Você recebe uma versão para abrir no navegador e outra em PDF.</p></div></>}
