@@ -30,16 +30,17 @@ describe('configuração pública do site', { concurrency: false }, () => {
 
   test('sem override usa o WhatsApp oficial atualizado', async () => {
     const { site, contactLink } = await loadSite();
-    assert.equal(site.contact.whatsapp, '5547991913588');
-    assert.equal(new URL(contactLink()).pathname, '/5547991913588');
+    assert.equal(site.contact.whatsapp, '554791635624');
+    assert.equal(site.contact.whatsappDisplay, '+55 (47) 9163-5624');
+    assert.equal(new URL(contactLink()).pathname, '/554791635624');
   });
 
   test('número nacional de 11 dígitos ganha o código do Brasil', async () => {
-    const { site, contactLink } = await loadSite({ PUBLIC_WHATSAPP: '47991913588' });
-    assert.equal(site.contact.whatsapp, '5547991913588');
+    const { site, contactLink } = await loadSite({ PUBLIC_WHATSAPP: '47912345678' });
+    assert.equal(site.contact.whatsapp, '5547912345678');
     const contact = new URL(contactLink('consulta-nutricional'));
     assert.equal(contact.origin, 'https://wa.me');
-    assert.equal(contact.pathname, '/5547991913588');
+    assert.equal(contact.pathname, '/5547912345678');
     assert.match(contact.searchParams.get('text'), /consulta nutricional individual/);
   });
 
@@ -49,14 +50,15 @@ describe('configuração pública do site', { concurrency: false }, () => {
   });
 
   test('formatação de telefone nacional é normalizada', async () => {
-    const { site } = await loadSite({ PUBLIC_WHATSAPP: ' (47) 99191-3588 ' });
-    assert.equal(site.contact.whatsapp, '5547991913588');
+    const { site } = await loadSite({ PUBLIC_WHATSAPP: ' (47) 9163-5624 ' });
+    assert.equal(site.contact.whatsapp, '554791635624');
+    assert.equal(site.contact.whatsappDisplay, '+55 (47) 9163-5624');
   });
 
-  for (const phone of ['5547991913588', '+55 (47) 99191-3588']) {
+  for (const phone of ['554791635624', '+55 (47) 9163-5624']) {
     test(`telefone internacional preserva o país sem duplicar 55: ${phone}`, async () => {
       const { site } = await loadSite({ PUBLIC_WHATSAPP: phone });
-      assert.equal(site.contact.whatsapp, '5547991913588');
+      assert.equal(site.contact.whatsapp, '554791635624');
     });
   }
 

@@ -1,5 +1,5 @@
 const env = import.meta.env ?? (typeof process !== 'undefined' ? process.env : {});
-const phoneDigits = (env.PUBLIC_WHATSAPP?.trim() || '5547991913588').replace(/[\s()+.-]/g, '');
+const phoneDigits = (env.PUBLIC_WHATSAPP?.trim() || '554791635624').replace(/[\s()+.-]/g, '');
 const whatsapp = /^\d{10,11}$/.test(phoneDigits) ? `55${phoneDigits}` : phoneDigits;
 const email = env.PUBLIC_EMAIL?.trim() || 'duartegisarte@gmail.com';
 const instagram = env.PUBLIC_INSTAGRAM?.trim() || null;
@@ -54,6 +54,8 @@ export const site = {
     whatsapp,
     whatsappDisplay: /^55\d{11}$/.test(whatsapp)
       ? whatsapp.replace(/^55(\d{2})(\d{5})(\d{4})$/, '+55 ($1) $2-$3')
+      : /^55\d{10}$/.test(whatsapp)
+        ? whatsapp.replace(/^55(\d{2})(\d{4})(\d{4})$/, '+55 ($1) $2-$3')
       : `+${whatsapp}`,
     email,
     instagram,

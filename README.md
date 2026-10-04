@@ -53,7 +53,7 @@ O domínio canônico é `https://gislaineduarte.com.br`. O arquivo `vercel.json`
 
 ## Conteúdo e contato
 
-WhatsApp oficial atualizado pelo usuário: `+55 (47) 99191-3588`. E-mail: `duartegisarte@gmail.com`. Os links de orçamento têm mensagens específicas para cada serviço; não enviam automaticamente nem confirmam agendamento.
+WhatsApp oficial atualizado pelo usuário: `+55 (47) 9163-5624`. E-mail: `duartegisarte@gmail.com`. Os links de orçamento têm mensagens específicas para cada serviço; não enviam automaticamente nem confirmam agendamento.
 
 Para sobrescrever dados oficiais, copie `.env.example` para `.env` e preencha `PUBLIC_WHATSAPP`, `PUBLIC_EMAIL` ou `PUBLIC_INSTAGRAM`. Números brasileiros de 10 ou 11 dígitos com DDD recebem o prefixo internacional 55; números já completos são preservados. A interface e o pré-render compartilham a configuração, com `envDir` apontando para a raiz. Todas as variáveis `PUBLIC_*` e `VITE_*` são públicas: nunca coloque segredos nelas.
 

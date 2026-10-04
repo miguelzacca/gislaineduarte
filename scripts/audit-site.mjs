@@ -6,7 +6,7 @@ import { site } from '../src/data/site.js';
 
 const root = path.resolve('dist');
 const origin = 'https://gislaineduarte.com.br';
-const confirmedPhone = '5547991913588';
+const confirmedPhone = '554791635624';
 const confirmedEmail = 'duartegisarte@gmail.com';
 const configuredInstagram = process.env.PUBLIC_INSTAGRAM?.trim() || null;
 const expectedRoutes = [

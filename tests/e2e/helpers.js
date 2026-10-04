@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 
 export const siteOrigin = 'https://gislaineduarte.com.br';
-export const whatsappNumber = '5547991913588';
+export const whatsappNumber = '554791635624';
 export const contactEmail = 'duartegisarte@gmail.com';
 export const publicRoutes = [
   '/',
