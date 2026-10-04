@@ -11,4 +11,5 @@ export const recipeAllergens = {
   peanuts: { id: 'peanuts', label: 'Amendoim', detail: 'Contém amendoim ou o oferece como ingrediente opcional.' },
   sesame: { id: 'sesame', label: 'Gergelim', detail: 'Contém gergelim ou uma mistura de sementes que pode incluí-lo.' },
   fish: { id: 'fish', label: 'Peixe', detail: 'Contém peixe. Retire cuidadosamente todas as espinhas.' },
+  soy: { id: 'soy', label: 'Soja', detail: 'Contém soja na receita ou em uma substituição com tofu. Confira o rótulo e o contato cruzado.' },
 };

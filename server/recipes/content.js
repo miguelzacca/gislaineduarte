@@ -10,7 +10,9 @@ export async function initializeRecipeContent(db) {
   await db.query(`INSERT INTO recipe_content(id, data)
     SELECT value->>'id', value FROM jsonb_array_elements($1::jsonb)
     ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, revision = recipe_content.revision + 1, updated_at = now()
-    WHERE (recipe_content.revision = 1 OR recipe_content.data->>'seedVersion' = '2026-10-02-editorial-audit')
+    WHERE (recipe_content.revision = 1 OR recipe_content.data->>'seedVersion' = '2026-10-02-editorial-audit'
+      OR (recipe_content.data->>'seedVersion' = '2026-10-04-recipe-book'
+        AND recipe_content.data #>> '{validation,status}' = 'generated-draft-pending-review'))
       AND COALESCE(recipe_content.data #>> '{validation,status}', '') NOT IN ('professional-reviewed', 'draft')
       AND COALESCE(recipe_content.data->>'seedVersion', '') <> EXCLUDED.data->>'seedVersion'`, [JSON.stringify(allRecipes)]);
 }
@@ -87,6 +89,6 @@ export function normalizeRecipeEdit(input, previous = null) {
     allergenIds: Array.isArray(input.allergenIds) ? [...new Set(input.allergenIds.filter(value => Object.hasOwn(recipeAllergens, value)))] : previous?.allergenIds || [],
     tags: previous?.tags || [category], editorialContext: text(input.editorialContext ?? previous?.editorialContext ?? 'Receita educativa cadastrada pela profissional.', 2000),
     image: { ...(!imageChanged ? previous.image : { src: imageUrl, width: 960, height: 720 }), reference: input.imageReference === undefined ? Boolean(!imageChanged && previous?.image?.reference) : input.imageReference === true, alt: imageAlt, credit: { ...(!imageChanged ? previous.image.credit : {}), author: imageAuthor, sourceUrl: imageSource, license: imageLicense } },
-    validation: { ...(previous?.validation || {}), status: published ? 'professional-reviewed' : 'draft', reviewedAt: published ? new Date().toISOString() : null, source: text(input.editorialSource ?? previous?.validation?.source ?? 'Cadastro no painel da profissional', 2000), inferredFields: previous?.validation?.inferredFields || [] },
+    validation: { ...(previous?.validation || {}), status: published ? 'professional-reviewed' : 'draft', professionallyReviewed: published, reviewedAt: published ? new Date().toISOString() : null, source: text(input.editorialSource ?? previous?.validation?.source ?? 'Cadastro no painel da profissional', 2000), inferredFields: previous?.validation?.inferredFields || [] },
   };
 }

@@ -53,11 +53,13 @@ Início; sobre; atendimentos; consulta individual; ciclos de acompanhamento; con
 
 O domínio canônico é `https://gislaineduarte.com.br`. O arquivo `vercel.json` configura o build estático, os assets e a inclusão privada dos artefatos nas Functions. Para configurar checkout InfinitePay, Postgres, e-mail e painel de gestão, consulte [docs/recipes-product.md](docs/recipes-product.md). Outros hosts devem servir os `index.html` das pastas e `404.html` com status 404, além de implementar as rotas de API.
 
+O produto **À mesa com GLP-1** tem página própria em `/receitas-glp-1`, 30 receitas (8 bebidas), 11 capítulos educativos e entregas PDF/HTML protegidas. Conteúdo, pacote local, revisão profissional pendente e operação estão em [docs/glp1-product.md](docs/glp1-product.md); os textos de divulgação estão em [docs/glp1-kit-comercial.md](docs/glp1-kit-comercial.md).
+
 ## Conteúdo e contato
 
 WhatsApp oficial atualizado pelo usuário: `+55 (47) 9163-5624`. E-mail: `duartegisarte@gmail.com`. Os links de orçamento têm mensagens específicas para cada serviço; não enviam automaticamente nem confirmam agendamento.
 
-Para sobrescrever dados oficiais, copie `.env.example` para `.env` e preencha `PUBLIC_WHATSAPP`, `PUBLIC_EMAIL` ou `PUBLIC_INSTAGRAM`. Números brasileiros de 10 ou 11 dígitos com DDD recebem o prefixo internacional 55; números já completos são preservados. A interface e o pré-render compartilham a configuração, com `envDir` apontando para a raiz. Todas as variáveis `PUBLIC_*` e `VITE_*` são públicas: nunca coloque segredos nelas.
+O WhatsApp oficial está fixado em `src/data/site.js`: `554791635624`, exibido como `+55 (47) 9163-5624`. Configurações antigas de `PUBLIC_WHATSAPP` são ignoradas no navegador, no pré-render e na API. Para sobrescrever e-mail ou Instagram, copie `.env.example` para `.env` e preencha `PUBLIC_EMAIL` ou `PUBLIC_INSTAGRAM`. A interface e o pré-render compartilham a configuração, com `envDir` apontando para a raiz. Todas as variáveis `PUBLIC_*` e `VITE_*` são públicas: nunca coloque segredos nelas.
 
 Previews reconhecidos por `VERCEL_ENV`/`CONTEXT` usam `noindex`. Para outros ambientes de revisão, configure `PUBLIC_SITE_NOINDEX=true`. A produção deve usar `false`; execute `AUDIT_REQUIRE_INDEXABLE=1 npm run audit` (no PowerShell, atribua essa variável antes do comando) para exigir indexação válida.
 

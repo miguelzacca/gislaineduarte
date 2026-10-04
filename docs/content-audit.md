@@ -8,13 +8,13 @@ Fontes lidas integralmente: `briefing-site-gislaine-duarte (3).md` e `gislaine-d
 - Registro confirmado na conversa: CRN-2 nº 22562. O número e a região não foram inferidos a partir de telefone ou biografia.
 - CPF e data de nascimento não foram copiados para o repositório, frontend, metadados ou JSON-LD. Não são necessários à identificação profissional pública implementada.
 - Domínio informado diretamente pelo usuário: `https://gislaineduarte.com.br`.
-- WhatsApp final confirmado pelo usuário na conversa, substituindo o contato anterior: `47991913588`, normalizado como número brasileiro de 11 dígitos com DDD 47. Link internacional: `https://wa.me/5547991913588`. A normalização foi comunicada ao usuário.
+- WhatsApp final confirmado pelo usuário na conversa, substituindo o contato anterior: `+55 (47) 9163-5624`. Link internacional: `https://wa.me/554791635624`, preservando exatamente os dígitos fornecidos.
 - E-mail confirmado pelo usuário: `duartegisarte@gmail.com`.
 - Formação informada: bacharel em Nutrição. Nutrição Estética e Nutrição Aplicada à Saúde da Mulher são pós-graduações em andamento.
 - Biografia preserva origem gaúcha, fé cristã, casamento e empreendimento em produtos naturais, sem inferir localização de atendimento ou associar a consulta a compras.
 - Serviços: consulta individual e ciclos de acompanhamento. Listas `confirmedDeliverables` permanecem vazias. Os blocos `steps` descrevem somente a proposta de cuidado já presente no briefing, sem anunciar procedimentos, encontros ou suporte.
 
-Os dados estão em `src/data/site.js`, módulo ESM usado pelo gerador de HTML. `PUBLIC_WHATSAPP` (número brasileiro com DDD ou internacional completo), `PUBLIC_EMAIL` e `PUBLIC_INSTAGRAM` permitem substituir contatos por dados oficiais. A geração lê `.env` da raiz, e `envDir` mantém o mesmo diretório no Vite e na hidratação. Variáveis de contato vazias mantêm os contatos confirmados. Número ou e-mail com formato inválido interrompem o build para evitar um CTA quebrado. Instagram só é exposto quando existe URL HTTPS configurada. O `.env` local fornecido configura `https://www.instagram.com/nutri_gislaineduarte`; nenhum perfil foi inventado.
+Os dados estão em `src/data/site.js`, módulo ESM usado pelo gerador de HTML. O WhatsApp oficial é fixo; configurações antigas de `PUBLIC_WHATSAPP` são ignoradas no navegador, no pré-render e na API. `PUBLIC_EMAIL` e `PUBLIC_INSTAGRAM` permitem substituir os demais contatos por dados oficiais. A geração lê `.env` da raiz, e `envDir` mantém o mesmo diretório no Vite e na hidratação. Variáveis de contato vazias mantêm os contatos confirmados. E-mail com formato inválido interrompe o build para evitar um CTA quebrado. Instagram só é exposto quando existe URL HTTPS configurada. O `.env` local fornecido configura `https://www.instagram.com/nutri_gislaineduarte`; nenhum perfil foi inventado.
 
 ## Pendências da cliente
 

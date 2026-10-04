@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { recipesProductPreview as defaultProduct, glpRecipesProductPreview } from '../generated/recipes-product-preview.js';
+import { ProductGuide } from './ProductGuide.jsx';
+import '../styles/product-guide.css';
 import { biography, contactLink } from '../data/site.js';
 import { BrandMark } from './Brand.jsx';
 import { ProfessionalIdentity } from './Layout.jsx';
@@ -216,12 +218,12 @@ export function RecipeProductLandingPage({ product: routeProduct } = {}) {
             <p className="product-hero__trust"><span>{product.recipes.length} receitas{product.recipeCounts?.variations ? ', incluindo variações' : ''}</span><span>3 formatos</span><span>acesso organizado</span></p>
             {product.recipeCounts?.variations ? <p className="product-hero__count-detail">{product.recipeCounts.preparations} preparações + {product.recipeCounts.variations} {product.recipeCounts.variations === 1 ? 'variação com ficha própria' : 'variações com fichas próprias'}.</p> : null}
           </div>
-          <div className="product-hero-art">
+          {product.guideOutline ? <div className="glp-product-hero-art"><div className="glp-book-cover"><span>Gislaine Duarte · Nutrição & cuidado</span><strong>À mesa<br />com GLP-1</strong><p>Comer, beber e cuidar da rotina durante o tratamento.</p><ProductPhoto image={product.hero.image} eager sizes="(min-width: 900px) 420px, 80vw" /><small>{product.recipes.length} receitas · guia prático · {product.edition}</small></div></div> : <div className="product-hero-art">
             <div className="product-hero-art__halo" aria-hidden="true" />
             <ProductPhoto image={cookingPortrait} className="product-hero-art__portrait" eager sizes="(min-width: 1645px) 560px, (min-width: 768px) 34vw, (min-width: 625px) 420px, 67vw" />
             <RecipeCardsScene product={product} fallbackImage={product.hero.image} />
             <span className="product-hero-art__caption">{product.recipes.length} receitas · uma jornada prática</span>
-          </div>
+          </div>}
         </div>
       </section>
 
@@ -235,7 +237,7 @@ export function RecipeProductLandingPage({ product: routeProduct } = {}) {
         <div className="shell product-introduction__grid">
           <div>
             <p className="eyebrow eyebrow--gold">Uma coleção para usar de verdade</p>
-            <h2 id="collection-title">Menos receitas salvas.<br />Mais receitas <em>preparadas.</em></h2>
+            <h2 id="collection-title">{product.guideOutline ? <>Quando o apetite muda,<br />o cuidado <em>continua.</em></> : <>Menos receitas salvas.<br />Mais receitas <em>preparadas.</em></>}</h2>
           </div>
           <div className="product-introduction__copy">
             <p>{product.description}</p>
@@ -244,10 +246,12 @@ export function RecipeProductLandingPage({ product: routeProduct } = {}) {
         </div>
       </section>
 
+      {product.guideOutline ? <section className="product-guide-outline" aria-labelledby="guide-outline-title"><div className="shell"><p className="eyebrow">Um guia que acompanha as receitas</p><h2 id="guide-outline-title">Entenda os cuidados.<br /><em>Organize suas possibilidades.</em></h2><p>Além de pratos e bebidas, o livro reúne orientações educativas, planejamento e fichas para levar à consulta.</p><ul>{product.guideOutline.map(chapter => <li key={chapter.id}><span>{chapter.kicker}</span><strong>{chapter.title}</strong></li>)}</ul></div></section> : null}
+
       <section className="product-preview" aria-labelledby="preview-title">
         <div className="shell">
           <div className="product-preview__heading">
-            <div><p className="eyebrow">A jornada</p><h2 id="preview-title">Do doce ao salgado,<br /><em>novas possibilidades.</em></h2></div>
+            <div><p className="eyebrow">A jornada</p><h2 id="preview-title">{product.guideOutline ? <>Pratos, lanches e bebidas,<br /><em>para a sua rotina.</em></> : <>Do doce ao salgado,<br /><em>novas possibilidades.</em></>}</h2></div>
             <p>Uma prévia editorial da seleção. Ingredientes, modo de preparo, substituições e alertas ficam organizados na área da coleção.</p>
           </div>
           <div className="product-preview__list">
@@ -366,7 +370,7 @@ function useStoredState(key, initialValue) {
   }, [key]);
   useEffect(() => {
     if (!ready) return;
-    try { window.localStorage.setItem(`${STORAGE_PREFIX}:${key}`, JSON.stringify(value)); } catch { /* fallback em memória */ }
+    try { window.localStorage.setItem(`${STORAGE_PREFIX}:${selectedProductId()}:${key}`, JSON.stringify(value)); } catch { /* fallback em memória */ }
   }, [key, ready, value]);
   return [value, setValue];
 }
@@ -449,7 +453,7 @@ function RecipeDetail({ recipe, index, total, favorites, prepared, multiplier, c
       <div className="recipe-facts" aria-label="Informações da receita">
         <div><span>Tempo</span><strong>{recipe.time.label}</strong>{recipe.time.inferred ? <small>Definição editorial a confirmar</small> : null}</div>
         <div><span>Equipamentos</span><strong>{recipe.equipment.join(' · ') || 'Conforme o preparo'}</strong></div>
-        <div><span>Ajuste</span><strong>{multiplier === 1 ? 'Receita original' : `${scaledNumber(multiplier)}× a receita`}</strong></div>
+        <div><span>Rendimento e ajuste</span><strong>{recipe.yield || 'Rendimento não informado'}</strong><small>{multiplier === 1 ? 'Receita original' : `${scaledNumber(multiplier)}× a receita`}</small></div>
       </div>
 
       <div className="recipe-detail__columns">
@@ -464,7 +468,7 @@ function RecipeDetail({ recipe, index, total, favorites, prepared, multiplier, c
               return <li key={ingredient.id}><label><input type="checkbox" checked={checked} onChange={() => onIngredient(recipe.id, ingredient.id)} /><span className="recipe-checkbox" aria-hidden="true"><Icon name="check" /></span><span>{ingredientLabel(ingredient, multiplier)}{ingredient.optional ? <small>Opcional</small> : null}</span></label></li>;
             })}
           </ul>
-          {recipe.alternativeIngredients?.length ? <div className="recipe-substitution"><strong>Alternativa</strong>{recipe.substitutions.map((item) => <p key={item}>{item}</p>)}</div> : null}
+          {recipe.substitutions?.length ? <div className="recipe-substitution"><strong>Alternativa</strong>{recipe.substitutions.map((item) => <p key={item}>{item}</p>)}</div> : null}
           <button className="shopping-toggle" type="button" aria-pressed={inShoppingList} onClick={() => onShopping(recipe.id)}><Icon name="list" />{inShoppingList ? 'Na lista de compras' : 'Adicionar à lista de compras'}</button>
         </section>
 
@@ -555,7 +559,9 @@ export function RecipeLibrary({ data }) {
         </div>
       </section>
 
-      <section className="recipe-toolbar" aria-label="Ferramentas da coleção">
+      {data.guide ? <ProductGuide guide={data.guide} recipes={data.recipes} onRecipeSelect={id => { setCategory('todas'); setQuery(''); setActiveId(id); document.getElementById('receitas-do-livro')?.scrollIntoView({ block: 'start' }); }} /> : null}
+
+      <section className="recipe-toolbar" id="receitas-do-livro" aria-label="Ferramentas da coleção">
         <div className="shell recipe-toolbar__inner">
           <label className="recipe-search"><span className="sr-only">Pesquisar receita ou ingrediente</span><Icon name="search" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar receita ou ingrediente" /></label>
           <fieldset className="recipe-filters"><legend className="sr-only">Filtrar receitas por categoria</legend>{['todas', 'doce', 'salgada', 'bebida'].map((filter) => <button type="button" aria-pressed={category === filter} onClick={() => setCategory(filter)} key={filter}>{filter === 'todas' ? 'Todas' : filter === 'doce' ? 'Doces' : filter === 'bebida' ? 'Bebidas' : 'Salgadas'}</button>)}</fieldset>

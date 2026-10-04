@@ -2,7 +2,7 @@
 
 ## Base factual
 
-Fontes: `briefing-site-gislaine-duarte (3).md`, HTML de identidade e confirmações diretas do projeto. Domínio: `https://gislaineduarte.com.br`. WhatsApp atualizado pelo usuário: `5547991913588`. E-mail: `duartegisarte@gmail.com`.
+Fontes: `briefing-site-gislaine-duarte (3).md`, HTML de identidade e confirmações diretas do projeto. Domínio: `https://gislaineduarte.com.br`. WhatsApp atualizado pelo usuário: `554791635624` (`+55 (47) 9163-5624`). E-mail: `duartegisarte@gmail.com`.
 
 Não publicar duração de ciclos, região do CRN, quantidade de encontros, suporte, preços, modalidades ou material digital sem confirmação. Pós-graduações continuam em andamento. O registro recebido é `22562`; sua identificação completa ainda requer confirmação.
 
@@ -46,7 +46,7 @@ A aprovação editorial dos textos, identificação completa do registro e infor
 ## Evidências verificadas em 20 de setembro de 2026
 
 - Playwright: **46/46 aprovados** na rodada final, em aproximadamente 1,5 minuto. Os testes incluem as sete rotas, nove larguras, menu por toque e teclado, histórico, recarregamento, 404, contato, ausência de JavaScript/WebGL, preferências e hidratação React. A captura percorre cada bloco revelado para confirmar sua presença antes do screenshot.
-- Configuração: **20/20 testes unitários aprovados**, incluindo telefone nacional/internacional, e-mail, Instagram e restauração do ambiente após erros. O WhatsApp final é o DDD 47 confirmado na última mensagem do usuário.
+- Configuração: testes unitários cobrem o WhatsApp oficial em todos os links de serviços, sua preservação diante de configurações antigas de ambiente, e-mail, Instagram e restauração do ambiente após erros. O WhatsApp final é `+55 (47) 9163-5624`, confirmado na última mensagem do usuário.
 - Axe: **15 cenários sem violações**, incluindo todos os níveis A/AA pertinentes de WCAG 2.0, 2.1 e 2.2 e o menu aberto. O nome acessível do wordmark foi alinhado ao texto visível após a verificação complementar do Lighthouse.
 - Auditoria estática com `AUDIT_REQUIRE_INDEXABLE=1`: **8 páginas, 7 URLs no sitemap, zero erros e zero observações**. A página 404 permanece com `noindex`.
 - Console e hidratação: nenhum erro inesperado nos fluxos testados; o React preservou os elementos `main` e `h1` e os destinos dos links do HTML inicial em todas as rotas.

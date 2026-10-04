@@ -8,6 +8,7 @@ dist/
 test-results/
 playwright-report/
 artifacts/
+output/
 tmp/
 .product-tools/
 tests/artifacts/

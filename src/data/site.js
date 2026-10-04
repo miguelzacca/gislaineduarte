@@ -1,12 +1,9 @@
 const env = import.meta.env ?? (typeof process !== 'undefined' ? process.env : {});
-const phoneDigits = (env.PUBLIC_WHATSAPP?.trim() || '554791635624').replace(/[\s()+.-]/g, '');
-const whatsapp = /^\d{10,11}$/.test(phoneDigits) ? `55${phoneDigits}` : phoneDigits;
+// Contato confirmado pelo usuário; configurações antigas não podem substituí-lo.
+const whatsapp = '554791635624';
 const email = env.PUBLIC_EMAIL?.trim() || 'duartegisarte@gmail.com';
 const instagram = env.PUBLIC_INSTAGRAM?.trim() || null;
 
-if (!/^[1-9]\d{7,14}$/.test(whatsapp)) {
-  throw new Error('PUBLIC_WHATSAPP deve conter um número brasileiro com DDD ou um número internacional completo.');
-}
 if (!/^[^\s@?&#]+@[^\s@?&#]+\.[^\s@?&#]+$/.test(email)) {
   throw new Error('PUBLIC_EMAIL deve conter um endereço de e-mail válido.');
 }

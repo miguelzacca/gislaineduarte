@@ -1,4 +1,6 @@
-import { expandedRecipes, glpRecipes } from './recipes-expanded.js';
+import { expandedRecipes } from './recipes-expanded.js';
+import { glpRecipes } from './glp-recipes.js';
+import { glpGuide } from './glp-guide.js';
 import { recipeAllergens } from './recipe-allergens.js';
 import { completeRecipeBook } from './recipes-editorial.js';
 import { recipePhotograph } from './recipe-photography.js';
@@ -21,13 +23,13 @@ import photoCredits from '../../public/images/foods/credits.json' with { type: '
  * @property {string} id
  * @property {string} slug
  * @property {string} name
- * @property {'doce' | 'salgada'} category
+ * @property {'doce' | 'salgada' | 'bebida'} category
  * @property {string} introduction
  * @property {string} editorialContext
  * @property {RecipeIngredient[]} ingredients
  * @property {string[]} preparation
  * @property {RecipeTime} time
- * @property {null} yield
+ * @property {string | null} yield
  * @property {string[]} equipment
  * @property {string[]} notes
  * @property {string[]} substitutions
@@ -392,7 +394,7 @@ for (const recipe of recipesProduct.recipes) {
   recipe.validation.source = recipe.validation.source.replace(' e conteúdo canônico aprovado no briefing do produto.', '. Aprovação profissional não registrada.');
 }
 recipesProduct.recipes.push(...expandedRecipes);
-for (const recipe of [...expandedRecipes, ...glpRecipes]) {
+for (const recipe of expandedRecipes) {
   recipe.image.credit = photoCredits.photos.find(photo => photo.id === recipe.image.creditId);
   if (!recipe.published && recipe.validation.status === 'source-transcribed') recipe.validation.status = 'incomplete-source-pending-review';
 }
@@ -403,13 +405,41 @@ for (const slug of ['bombom-banana-cacau', 'torta-proteica-frango', 'kafta-batat
   recipe.validation.imageNote = 'A imagem da preparação enviada como referência está sem autoria/licença confirmadas. A entrega utiliza uma fotografia licenciada de ingrediente, identificada como referência.';
 }
 export const glpRecipesProduct = {
-  ...recipesProduct, id: GLP_RECIPES_PRODUCT_ID, title: 'Receitas para GLP-1', shortTitle: 'Receitas para GLP-1',
-  subtitle: 'Preparações em pequenas porções para apoiar a conversa com sua nutricionista durante o acompanhamento.',
-  description: 'Livro educativo com preparações simples, texturas variadas, ingredientes e cuidados para personalizar durante o acompanhamento nutricional de quem utiliza GLP-1.',
+  ...recipesProduct, id: GLP_RECIPES_PRODUCT_ID, title: glpGuide.title, shortTitle: glpGuide.title,
+  subtitle: 'Receitas, bebidas e um guia prático para cuidar da alimentação durante o tratamento.',
+  description: 'Uma coleção própria para adultos em acompanhamento com GLP-1: preparações doces e salgadas, bebidas, orientações de tolerância alimentar, organização da semana e cuidados para conversar com sua equipe.',
+  positioning: 'Livro e guia de alimentação durante o uso de GLP-1',
   publicPath: '/receitas-glp-1', experiencePath: '/minhas-receitas?product=receitas-glp1',
   downloadEndpoint: '/api/recipes/download?product=receitas-glp1', recipes: glpRecipes,
-  educationalNotice: 'Material educativo. A tolerância, a porção e as necessidades nutricionais variam. As receitas não substituem acompanhamento e não orientam doses ou ajustes de medicamentos GLP-1.',
-  hero: { ...recipesProduct.hero, image: foodPhoto('papaya') },
+  educationalNotice: glpGuide.notice,
+  guide: glpGuide,
+  hero: { image: glpRecipes.find(recipe => recipe.slug === 'glp-creme-abobora-frango').image, socialImage: '/images/og-glp1.jpg' },
+  formats: [
+    { id: 'interactive', title: 'Livro e guia no site', description: 'Consulte o guia, pesquise pratos e bebidas, ajuste quantidades e monte sua lista de compras na área adquirida.' },
+    { id: 'offline', title: 'HTML para levar com você', description: 'O mesmo conteúdo, com fotos, capítulos e ferramentas, em um arquivo que abre sem internet.' },
+    { id: 'pdf', title: 'PDF diagramado', description: 'Livro com receitas ilustradas, guia, roteiro semanal e fichas de apoio para consultar no celular ou imprimir.' },
+  ],
+  whatYouFind: [
+    `${glpRecipes.length} receitas com ingredientes, rendimento, preparo e imagens ilustrativas.`,
+    `${glpRecipes.filter(recipe => recipe.category === 'bebida').length} bebidas, entre águas aromatizadas, infusão e lanches líquidos.`,
+    'Guia educativo sobre apetite, proteína, hidratação e tolerância digestiva.',
+    'Cuidados para náusea, refluxo, constipação e diarreia, com sinais de alerta.',
+    'Roteiro de combinações para a semana, conservação e lista de compras.',
+    'Modelo de observações e perguntas para levar à consulta.',
+  ],
+  audience: [
+    'Adultos que usam medicamentos com ação em GLP-1 sob acompanhamento e querem organizar a alimentação.',
+    'Quem busca ideias de pratos, lanches e bebidas com porções e texturas ajustáveis.',
+    'Quem prefere entender os cuidados e discutir adaptações com a equipe de saúde.',
+  ],
+  faqs: [
+    { question: 'O livro elimina efeitos colaterais do medicamento?', answer: 'Não. Oferece educação alimentar e possibilidades de preparo que podem ajudar na tolerância. Não trata efeitos adversos e orienta quando procurar avaliação.' },
+    { question: 'É um plano alimentar individual?', answer: 'Não. As porções são culinárias e o roteiro semanal é um repertório de combinações. Sua nutricionista define a adequação ao seu contexto.' },
+    { question: 'Também tem bebidas?', answer: 'Sim. Há águas aromatizadas, uma infusão suave e lanches líquidos. Nenhuma bebida substitui solução de reidratação oral quando indicada.' },
+    { question: 'O que recebo após a liberação do acesso?', answer: 'O livro e o guia na área do site, um HTML autocontido que funciona sem internet e um PDF diagramado para salvar ou imprimir.' },
+    { question: 'As imagens são fotos de receitas testadas?', answer: 'As imagens foram geradas com IA para ilustrar sugestões de apresentação. A aparência e o rendimento reais podem variar. Esta edição não declara teste em cozinha.' },
+    { question: 'O material orienta doses ou mudanças de medicamento?', answer: 'Não. Essas decisões pertencem ao prescritor. O guia traz cuidados alimentares e sinais de quando procurar atendimento.' },
+  ],
 };
 export const recipeProducts = [recipesProduct, glpRecipesProduct];
 const previousImages = new Map(recipesProduct.recipes.map(recipe => [recipe.id, recipe.image.src]));
@@ -431,7 +461,7 @@ export function recipeBookCounts(recipes) {
 }
 
 export const allRecipes = [...recipesProduct.recipes, ...glpRecipes];
-for (const recipe of allRecipes) recipe.seedVersion = '2026-10-04-recipe-book';
+for (const recipe of allRecipes) recipe.seedVersion = recipe.productIds.includes(GLP_RECIPES_PRODUCT_ID) ? '2026-10-04-glp1-v1' : '2026-10-04-recipe-book';
 export function recipeProductById(id = RECIPES_PRODUCT_ID) { return recipeProducts.find(product => product.id === id) || null; }
 export function requestedRecipeProduct(request) { return recipeProductById(new URL(request.url).searchParams.get('product') || RECIPES_PRODUCT_ID); }
 
@@ -451,6 +481,7 @@ export function buildProtectedProductPayload(recipesProduct = recipeProducts[0])
     publicPath: recipesProduct.publicPath,
     experiencePath: recipesProduct.experiencePath,
     downloadEndpoint: recipesProduct.downloadEndpoint,
+    ...(recipesProduct.guide ? { guide: recipesProduct.guide } : {}),
     recipeCounts: recipeBookCounts(recipesProduct.recipes),
     recipes: recipesProduct.recipes.filter(recipe => recipe.published !== false).map(({ validation: _validation, editorialContext, image: recipeImage, ...recipe }) => ({
       ...recipe,
@@ -484,6 +515,7 @@ export function buildPublicProductPreview(recipesProduct = recipeProducts[0]) {
     whatYouFind: recipesProduct.whatYouFind,
     audience: recipesProduct.audience,
     faqs: recipesProduct.faqs,
+    ...(recipesProduct.guide ? { guideOutline: recipesProduct.guide.chapters.map(({ id, kicker, title }) => ({ id, kicker, title })), edition: recipesProduct.guide.edition } : {}),
     recipeCounts: recipeBookCounts(recipesProduct.recipes),
     recipes: recipesProduct.recipes.filter(recipe => recipe.published !== false).map((recipe, index) => ({
       id: recipe.id,

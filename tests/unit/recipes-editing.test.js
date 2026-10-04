@@ -9,7 +9,7 @@ import { handleContentRequest } from '../../api/recipes/content.js';
 import { handleDownloadRequest } from '../../api/recipes/download.js';
 import { adminCookie } from '../../server/recipes/admin.js';
 import { SESSION_COOKIE, tokenHash } from '../../server/recipes/access.js';
-import { recipeProducts, RECIPES_PRODUCT_ID, GLP_RECIPES_PRODUCT_ID } from '../../src/data/recipes-product.js';
+import { allRecipes, recipeProducts, RECIPES_PRODUCT_ID, GLP_RECIPES_PRODUCT_ID } from '../../src/data/recipes-product.js';
 
 test('PostgreSQL recipe editing preserves drafts, versions, purchases and current exports', async t => {
   const pg = await PGlite.create();
@@ -35,7 +35,7 @@ test('PostgreSQL recipe editing preserves drafts, versions, purchases and curren
     let edited;
     await t.test('save revision changes live catalog, source credit and protected recipe', async () => {
       const initial = await (await call('GET')).json();
-      assert.equal(initial.recipes.length, 38);
+      assert.equal(initial.recipes.length, allRecipes.length);
       const recipe = initial.recipes.find(item => item.id === 'brigadeiro-banana');
       const response = await call('PATCH', { ...recipe, reviewConfirmed: true, title: 'Brigadeiro revisado', preparationText: 'Amasse a banana.\nCozinhe os ingredientes até firmar.\nDeixe esfriar antes de modelar.', imageAuthor: 'Crédito revisado', servings: 4, nutrition: { kcal: 50, protein: 2, carbs: 7, fat: 1, source: 'Ficha de cálculo da profissional' } });
       assert.equal(response.status, 200); edited = (await response.json()).recipe;
@@ -50,6 +50,7 @@ test('PostgreSQL recipe editing preserves drafts, versions, purchases and curren
       assert.equal(saved.nutrition.source, 'Ficha de cálculo da profissional');
     });
     await t.test('reseed never overwrites professional edits and drafts are private', async () => {
+      await pg.query("UPDATE recipe_content SET data = jsonb_set(jsonb_set(data,'{published}','false'::jsonb),'{validation,status}','\"draft\"'::jsonb), revision = 2 WHERE id = 'pao-fuba'");
       await initializeRecipeContent(db);
       assert.equal((await readRecipeRecords(db)).find(item => item.id === edited.id).name, edited.title);
       const content = await readRecipeProduct(db, RECIPES_PRODUCT_ID);
@@ -77,11 +78,13 @@ test('PostgreSQL recipe editing preserves drafts, versions, purchases and curren
       const listing = await (await handleAdminProductsRequest(request('GET'), { env, store: db })).json();
       const product = listing.products.find(item => item.id === GLP_RECIPES_PRODUCT_ID);
       const body = { ...product, title: 'Receitas GLP-1 revisadas', priceCents: 3900, published: true };
-      assert.equal((await readRecipeProduct(db, GLP_RECIPES_PRODUCT_ID)).recipes.length, 0, 'exemplos gerados não são material GLP-1 aprovado');
+      await pg.query("UPDATE recipe_content SET data = jsonb_set(data,'{published}','false'::jsonb) WHERE data->'productIds' ? $1", [GLP_RECIPES_PRODUCT_ID]);
+      assert.equal((await readRecipeProduct(db, GLP_RECIPES_PRODUCT_ID)).recipes.length, 0, 'livro sem fichas disponíveis');
       assert.equal((await handleAdminProductsRequest(request('PATCH', body), { env, store: db })).status, 400, 'livro sem receitas aprovadas permanece indisponível');
       const initialRecipes = await (await call('GET')).json();
       const reviewed = initialRecipes.recipes.find(item => item.id === 'glp-iogurte-mamao');
       assert.equal((await call('PATCH', { ...reviewed, published: true, reviewConfirmed: true, editorialSource: 'Receita selecionada pela profissional para este teste', editorialContext: 'Receita educativa revisada no teste.' })).status, 200);
+      assert.equal((await readRecipeRecords(db)).find(recipe => recipe.id === reviewed.id).validation.professionallyReviewed, true);
       assert.equal((await handleAdminProductsRequest(request('PATCH', body), { env, store: db })).status, 200);
       assert.equal((await handleAdminProductsRequest(request('PATCH', body), { env, store: db })).status, 409);
       const editor = await (await call('GET')).json();
@@ -101,7 +104,7 @@ test('recipe edits reject unsafe photos and nutrition without a declared source'
   assert.throws(() => normalizeRecipeEdit({ ...draft, published: true, reviewConfirmed: true, ingredientsText: '1 maçã', preparationText: 'Lave e corte.', imageAlt: 'Maçã' }), /autoria/);
 });
 
-test('editorial reseed corrects untouched invented GLP recipes without changing professional work', async t => {
+test('novo produto GLP atualiza rascunhos antigos e preserva o trabalho profissional', async t => {
   const pg = await PGlite.create();
   t.after(() => pg.close());
   await initializeRecipeContent(pg);
@@ -111,9 +114,21 @@ test('editorial reseed corrects untouched invented GLP recipes without changing 
   await pg.query('UPDATE recipe_content SET data = $2::jsonb, revision = 1 WHERE id = $1', [legacy.id, JSON.stringify(legacy)]);
   await initializeRecipeContent(pg);
   const corrected = (await readRecipeRecords(pg)).find(item => item.id === legacy.id);
-  assert.equal(corrected.published, false);
-  assert.match(corrected.validation.source, /gerado pelo sistema/);
+  assert.equal(corrected.published, true);
+  assert.match(corrected.validation.source, /a pedido do usuário/);
+  assert.equal(corrected.validation.professionallyReviewed, false);
   assert.equal(corrected.revision, 2);
+  const priorDraft = { ...original, published: false, seedVersion: '2026-10-04-recipe-book', validation: { status: 'generated-draft-pending-review', source: 'Rascunho gerado da edição anterior' } };
+  await pg.query('UPDATE recipe_content SET data = $2::jsonb, revision = 2 WHERE id = $1', [priorDraft.id, JSON.stringify(priorDraft)]);
+  await initializeRecipeContent(pg);
+  const upgraded = (await readRecipeRecords(pg)).find(item => item.id === priorDraft.id);
+  assert.equal(upgraded.published, true);
+  assert.equal(upgraded.seedVersion, '2026-10-04-glp1-v1');
+  assert.equal(upgraded.revision, 3);
+  const customDraft = { ...upgraded, published: false, name: 'Rascunho ajustado pela profissional', validation: { status: 'draft' } };
+  await pg.query('UPDATE recipe_content SET data = $2::jsonb WHERE id = $1', [customDraft.id, JSON.stringify(customDraft)]);
+  await initializeRecipeContent(pg);
+  assert.equal((await readRecipeRecords(pg)).find(item => item.id === customDraft.id).name, customDraft.name);
   const changed = { ...corrected, published: true, name: 'Preparação revisada', validation: { status: 'professional-reviewed', source: 'Cadastro profissional' } };
   await pg.query('UPDATE recipe_content SET data = $2::jsonb WHERE id = $1', [changed.id, JSON.stringify(changed)]);
   await initializeRecipeContent(pg);

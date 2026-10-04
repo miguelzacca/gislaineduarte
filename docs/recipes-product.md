@@ -6,6 +6,14 @@ A URL pública é `/livro-de-receitas`, sem quantidade fixa no endereço. O cami
 
 ## Compra e acesso
 
+### Coleção À mesa com GLP-1
+
+A coleção tem 30 fichas originais (22 preparações e 8 bebidas), 11 capítulos educativos e materiais de organização. A fonte das fichas é `src/data/glp-recipes.js`; o guia e as referências estão em `src/data/glp-guide.js`. A prévia pública mostra somente o índice do guia. A entrega autorizada inclui o conteúdo completo, PDF e HTML independente; os arquivos locais e o ZIP ficam em `output/`, sem integrar o site público.
+
+O estado editorial distingue conteúdo compilado de revisão clínica: esta entrega ainda não registra revisão da Gislaine nem teste culinário. Essa pendência é informada nos artefatos e no [roteiro do produto](glp1-product.md). Nenhum preço, publicação no banco remoto, push ou deploy foi alterado. A atualização de sementes preserva fichas revisadas e rascunhos personalizados, substituindo somente versões padrão antigas elegíveis.
+
+### Fluxo existente de compra
+
 As páginas internas, links de e-mail e callbacks usam URLs sem barra final. `vercel.json` define `cleanUrls: true` e `trailingSlash: false`; endereços antigos com barra redirecionam para a versão canônica. O ambiente local segue o mesmo padrão.
 
 1. A pessoa escolhe comprar. Uma sessão válida abre a coleção diretamente; um pedido em andamento é retomado. Sem sessão ou pedido conhecido, o e-mail é solicitado uma vez e enviado também em `customer.email` para preencher o checkout da InfinitePay. Se esse e-mail já comprou a coleção, enviamos o link de acesso à conta existente, sem criar outra cobrança.

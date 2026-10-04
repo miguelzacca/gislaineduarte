@@ -5,6 +5,7 @@ import { formatIngredient, consolidateShoppingList } from '../../src/data/recipe
 import { buildOfflineHtml } from '../../scripts/lib/build-offline-recipes.mjs';
 import { curatedImageBuffer } from '../nutrition/assets.js';
 import { site } from '../../src/data/site.js';
+import { buildGlpPdf } from './glp-pdf.js';
 
 async function photograph(image) {
   return curatedImageBuffer(image.src);
@@ -25,10 +26,12 @@ export async function buildRecipeHtml(data) {
     readFile(resolve('public/fonts/editorial.woff2')), readFile(resolve('public/fonts/editorial-italic.woff2')),
     readFile(resolve('public/fonts/body.woff2')), readFile(resolve('public/images/brand-mark.svg'), 'utf8'),
   ]);
-  return buildOfflineHtml({ data, imageData, heroData: imageData[data.recipes[0]?.slug] || '', fonts: { editorial: editorial.toString('base64'), editorialItalic: editorialItalic.toString('base64'), body: body.toString('base64') }, brandSvg });
+  const guideStyles = data.guide ? `${await readFile(resolve('src/styles/product-guide.css'), 'utf8')}\n.product-guide{--color-line:rgba(23,63,53,.19);--paper:#edece2;--white:#fffdf7;--gold-ink:#806624;--gold-light:#d9bf85;--color-muted:#496b56}` : '';
+  return buildOfflineHtml({ data, imageData, heroData: imageData[data.guide ? 'glp-creme-abobora-frango' : data.recipes[0]?.slug] || '', fonts: { editorial: editorial.toString('base64'), editorialItalic: editorialItalic.toString('base64'), body: body.toString('base64') }, brandSvg, guideStyles });
 }
 
 export async function buildRecipePdf(data) {
+  if (data.guide) return buildGlpPdf(data);
   const doc = new PDFDocument({ size: 'A4', margin: 46, bufferPages: true, info: { Title: data.title, Author: site.fullName, Subject: 'Receitas educativas, preparo e organização da cozinha' } });
   const chunks = [];
   const result = new Promise((resolvePromise, reject) => { doc.on('data', chunk => chunks.push(chunk)); doc.on('end', () => resolvePromise(Buffer.concat(chunks))); doc.on('error', reject); });

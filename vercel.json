@@ -21,7 +21,7 @@
       "maxDuration": 60
     },
     "api/recipes/download.js": {
-      "includeFiles": "{public/fonts/**,public/images/foods/**,public/images/teas/**,public/images/recipes-real/**,public/images/brand-mark.svg,server/nutrition/fonts/**}",
+      "includeFiles": "{public/fonts/**,public/images/foods/**,public/images/teas/**,public/images/recipes-real/**,public/images/recipes/**,public/images/recipes-editorial/**,public/images/glp-recipes/**,public/images/brand-mark.svg,server/nutrition/fonts/**,src/styles/product-guide.css}",
       "maxDuration": 60
     }
   },

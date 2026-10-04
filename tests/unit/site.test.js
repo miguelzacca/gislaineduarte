@@ -35,36 +35,17 @@ describe('configuração pública do site', { concurrency: false }, () => {
     assert.equal(new URL(contactLink()).pathname, '/554791635624');
   });
 
-  test('número nacional de 11 dígitos ganha o código do Brasil', async () => {
-    const { site, contactLink } = await loadSite({ PUBLIC_WHATSAPP: '47912345678' });
-    assert.equal(site.contact.whatsapp, '5547912345678');
-    const contact = new URL(contactLink('consulta-nutricional'));
-    assert.equal(contact.origin, 'https://wa.me');
-    assert.equal(contact.pathname, '/5547912345678');
-    assert.match(contact.searchParams.get('text'), /consulta nutricional individual/);
-  });
-
-  test('número nacional de 10 dígitos também ganha o código do Brasil', async () => {
-    const { site } = await loadSite({ PUBLIC_WHATSAPP: '4733334444' });
-    assert.equal(site.contact.whatsapp, '554733334444');
-  });
-
-  test('formatação de telefone nacional é normalizada', async () => {
-    const { site } = await loadSite({ PUBLIC_WHATSAPP: ' (47) 9163-5624 ' });
-    assert.equal(site.contact.whatsapp, '554791635624');
-    assert.equal(site.contact.whatsappDisplay, '+55 (47) 9163-5624');
-  });
-
-  for (const phone of ['554791635624', '+55 (47) 9163-5624']) {
-    test(`telefone internacional preserva o país sem duplicar 55: ${phone}`, async () => {
-      const { site } = await loadSite({ PUBLIC_WHATSAPP: phone });
+  for (const phone of ['', '47912345678', '5547912345678', ' (47) 9163-5624 ', 'telefone']) {
+    test(`configuração de ambiente não substitui o WhatsApp oficial: ${phone || '(vazia)'}`, async () => {
+      const { site, contactLink, services } = await loadSite({ PUBLIC_WHATSAPP: phone });
       assert.equal(site.contact.whatsapp, '554791635624');
-    });
-  }
-
-  for (const phone of ['telefone', '123', '0047991913588', '55479919135881234']) {
-    test(`telefone inválido interrompe a configuração: ${phone}`, async () => {
-      await assert.rejects(loadSite({ PUBLIC_WHATSAPP: phone }), /PUBLIC_WHATSAPP/);
+      assert.equal(site.contact.whatsappDisplay, '+55 (47) 9163-5624');
+      for (const service of [undefined, ...services]) {
+        const contact = new URL(contactLink(service));
+        assert.equal(contact.origin, 'https://wa.me');
+        assert.equal(contact.pathname, '/554791635624');
+        assert.ok(contact.searchParams.get('text').includes('Gislaine'));
+      }
     });
   }
 

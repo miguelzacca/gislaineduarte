@@ -4,7 +4,7 @@
 
 Vite 8.3.0 + React 19.3.0, JavaScript/JSX. Não há Next.js, TypeScript ou aplicação vanilla disfarçada: páginas, navegação, menu e componentes são React, com HTML pré-renderizado e hidratação. Node 25.2.1 foi usado neste ambiente Windows; Node 24 LTS é a versão recomendada para uso do projeto.
 
-O domínio canônico é `https://gislaineduarte.com.br`. O WhatsApp final confirmado pelo usuário é `+55 (47) 99191-3588`; o e-mail é `duartegisarte@gmail.com`. O `.env` local foi preservado, e a normalização aceita seu número brasileiro sem prefixo de país. O Instagram aparece somente quando configurado.
+O domínio canônico é `https://gislaineduarte.com.br`. O WhatsApp final confirmado pelo usuário é `+55 (47) 9163-5624`; o e-mail é `duartegisarte@gmail.com`. O telefone está fixado em `src/data/site.js`, e configurações antigas de ambiente não o substituem. O Instagram aparece somente quando configurado.
 
 Desenvolvimento em `http://127.0.0.1:4321`; preview estático de produção em `http://127.0.0.1:4323`. Portas distintas impedem que os testes reutilizem acidentalmente o servidor de desenvolvimento.
 

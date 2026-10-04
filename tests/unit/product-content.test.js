@@ -2,14 +2,14 @@ import assert from 'node:assert/strict';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import test from 'node:test';
 import { load } from 'cheerio';
-import { allRecipes, recipeProducts, buildProtectedProductPayload, buildPublicProductPreview, consolidateShoppingList, formatIngredient, recipesProduct } from '../../src/data/recipes-product.js';
+import { allRecipes, recipeProducts, glpRecipesProduct, buildProtectedProductPayload, buildPublicProductPreview, consolidateShoppingList, formatIngredient, recipesProduct } from '../../src/data/recipes-product.js';
 import { initializeRecipeContent, readRecipeRecords } from '../../server/recipes/content.js';
 import { PGlite } from '@electric-sql/pglite';
 
-test('livro ampliado contém receitas completas e mantém os rascunhos GLP-1 separados', () => {
+test('livros completos mantêm receitas e identidade de GLP-1 separadas', () => {
   assert.equal(recipesProduct.recipes.length, 31);
-  assert.equal(allRecipes.length, 39);
-  assert.equal(new Set(allRecipes.map((recipe) => recipe.slug)).size, 39);
+  assert.equal(allRecipes.length, 61);
+  assert.equal(new Set(allRecipes.map((recipe) => recipe.slug)).size, 61);
   for (const recipe of allRecipes) {
     assert.ok(recipe.ingredients.length);
     assert.ok(recipe.preparation.length);
@@ -17,10 +17,12 @@ test('livro ampliado contém receitas completas e mantém os rascunhos GLP-1 sep
     assert.ok(recipe.validation.status);
     assert.ok(recipe.productIds.length);
     assert.ok(recipe.image.credit?.author);
-    assert.match(recipe.image.src, /^\/images\/(foods|recipes|recipes-editorial)\//);
+    assert.match(recipe.image.src, /^\/images\/(foods|recipes|recipes-editorial|glp-recipes)\//);
   }
   assert.equal(recipesProduct.recipes.every(recipe => recipe.published), true);
-  assert.equal(allRecipes.filter(recipe => recipe.productIds.includes('receitas-glp1')).every(recipe => !recipe.published), true);
+  assert.equal(glpRecipesProduct.recipes.length, 30);
+  assert.equal(glpRecipesProduct.recipes.filter(recipe => recipe.category === 'bebida').length, 8);
+  assert.ok(glpRecipesProduct.recipes.every(recipe => recipe.published && recipe.validation.professionallyReviewed === false));
   assert.equal(formatIngredient(recipesProduct.recipes[0].ingredients[4]), '½ colher de chá de cúrcuma');
   assert.equal(formatIngredient(recipesProduct.recipes[4].ingredients[2]), '½ colher de chá de sal');
 });
@@ -39,6 +41,11 @@ test('prévia pública protege preparo e somente receitas publicadas entram em c
   for (const product of recipeProducts) {
     assert.deepEqual(buildProtectedProductPayload(product).recipes.map(recipe => recipe.id), product.recipes.filter(recipe => recipe.published).map(recipe => recipe.id));
   }
+  const glpPreview = buildPublicProductPreview(glpRecipesProduct);
+  assert.equal(glpPreview.guideOutline.length, 11);
+  assert.equal('guide' in glpPreview, false);
+  assert.equal(JSON.stringify(glpPreview).includes(glpRecipesProduct.guide.chapters[3].sections[0].bullets[0]), false);
+  assert.equal(buildProtectedProductPayload(glpRecipesProduct).guide.chapters.length, 11);
 });
 
 test('lista consolidada soma medidas iguais sem inventar quantidades a gosto', () => {
@@ -66,8 +73,8 @@ test('contagem inclui a variação com ingredientes próprios e sem somar substi
   for (const recipe of payload.recipes) assert.doesNotMatch(JSON.stringify([recipe.ingredients, recipe.preparation]), /confirmar|não informado|não informada|não legível/i);
 });
 
-test('cada receita do livro aponta para uma imagem da preparação, presente no projeto', async () => {
-  for (const recipe of recipesProduct.recipes) {
+test('cada receita dos livros aponta para uma imagem da preparação, presente no projeto', async () => {
+  for (const recipe of allRecipes) {
     assert.equal(recipe.image.reference, false);
     assert.equal(recipe.image.generated, true);
     assert.ok((await stat(`public${recipe.image.src}`)).size > 10000, recipe.slug);
@@ -103,28 +110,42 @@ test('atualização do conteúdo antigo preserva fichas e fotos editadas pela pr
 });
 
 test('HTML offline é autocontido e contém exatamente as receitas publicadas', async () => {
-  const html = await readFile('artifacts/recipes/7-receitas-para-ajudar-voce-a-desinflamar-offline.html', 'utf8');
-  const $ = load(html);
-  const published = recipesProduct.recipes.filter(recipe => recipe.published);
-  assert.equal($('.recipe').length, published.length);
-  assert.equal($('img[src^="data:image/"]').length, published.length + 1);
-  assert.equal($('style').length, 1);
-  assert.equal($('script[src],link[href^="http"],img[src^="http"],link[rel="stylesheet"]').length, 0);
-  assert.match(html, /connect-src 'none'/);
-  assert.equal(/\bfetch\s*\(/.test(html), false);
-  assert.equal(/url\(\s*['"]?https?:\/\//i.test(html), false);
-  assert.equal(/\.img_tmp_refs|instagram|reels/i.test(html), false);
-  const embedded = JSON.parse($('#product-data').text());
-  assert.deepEqual(embedded.recipes.map((recipe) => recipe.name), published.map((recipe) => recipe.name));
+  for (const [name, product] of [['7-receitas-para-ajudar-voce-a-desinflamar', recipesProduct], ['receitas-glp1', glpRecipesProduct]]) {
+    const html = await readFile(`artifacts/recipes/${name}-offline.html`, 'utf8');
+    const $ = load(html);
+    const published = product.recipes.filter(recipe => recipe.published);
+    assert.equal($('.recipe').length, published.length);
+    assert.equal($('img[src^="data:image/"]').length, published.length + 1);
+    assert.equal($('style').length, 1);
+    assert.equal($('script[src],link[href^="http"],img[src^="http"],link[rel="stylesheet"]').length, 0);
+    assert.match(html, /connect-src 'none'/);
+    assert.equal(/\bfetch\s*\(/.test(html), false);
+    assert.equal(/url\(\s*['"]?https?:\/\//i.test(html), false);
+    assert.equal(/\.img_tmp_refs|instagram|reels/i.test(html), false);
+    const embedded = JSON.parse($('#product-data').text());
+    assert.deepEqual(embedded.recipes.map((recipe) => recipe.name), published.map((recipe) => recipe.name));
+    if (product.guide) {
+      assert.equal(embedded.guide.chapters.length, 11);
+      assert.equal($('.product-guide__chapters>details').length, 11);
+      assert.equal($('.product-guide__journal>div').length, 6);
+      assert.equal(embedded.recipes.filter(recipe => recipe.category === 'bebida').length, 8);
+      assert.ok(html.includes('Refrigere perecíveis em até duas horas'));
+    }
+  }
 });
 
 test('landing e shell protegido não entregam o preparo; sitemap omite área adquirida', async () => {
   const landing = await readFile('dist/livro-de-receitas/index.html', 'utf8');
   const protectedPage = await readFile('dist/minhas-receitas/index.html', 'utf8');
+  const glpLanding = await readFile('dist/receitas-glp-1/index.html', 'utf8');
   const sitemap = await readFile('dist/sitemap.xml', 'utf8');
   assert.match(landing, /Livro de receitas/);
   assert.equal(landing.includes('Misture todos os ingredientes até obter uma massa uniforme.'), false);
   assert.equal(protectedPage.includes('Misture todos os ingredientes até obter uma massa uniforme.'), false);
+  assert.match(glpLanding, /À mesa com GLP-1/);
+  assert.equal(glpLanding.includes('Misture o leite e a aveia em uma panela pequena.'), false);
+  assert.equal(glpLanding.includes('Refrigere perecíveis em até duas horas'), false);
+  assert.equal(protectedPage.includes('Refrigere perecíveis em até duas horas'), false);
   assert.match(protectedPage, /noindex, nofollow/);
   assert.equal(sitemap.includes('/minhas-receitas'), false);
   assert.equal(sitemap.includes('/livro-de-receitas'), true);
@@ -136,5 +157,7 @@ test('landing e shell protegido não entregam o preparo; sitemap omite área adq
   for (const bundle of bundles) {
     const source = await readFile(`dist/assets/${bundle}`, 'utf8');
     assert.equal(source.includes('Misture todos os ingredientes até obter uma massa uniforme.'), false, `preparo encontrado no bundle ${bundle}`);
+    assert.equal(source.includes('Misture o leite e a aveia em uma panela pequena.'), false, `receita GLP encontrada no bundle ${bundle}`);
+    assert.equal(source.includes('Refrigere perecíveis em até duas horas'), false, `guia GLP encontrado no bundle ${bundle}`);
   }
 });

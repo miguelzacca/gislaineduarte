@@ -863,14 +863,14 @@ export const recipesProductPreview = Object.freeze({
 });
 export const glpRecipesProductPreview = Object.freeze({
   "id": "receitas-glp1",
-  "title": "Receitas para GLP-1",
-  "shortTitle": "Receitas para GLP-1",
-  "subtitle": "Preparações em pequenas porções para apoiar a conversa com sua nutricionista durante o acompanhamento.",
-  "description": "Livro educativo com preparações simples, texturas variadas, ingredientes e cuidados para personalizar durante o acompanhamento nutricional de quem utiliza GLP-1.",
-  "positioning": "Coleção digital de receitas",
+  "title": "À mesa com GLP-1",
+  "shortTitle": "À mesa com GLP-1",
+  "subtitle": "Receitas, bebidas e um guia prático para cuidar da alimentação durante o tratamento.",
+  "description": "Uma coleção própria para adultos em acompanhamento com GLP-1: preparações doces e salgadas, bebidas, orientações de tolerância alimentar, organização da semana e cuidados para conversar com sua equipe.",
+  "positioning": "Livro e guia de alimentação durante o uso de GLP-1",
   "publicPath": "/receitas-glp-1",
   "experiencePath": "/minhas-receitas?product=receitas-glp1",
-  "educationalNotice": "Material educativo. A tolerância, a porção e as necessidades nutricionais variam. As receitas não substituem acompanhamento e não orientam doses ou ajustes de medicamentos GLP-1.",
+  "educationalNotice": "Material educativo para adultos em acompanhamento médico e nutricional. As estratégias podem ajudar na tolerância alimentar, mas não tratam nem eliminam efeitos adversos. Não altere medicamentos por conta própria. Porções culinárias não são uma prescrição individual.",
   "commerce": {
     "currency": "BRL",
     "priceCents": null,
@@ -879,84 +879,888 @@ export const glpRecipesProductPreview = Object.freeze({
   },
   "hero": {
     "image": {
-      "src": "/images/foods/papaya.jpg",
-      "width": 960,
-      "height": 720,
-      "alt": "Mamão cortado; foto representativa, sem identificação da variedade Formosa.",
+      "src": "/images/glp-recipes/creme-abobora-frango.jpg",
+      "width": 1440,
+      "height": 1080,
+      "alt": "Imagem ilustrativa de creme de abóbora com frango, em apresentação sobre mesa clara.",
       "credit": {
-        "id": "papaya",
-        "name": "Mamão Formosa",
-        "file": "/images/foods/papaya.jpg",
-        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Papaya_-_longitudinal_section.jpg",
-        "author": "Ivar Leidus",
-        "license": "CC BY-SA 4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-        "caption": "Mamão cortado; foto representativa, sem identificação da variedade Formosa.",
-        "title": "File:Papaya - longitudinal section.jpg",
-        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Papaya_-_longitudinal_section.jpg/960px-Papaya_-_longitudinal_section.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/09/Papaya_-_longitudinal_section.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-        "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-        "sha256": "776831bf16b054b02c29a12d340c9c96e6cfe3b6ee53d72e810b4865a3cdec2e",
-        "bytes": 36075
+        "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+        "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
       },
-      "reference": true
+      "reference": false,
+      "generated": true
     },
-    "socialImage": "/images/og-7-receitas.jpg"
+    "socialImage": "/images/og-glp1.jpg"
   },
   "formats": [
     {
       "id": "interactive",
-      "title": "Experiência interativa",
-      "description": "Pesquise, filtre, marque favoritas, acompanhe o preparo e organize sua lista de compras."
+      "title": "Livro e guia no site",
+      "description": "Consulte o guia, pesquise pratos e bebidas, ajuste quantidades e monte sua lista de compras na área adquirida."
     },
     {
       "id": "offline",
-      "title": "Versão offline",
-      "description": "Leve a jornada com você em um único arquivo que funciona mesmo sem internet."
+      "title": "HTML para levar com você",
+      "description": "O mesmo conteúdo, com fotos, capítulos e ferramentas, em um arquivo que abre sem internet."
     },
     {
       "id": "pdf",
-      "title": "PDF para consultar ou imprimir",
-      "description": "Uma edição A4 cuidadosamente diagramada para a cozinha, o celular ou o papel."
+      "title": "PDF diagramado",
+      "description": "Livro com receitas ilustradas, guia, roteiro semanal e fichas de apoio para consultar no celular ou imprimir."
     }
   ],
   "whatYouFind": [
-    "Receitas doces e salgadas com ingredientes e preparo organizados.",
-    "Alertas claros de alergênicos, substituições e observações importantes.",
-    "Checklist por receita e lista de compras consolidada.",
-    "Orientações de tempo apenas quando informadas ou marcadas como aproximadas."
+    "30 receitas com ingredientes, rendimento, preparo e imagens ilustrativas.",
+    "8 bebidas, entre águas aromatizadas, infusão e lanches líquidos.",
+    "Guia educativo sobre apetite, proteína, hidratação e tolerância digestiva.",
+    "Cuidados para náusea, refluxo, constipação e diarreia, com sinais de alerta.",
+    "Roteiro de combinações para a semana, conservação e lista de compras.",
+    "Modelo de observações e perguntas para levar à consulta."
   ],
   "audience": [
-    "Quem deseja variar preparações simples sem perder sabor.",
-    "Quem prefere ter receitas e compras organizadas em um só lugar.",
-    "Quem busca um primeiro passo prático antes de um cuidado nutricional individualizado."
+    "Adultos que usam medicamentos com ação em GLP-1 sob acompanhamento e querem organizar a alimentação.",
+    "Quem busca ideias de pratos, lanches e bebidas com porções e texturas ajustáveis.",
+    "Quem prefere entender os cuidados e discutir adaptações com a equipe de saúde."
   ],
   "faqs": [
     {
-      "question": "Este material substitui uma consulta nutricional?",
-      "answer": "Não. A coleção tem caráter educativo e oferece receitas para apoiar a rotina. Necessidades clínicas, alergias, objetivos e adaptações pessoais pedem avaliação individualizada."
+      "question": "O livro elimina efeitos colaterais do medicamento?",
+      "answer": "Não. Oferece educação alimentar e possibilidades de preparo que podem ajudar na tolerância. Não trata efeitos adversos e orienta quando procurar avaliação."
     },
     {
-      "question": "As receitas são todas sem glúten?",
-      "answer": "Não. Algumas usam aveia, que exige certificação e controle de contaminação cruzada, e outras só podem ser apresentadas como sem glúten quando todos os ingredientes forem certificados e o preparo for protegido de contato cruzado."
+      "question": "É um plano alimentar individual?",
+      "answer": "Não. As porções são culinárias e o roteiro semanal é um repertório de combinações. Sua nutricionista define a adequação ao seu contexto."
     },
     {
-      "question": "Posso ajustar a quantidade dos ingredientes?",
-      "answer": "A experiência calcula multiplicadores para medidas numéricas. Ingredientes descritos como “a gosto” permanecem assim, e o ponto, a forma e o tempo de cocção ainda precisam ser observados."
+      "question": "Também tem bebidas?",
+      "answer": "Sim. Há águas aromatizadas, uma infusão suave e lanches líquidos. Nenhuma bebida substitui solução de reidratação oral quando indicada."
     },
     {
-      "question": "Como funcionam o PDF e a versão offline?",
-      "answer": "Depois da liberação do acesso, os dois arquivos ficam disponíveis na área da coleção. O HTML abre diretamente no navegador sem internet; o PDF pode ser salvo ou impresso."
+      "question": "O que recebo após a liberação do acesso?",
+      "answer": "O livro e o guia na área do site, um HTML autocontido que funciona sem internet e um PDF diagramado para salvar ou imprimir."
     },
     {
-      "question": "As receitas têm calorias ou macronutrientes?",
-      "answer": "Valores nutricionais aparecem apenas quando a profissional cadastra um cálculo com fonte, rendimento e porções definidos. Receitas sem esse cálculo não exibem estimativas."
+      "question": "As imagens são fotos de receitas testadas?",
+      "answer": "As imagens foram geradas com IA para ilustrar sugestões de apresentação. A aparência e o rendimento reais podem variar. Esta edição não declara teste em cozinha."
+    },
+    {
+      "question": "O material orienta doses ou mudanças de medicamento?",
+      "answer": "Não. Essas decisões pertencem ao prescritor. O guia traz cuidados alimentares e sinais de quando procurar atendimento."
     }
   ],
+  "guideOutline": [
+    {
+      "id": "boas-vindas",
+      "kicker": "01 · Comece por aqui",
+      "title": "Uma mesa possível, no seu ritmo"
+    },
+    {
+      "id": "como-funciona",
+      "kicker": "02 · Entenda o tratamento",
+      "title": "O que GLP-1 tem a ver com a alimentação?"
+    },
+    {
+      "id": "base-alimentar",
+      "kicker": "03 · A base da rotina",
+      "title": "Comer menos volume, continuar se nutrindo"
+    },
+    {
+      "id": "nausea",
+      "kicker": "04 · Tolerância alimentar",
+      "title": "Quando aparece náusea ou saciedade precoce"
+    },
+    {
+      "id": "refluxo",
+      "kicker": "05 · Tolerância alimentar",
+      "title": "Azia, refluxo e sensação de estômago cheio"
+    },
+    {
+      "id": "intestino",
+      "kicker": "06 · Tolerância alimentar",
+      "title": "Constipação e diarreia pedem ajustes diferentes"
+    },
+    {
+      "id": "bebidas",
+      "kicker": "07 · Além do prato",
+      "title": "Hidratação e bebidas com intenção"
+    },
+    {
+      "id": "alertas",
+      "kicker": "08 · Cuidado essencial",
+      "title": "Quando procurar ajuda"
+    },
+    {
+      "id": "cozinha",
+      "kicker": "09 · Cozinha organizada",
+      "title": "Prepare com segurança, guarde com cuidado"
+    },
+    {
+      "id": "semana",
+      "kicker": "10 · Planeje sem engessar",
+      "title": "Uma semana de possibilidades"
+    },
+    {
+      "id": "consulta",
+      "kicker": "11 · Leve para a consulta",
+      "title": "Suas observações tornam o cuidado mais claro"
+    }
+  ],
+  "edition": "1ª edição · outubro de 2026",
   "recipeCounts": {
-    "total": 0,
-    "preparations": 0,
+    "total": 30,
+    "preparations": 30,
     "variations": 0
   },
-  "recipes": []
+  "recipes": [
+    {
+      "id": "glp-mingau-aveia",
+      "slug": "glp-mingau-aveia",
+      "number": 1,
+      "name": "Mingau cremoso de banana e aveia",
+      "category": "doce",
+      "introduction": "Aveia cozida no leite com a doçura da banana madura. Uma preparação morna, de colher, para variar o café da manhã.",
+      "tags": [
+        "Textura macia",
+        "Café da manhã",
+        "Aveia"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/mingau-banana-aveia.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de mingau cremoso de banana e aveia, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "ovos-ricota",
+      "slug": "ovos-ricota",
+      "number": 2,
+      "name": "Ovos mexidos com ricota",
+      "category": "salgada",
+      "introduction": "Ovos completamente cozidos, com ricota para uma textura macia. Combine com o acompanhamento previsto no seu plano.",
+      "tags": [
+        "Café da manhã",
+        "Sem fritura por imersão",
+        "Ovos"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/ovos-ricota.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de ovos mexidos com ricota, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "glp-iogurte-mamao",
+      "slug": "glp-iogurte-mamao",
+      "number": 3,
+      "name": "Iogurte com mamão e aveia",
+      "category": "doce",
+      "introduction": "Uma tigela fria com fruta, iogurte e uma pequena quantidade de aveia. Pode ser montada em poucos minutos.",
+      "tags": [
+        "Sem fogão",
+        "Fruta",
+        "Café da manhã"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/iogurte-mamao.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de iogurte com mamão e aveia, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "panqueca-banana",
+      "slug": "panqueca-banana",
+      "number": 4,
+      "name": "Panquequinhas de banana e aveia",
+      "category": "doce",
+      "introduction": "Pequenas panquecas sem adição de açúcar na fórmula, feitas na frigideira. Banana, ovo e aveia formam a base.",
+      "tags": [
+        "Café da manhã",
+        "Frigideira",
+        "Sem adição de açúcar"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/panqueca-banana.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de panquequinhas de banana e aveia, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "cuscuz-ovo",
+      "slug": "cuscuz-ovo",
+      "number": 5,
+      "name": "Cuscuz macio com ovo e abobrinha",
+      "category": "salgada",
+      "introduction": "Uma versão simples de cuscuz de milho com ovo e abobrinha cozida. Sirva em uma tigela, sem compactar demais.",
+      "tags": [
+        "Milho",
+        "Café da manhã",
+        "Textura macia"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/cuscuz-ovo.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de cuscuz macio com ovo e abobrinha, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "iogurte-kiwi",
+      "slug": "iogurte-kiwi",
+      "number": 6,
+      "name": "Iogurte com kiwi e aveia",
+      "category": "doce",
+      "introduction": "Kiwi e aveia trazem variedade a um lanche de iogurte. Inclua gradualmente alimentos com fibras, conforme orientação e tolerância.",
+      "tags": [
+        "Fruta",
+        "Sem fogão",
+        "Lanche"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/iogurte-kiwi.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de iogurte com kiwi e aveia, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "glp-creme-abobora-frango",
+      "slug": "glp-creme-abobora-frango",
+      "number": 7,
+      "name": "Creme de abóbora com frango",
+      "category": "salgada",
+      "introduction": "Abóbora batida com água e frango desfiado. Um creme sem adição de creme de leite, fácil de porcionar.",
+      "tags": [
+        "Textura macia",
+        "Frango",
+        "Congela"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/creme-abobora-frango.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de creme de abóbora com frango, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "canja-frango",
+      "slug": "canja-frango",
+      "number": 8,
+      "name": "Canja de frango com arroz e cenoura",
+      "category": "salgada",
+      "introduction": "Um caldo com arroz macio, frango e cenoura. A quantidade de água pode ser ajustada para uma textura mais espessa.",
+      "tags": [
+        "Textura macia",
+        "Arroz",
+        "Frango"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/canja-frango.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de canja de frango com arroz e cenoura, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "glp-peixe-pure",
+      "slug": "glp-peixe-pure",
+      "number": 9,
+      "name": "Peixe em lascas com purê de mandioquinha",
+      "category": "salgada",
+      "introduction": "Peixe cozido e mandioquinha amassada, com abobrinha para acompanhar. Uma composição suave, sem molho ácido.",
+      "tags": [
+        "Peixe",
+        "Textura macia",
+        "Sem molho ácido"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/peixe-pure.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de peixe em lascas com purê de mandioquinha, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "glp-arroz-frango-cenoura",
+      "slug": "glp-arroz-frango-cenoura",
+      "number": 10,
+      "name": "Arroz macio com frango e cenoura",
+      "category": "salgada",
+      "introduction": "Uma maneira de transformar bases prontas em uma preparação úmida. Sirva com os acompanhamentos definidos no seu plano.",
+      "tags": [
+        "Bases prontas",
+        "Frango",
+        "Arroz"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/arroz-frango-cenoura.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de arroz macio com frango e cenoura, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "glp-lentilha-legumes",
+      "slug": "glp-lentilha-legumes",
+      "number": 11,
+      "name": "Lentilha macia com legumes",
+      "category": "salgada",
+      "introduction": "Uma preparação de leguminosa com legumes cozidos, para ampliar o repertório vegetal em pequenas etapas.",
+      "tags": [
+        "Leguminosa",
+        "Vegetal",
+        "Textura macia"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/lentilha-legumes.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de lentilha macia com legumes, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "arroz-lentilha",
+      "slug": "arroz-lentilha",
+      "number": 12,
+      "name": "Arroz com lentilha e cenoura",
+      "category": "salgada",
+      "introduction": "Uma combinação vegetal de arroz, lentilha e cenoura. As bases já cozidas tornam o preparo rápido.",
+      "tags": [
+        "Vegetal",
+        "Bases prontas",
+        "Leguminosa"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/arroz-lentilha.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de arroz com lentilha e cenoura, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "almondegas-frango",
+      "slug": "almondegas-frango",
+      "number": 13,
+      "name": "Almôndegas de frango com creme de abóbora",
+      "category": "salgada",
+      "introduction": "Pequenas almôndegas assadas, servidas com um creme de abóbora em vez de molho de tomate.",
+      "tags": [
+        "Forno",
+        "Frango",
+        "Sem molho ácido"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/almondegas-frango.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de almôndegas de frango com creme de abóbora, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "glp-omelete-abobrinha",
+      "slug": "glp-omelete-abobrinha",
+      "number": 14,
+      "name": "Omelete de abobrinha no forno",
+      "category": "salgada",
+      "introduction": "Uma omelete em pequenos ramequins, com abobrinha e ricota. O centro deve ficar completamente cozido.",
+      "tags": [
+        "Forno",
+        "Ovos",
+        "Refeição salgada"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/omelete-abobrinha.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de omelete de abobrinha no forno, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "tofu-arroz",
+      "slug": "tofu-arroz",
+      "number": 15,
+      "name": "Tofu macio com arroz e abobrinha",
+      "category": "salgada",
+      "introduction": "Uma opção vegetal com tofu, arroz e abobrinha cozida. O tempero suave valoriza a textura dos ingredientes.",
+      "tags": [
+        "Vegetal",
+        "Tofu",
+        "Arroz"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/tofu-arroz.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de tofu macio com arroz e abobrinha, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "bowl-frango-quinoa",
+      "slug": "bowl-frango-quinoa",
+      "number": 16,
+      "name": "Bowl morno de frango, quinoa e legumes",
+      "category": "salgada",
+      "introduction": "Uma tigela de frango e quinoa com cenoura e abobrinha. Pode ser organizada com bases cozidas previamente.",
+      "tags": [
+        "Bases prontas",
+        "Frango",
+        "Quinoa"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/bowl-frango-quinoa.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de bowl morno de frango, quinoa e legumes, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "pate-frango",
+      "slug": "pate-frango",
+      "number": 17,
+      "name": "Patê de frango com ricota",
+      "category": "salgada",
+      "introduction": "Um patê refrigerado de frango e ricota para montar pequenos lanches. O pão ou a torrada são escolhidos separadamente.",
+      "tags": [
+        "Lanche",
+        "Frio",
+        "Frango"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/pate-frango.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de patê de frango com ricota, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "bolinhos-frango-batata",
+      "slug": "bolinhos-frango-batata",
+      "number": 18,
+      "name": "Bolinhos assados de frango e batata",
+      "category": "salgada",
+      "introduction": "Frango cozido e batata amassada em bolinhos pequenos. A textura é macia e o preparo dispensa fritura por imersão.",
+      "tags": [
+        "Forno",
+        "Lanche",
+        "Congela"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/bolinhos-frango-batata.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de bolinhos assados de frango e batata, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "maca-iogurte",
+      "slug": "maca-iogurte",
+      "number": 19,
+      "name": "Maçã cozida com iogurte",
+      "category": "doce",
+      "introduction": "Maçã amolecida na panela, servida com iogurte natural. Uma combinação de fruta e lácteo para um lanche de colher.",
+      "tags": [
+        "Fruta cozida",
+        "Lanche",
+        "Textura macia"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/maca-iogurte.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de maçã cozida com iogurte, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "pudim-chia",
+      "slug": "pudim-chia",
+      "number": 20,
+      "name": "Pudim de iogurte e chia com mamão",
+      "category": "doce",
+      "introduction": "Chia totalmente hidratada em iogurte, com mamão para finalizar. Uma opção de preparo antecipado para dias de boa tolerância.",
+      "tags": [
+        "Preparo antecipado",
+        "Chia hidratada",
+        "Lanche"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/pudim-chia.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de pudim de iogurte e chia com mamão, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "glp-banana-iogurte",
+      "slug": "glp-banana-iogurte",
+      "number": 21,
+      "name": "Creme de banana com iogurte e cacau",
+      "category": "doce",
+      "introduction": "Um creme de colher com banana madura, iogurte e um pouco de cacau. A banana oferece a doçura da preparação.",
+      "tags": [
+        "Sem fogão",
+        "Lanche",
+        "Cacau"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/creme-banana-cacau.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de creme de banana com iogurte e cacau, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "pera-ricota",
+      "slug": "pera-ricota",
+      "number": 22,
+      "name": "Pera assada com ricota",
+      "category": "doce",
+      "introduction": "Pera macia com uma pequena porção de ricota. Uma sobremesa simples, sem calda ou adição de açúcar na fórmula.",
+      "tags": [
+        "Fruta assada",
+        "Sobremesa",
+        "Forno"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/pera-ricota.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de pera assada com ricota, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "agua-pepino",
+      "slug": "agua-pepino",
+      "number": 23,
+      "name": "Água aromatizada com pepino",
+      "category": "bebida",
+      "introduction": "Água potável com fatias finas de pepino para variar o sabor. Uma opção de hidratação, sem promessas de detox.",
+      "tags": [
+        "Hidratação",
+        "Sem cafeína",
+        "Sem açúcar adicionado"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/agua-pepino.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de água aromatizada com pepino, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "infusao-gengibre",
+      "slug": "infusao-gengibre",
+      "number": 24,
+      "name": "Infusão suave de gengibre",
+      "category": "bebida",
+      "introduction": "Uma infusão pouco concentrada para variar o sabor da água. É uma bebida culinária, sem indicação terapêutica.",
+      "tags": [
+        "Infusão culinária",
+        "Sem cafeína",
+        "Sem açúcar adicionado"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/infusao-gengibre.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de infusão suave de gengibre, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "vitamina-mamao",
+      "slug": "vitamina-mamao",
+      "number": 25,
+      "name": "Vitamina de mamão com iogurte",
+      "category": "bebida",
+      "introduction": "Mamão e iogurte em uma bebida cremosa, de volume moderado. Uma possibilidade de lanche líquido.",
+      "tags": [
+        "Lanche líquido",
+        "Mamão",
+        "Sem adição de açúcar"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/vitamina-mamao.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de vitamina de mamão com iogurte, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "smoothie-banana",
+      "slug": "smoothie-banana",
+      "number": 26,
+      "name": "Bebida cremosa de banana e aveia",
+      "category": "bebida",
+      "introduction": "Banana, leite e aveia batidos em uma bebida simples. Reserve tempo para hidratar a aveia e obter uma textura mais lisa.",
+      "tags": [
+        "Lanche líquido",
+        "Aveia",
+        "Sem adição de açúcar"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/smoothie-banana.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de bebida cremosa de banana e aveia, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "leite-canela",
+      "slug": "leite-canela",
+      "number": 27,
+      "name": "Leite morno com um toque de canela",
+      "category": "bebida",
+      "introduction": "Uma bebida de preparo curto, com aroma discreto de canela. A escolha da temperatura depende de você.",
+      "tags": [
+        "Bebida morna",
+        "Sem cafeína",
+        "Leite"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/leite-canela.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de leite morno com um toque de canela, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "bebida-morango",
+      "slug": "bebida-morango",
+      "number": 28,
+      "name": "Bebida de morango com iogurte",
+      "category": "bebida",
+      "introduction": "Morango e iogurte natural em uma bebida de lanche. O volume pode ser dividido em dois copos pequenos.",
+      "tags": [
+        "Lanche líquido",
+        "Morango",
+        "Sem adição de açúcar"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/bebida-morango.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de bebida de morango com iogurte, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "smoothie-manga-tofu",
+      "slug": "smoothie-manga-tofu",
+      "number": 29,
+      "name": "Bebida de manga com tofu macio",
+      "category": "bebida",
+      "introduction": "Uma bebida vegetal com manga madura e tofu macio, sem leite na fórmula. Confira o rótulo do tofu e o preparo para alergias.",
+      "tags": [
+        "Vegetal",
+        "Lanche líquido",
+        "Tofu"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/smoothie-manga-tofu.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de bebida de manga com tofu macio, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "agua-morango",
+      "slug": "agua-morango",
+      "number": 30,
+      "name": "Água aromatizada com morango",
+      "category": "bebida",
+      "introduction": "Água com uma pequena quantidade de fruta para variar o aroma. Sem xaropes, suplementos ou promessa de tratamento.",
+      "tags": [
+        "Hidratação",
+        "Sem cafeína",
+        "Sem açúcar adicionado"
+      ],
+      "image": {
+        "src": "/images/glp-recipes/agua-morango.jpg",
+        "width": 1440,
+        "height": 1080,
+        "alt": "Imagem ilustrativa de água aromatizada com morango, em apresentação sobre mesa clara.",
+        "credit": {
+          "author": "Imagem gerada com IA para a coleção de Gislaine Duarte",
+          "license": "Imagem ilustrativa gerada; não é fotografia de receita testada."
+        },
+        "reference": false,
+        "generated": true
+      }
+    }
+  ]
 });

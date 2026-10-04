@@ -4,7 +4,7 @@
 
 Repositório inicialmente contém briefing, HTML de identidade, ícone PNG e retrato JPEG, sem framework. Git limpo, branch main, sem AGENTS.md aplicável. `vercel.json` vazio apareceu durante a inspeção e será preservado/adaptado somente à aplicação local, sem deploy.
 
-Fonte de verdade: prompt do usuário > instruções do projeto > briefing > identidade > assets. Domínio confirmado: https://gislaineduarte.com.br. WhatsApp final atualizado pelo usuário: 47991913588, normalizado como +55 (47) 99191-3588; e-mail: duartegisarte@gmail.com. CRN 22562 com região desconhecida não será anunciado como identificação completa. Duração 3/5 versus 3/6 não resolvida. Materiais e artigos não têm arquivos finais, portanto não serão publicados.
+Fonte de verdade: prompt do usuário > instruções do projeto > briefing > identidade > assets. Domínio confirmado: https://gislaineduarte.com.br. WhatsApp final atualizado pelo usuário: +55 (47) 9163-5624, link https://wa.me/554791635624; e-mail: duartegisarte@gmail.com. CRN 22562 com região desconhecida não será anunciado como identificação completa. Duração 3/5 versus 3/6 não resolvida. Materiais e artigos não têm arquivos finais, portanto não serão publicados.
 
 ## Conceito
 

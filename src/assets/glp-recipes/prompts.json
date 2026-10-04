@@ -1,0 +1,220 @@
+{
+  "product": "À mesa com GLP-1",
+  "createdAt": "2026-10-04",
+  "tool": "built-in image_gen",
+  "visualDirection": "Premium realistic editorial cookbook photography. Landscape 4:3, modest serving, ivory handmade ceramics or clear glass, warm ivory stone table, sage linen, natural window light, forest green accents. Matching ingredient props, no extra toppings. No text, logos, people, medicines or supplements.",
+  "waterCorrection": "Opaque colored drinks were edited with the built-in image_gen tool into clear, colorless drinking water with fruit or cucumber slices. The edited versions are the final images.",
+  "status": "Illustrative generated images; no kitchen testing or clinical approval represented.",
+  "images": [
+    {
+      "slug": "mingau-banana-aveia",
+      "file": "/images/glp-recipes/mingau-banana-aveia.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-aae1a1bd-e534-4463-9c6a-979de9c33511.png",
+      "subject": "Creamy banana oat porridge with skim milk, three banana slices.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "ovos-ricota",
+      "file": "/images/glp-recipes/ovos-ricota.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-60c88234-43e3-4eae-ab36-4c7fa03cf28c.png",
+      "subject": "Soft fully cooked scrambled eggs mixed with white ricotta, tiny parsley garnish, one small slice toasted bread at side, delicate yellow and white curds, not runny.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "iogurte-mamao",
+      "file": "/images/glp-recipes/iogurte-mamao.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-879102f9-db54-411b-b8b7-744609a40c35.png",
+      "subject": "A small ivory bowl of thick plain natural yogurt with orange papaya cubes and a modest spoonful of fine oats visible on top; no seeds, no honey.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "panqueca-banana",
+      "file": "/images/glp-recipes/panqueca-banana.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-0c15e229-e08e-47a1-aede-7d95c4f9ad9e.png",
+      "subject": "Two small golden banana and oat pancakes, one sliced open to show a soft fully baked center, three banana slices, no syrup.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "cuscuz-ovo",
+      "file": "/images/glp-recipes/cuscuz-ovo.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-6e59ebb5-94f5-417d-b843-8dc18282d1cc.png",
+      "subject": "A small mound of soft yellow Brazilian steamed corn couscous topped with fully cooked scrambled egg and small soft zucchini cubes, no bacon, no cheese.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "iogurte-kiwi",
+      "file": "/images/glp-recipes/iogurte-kiwi.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-d6abba0d-acfe-4ef4-939d-fbdbf28bd59b.png",
+      "subject": "Thick natural white yogurt in a small bowl topped with sliced green kiwi and a little fine rolled oats.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "creme-abobora-frango",
+      "file": "/images/glp-recipes/creme-abobora-frango.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-218703a0-d76f-460d-bbc2-fe7452a64b2c.png",
+      "subject": "Smooth orange pumpkin soup with a small mound of finely shredded fully cooked white chicken, tiny chopped parsley. No cream, no croutons.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "canja-frango",
+      "file": "/images/glp-recipes/canja-frango.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-04aff976-5020-4554-985c-2ae64d9ba96e.png",
+      "subject": "A small bowl of Brazilian chicken rice soup, clear golden broth, soft white rice, finely shredded chicken and small cooked carrot cubes, restrained parsley.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "peixe-pure",
+      "file": "/images/glp-recipes/peixe-pure.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-82606cc7-adf6-4db2-9d4b-869f0f3636b3.png",
+      "subject": "Soft creamy mashed yellow arracacha (mandioquinha) topped with flakes of steamed white fish, cooked zucchini cubes on side, tiny parsley. No lemon, no tomato.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "arroz-frango-cenoura",
+      "file": "/images/glp-recipes/arroz-frango-cenoura.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-f4ba7778-40be-4143-9d50-f31f34fdf90f.png",
+      "subject": "A moist bowl of soft white rice, finely shredded fully cooked chicken and small tender carrot cubes. No peas or corn.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "lentilha-legumes",
+      "file": "/images/glp-recipes/lentilha-legumes.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-dd049861-7202-432d-b2eb-d98c5fda965c.png",
+      "subject": "Small shallow bowl of tender cooked brown lentils with small soft zucchini and carrot cubes, no rice, no meat.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "arroz-lentilha",
+      "file": "/images/glp-recipes/arroz-lentilha.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-1df1e724-e45e-4572-bf33-ccf6e6427d21.png",
+      "subject": "Small bowl of white rice mixed with tender brown lentils and diced cooked carrots, simple moist composition, no meat.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "almondegas-frango",
+      "file": "/images/glp-recipes/almondegas-frango.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-d19d9973-7532-4598-848d-aad665b783d0.png",
+      "subject": "Four small golden oven-baked chicken meatballs served on a smooth orange pumpkin puree sauce, no tomato, no spaghetti.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "omelete-abobrinha",
+      "file": "/images/glp-recipes/omelete-abobrinha.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-4c74d8d7-96fa-489a-9ba5-a10596d7466e.png",
+      "subject": "A small ivory ramekin containing fully cooked golden baked egg frittata with small zucchini pieces and white ricotta, moist firm center, no runny eggs.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "tofu-arroz",
+      "file": "/images/glp-recipes/tofu-arroz.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-98b2d70c-1118-45ac-8250-256d6f0bb140.png",
+      "subject": "Small shallow bowl with white tofu cubes, moist white rice and soft zucchini cubes. No soy sauce, no sesame, no meat.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "bowl-frango-quinoa",
+      "file": "/images/glp-recipes/bowl-frango-quinoa.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-d5a4475b-b5cc-476e-883f-2f0d5838553f.png",
+      "subject": "A small warm bowl with tender cooked quinoa, finely shredded chicken, soft carrot and zucchini cubes.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "pate-frango",
+      "file": "/images/glp-recipes/pate-frango.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-c17396f1-7397-4857-862a-6153dcae026b.png",
+      "subject": "Small ramekin with creamy finely shredded chicken and white ricotta yogurt spread, one small plain toast at side, no mayonnaise, no herbs.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "bolinhos-frango-batata",
+      "file": "/images/glp-recipes/bolinhos-frango-batata.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-d5710fb5-fde9-406c-9170-4272ef18db3c.png",
+      "subject": "Four small golden oval oven-baked chicken and potato croquettes, one opened showing moist shredded chicken and pale potato center, no sauces.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "maca-iogurte",
+      "file": "/images/glp-recipes/maca-iogurte.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-fb8b021a-cc29-4b71-a727-31e292c9ce6e.png",
+      "subject": "Small ivory bowl with thick white natural yogurt and tender peeled cooked apple cubes on top, no honey, no cinnamon, no oats.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "pudim-chia",
+      "file": "/images/glp-recipes/pudim-chia.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-516f5233-c240-4a5e-b63c-f4b93e3b4452.png",
+      "subject": "Two small clear jars containing fully hydrated black chia in white natural yogurt pudding, a few orange papaya cubes on top, no nuts.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "creme-banana-cacau",
+      "file": "/images/glp-recipes/creme-banana-cacau.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-cb845033-bc88-4fd9-8088-d752576f5009.png",
+      "subject": "Small ivory bowl of smooth pale brown banana yogurt cocoa cream, two thin banana slices at edge, no chocolate chips, no nuts, no whipped cream.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "pera-ricota",
+      "file": "/images/glp-recipes/pera-ricota.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-b1618e1e-c380-49a4-9d3e-d03f5fadebee.png",
+      "subject": "Two tender peeled baked pear halves served with a small amount of crumbled white ricotta, no honey, no nuts, no cinnamon.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "agua-pepino",
+      "file": "/images/glp-recipes/agua-pepino.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-021cef4a-30f7-4b6e-8871-c5f723da7752.png",
+      "subject": "A small clear glass of plain water with three thin cucumber slices visible inside; one cucumber slice as ingredient prop. No mint, no lemon.",
+      "correctedToClearWater": true
+    },
+    {
+      "slug": "infusao-gengibre",
+      "file": "/images/glp-recipes/infusao-gengibre.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-cebc5ab2-c0cc-47fb-b561-e19bad208b69.png",
+      "subject": "An ivory ceramic cup of very pale translucent ginger infusion, two tiny slices of fresh ginger on a small saucer as ingredient props. No lemon, no honey, no spices.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "vitamina-mamao",
+      "file": "/images/glp-recipes/vitamina-mamao.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-0a7a4ace-8962-4262-a36e-50f9ba124d35.png",
+      "subject": "A small clear glass of creamy pale orange papaya and natural yogurt skim milk smoothie. Two papaya cubes on small side dish. No oats, no seeds, no garnish.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "smoothie-banana",
+      "file": "/images/glp-recipes/smoothie-banana.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-3275dd1b-9258-4f97-b09e-bbbed6b443de.png",
+      "subject": "A small clear glass of smooth creamy off-white banana and fine oat skim milk drink, slight oat texture, one banana slice as side ingredient prop, no cinnamon.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "leite-canela",
+      "file": "/images/glp-recipes/leite-canela.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-508111bc-53aa-4961-8cb4-9abce10a5074.png",
+      "subject": "An ivory ceramic cup of warm skim milk, very lightly dusted with a tiny pinch of cinnamon, no foam art, no coffee, no whipped cream.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "bebida-morango",
+      "file": "/images/glp-recipes/bebida-morango.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-f500d602-3220-41bb-9aa6-e02e452268d9.png",
+      "subject": "A small clear glass of soft pastel pink strawberry natural yogurt drink, one strawberry at side. Smooth texture, no garnish, no cream.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "smoothie-manga-tofu",
+      "file": "/images/glp-recipes/smoothie-manga-tofu.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-0012d46e-7d51-4cd3-8fc2-0c4f86bfe5fd.png",
+      "subject": "A small clear glass of smooth pale golden yellow mango and soft tofu drink, two small mango cubes and a small plain tofu cube at side as ingredients. No dairy, no seeds, no garnish.",
+      "correctedToClearWater": false
+    },
+    {
+      "slug": "agua-morango",
+      "file": "/images/glp-recipes/agua-morango.jpg",
+      "source": "C:\\Users\\Distritek\\.codex\\generated_images\\01a107b4-fbf1-7303-846c-d91f1b8d0b43\\exec-b894b8e5-e3ec-46c7-b48e-d816b4858614.png",
+      "subject": "A small clear glass of plain water with four thin strawberry slices visible inside. No mint, no lemon, no sugar, no pink syrup.",
+      "correctedToClearWater": true
+    }
+  ]
+}

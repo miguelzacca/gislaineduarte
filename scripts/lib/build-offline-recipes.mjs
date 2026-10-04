@@ -1,10 +1,12 @@
 import { formatIngredient } from '../../src/data/recipes-product.js';
+import { guideMarkup } from './glp-guide-markup.mjs';
 
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const safeJson = (value) => JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
 
 function offlineStyles(fonts) {
   return `
+@media(min-width:901px){.recipe__facts:has(>div:nth-child(3)){grid-template-columns:repeat(3,minmax(0,1fr))}}
 @font-face{font-family:Editorial;src:url(data:font/woff2;base64,${fonts.editorial}) format('woff2');font-style:normal;font-weight:300 700;font-display:swap}
 @font-face{font-family:Editorial;src:url(data:font/woff2;base64,${fonts.editorialItalic}) format('woff2');font-style:italic;font-weight:300 700;font-display:swap}
 @font-face{font-family:Body;src:url(data:font/woff2;base64,${fonts.body}) format('woff2');font-style:normal;font-weight:200 800;font-display:swap}
@@ -26,10 +28,11 @@ function ingredientMarkup(ingredient, recipeId) {
 }
 
 function recipeMarkup(recipe, index, imageData) {
+  const imageCredit = [recipe.image.generated ? 'Imagem ilustrativa gerada com IA. A aparência final pode variar conforme o preparo.' : recipe.image.reference ? 'Ingrediente de referência; não representa o resultado da receita.' : '', recipe.image.credit?.author, recipe.image.credit?.license, recipe.image.credit?.sourceUrl, recipe.image.credit?.licenseUrl].filter(Boolean).join(' · ');
   const searchable = [recipe.name, recipe.introduction, ...recipe.tags, ...recipe.ingredients.map((item) => item.display || `${item.name} ${item.unit?.singular || ''}`)].join(' ').toLocaleLowerCase('pt-BR');
   return `<article class="recipe" id="${recipe.slug}" data-recipe="${recipe.id}" data-category="${recipe.category}" data-search="${escapeHtml(searchable)}">
   <div class="recipe__hero"><img src="${imageData[recipe.slug]}" width="1000" height="1500" alt="${escapeHtml(recipe.image.alt)}"><div class="recipe__head"><p class="eyebrow">${escapeHtml(recipe.category)} · ${String(index + 1).padStart(2, '0')}</p><h2>${escapeHtml(recipe.name)}</h2><p>${escapeHtml(recipe.introduction)}</p><div class="recipe__controls"><button type="button" data-favorite="${recipe.id}" aria-pressed="false">♡ Favoritar</button><button type="button" data-prepared="${recipe.id}" aria-pressed="false">✓ Marcar como preparada</button></div></div></div>
-  <p class="editorial-context">${escapeHtml(recipe.image.generated ? 'Imagem ilustrativa gerada com IA. A apar\u00eancia final pode variar conforme o preparo.' : [recipe.image.reference ? 'Ingrediente de referência; não representa o resultado da receita.' : '', recipe.image.credit?.author, recipe.image.credit?.license, recipe.image.credit?.sourceUrl, recipe.image.credit?.licenseUrl].filter(Boolean).join(' · '))}</p><div class="recipe__facts"><div><span>Tempo</span><strong>${escapeHtml(recipe.time.label)}${recipe.time.inferred ? ' · definição editorial a confirmar' : ''}</strong></div><div><span>Equipamentos</span><strong>${escapeHtml(recipe.equipment.join(' · '))}</strong></div></div>
+  <p class="editorial-context">${escapeHtml(imageCredit)}</p><div class="recipe__facts"><div><span>Tempo</span><strong>${escapeHtml(recipe.time.label)}${recipe.time.inferred ? ' · definição editorial a confirmar' : ''}</strong></div>${recipe.yield ? `<div><span>Rendimento</span><strong>${escapeHtml(recipe.yield)}</strong></div>` : ''}<div><span>Equipamentos</span><strong>${escapeHtml(recipe.equipment.join(' · '))}</strong></div></div>
   <div class="recipe__body"><section><div class="section-title"><p class="eyebrow">Checklist</p><h3>Ingredientes</h3></div><div class="portion" aria-label="Ajustar quantidade">${[0.5, 1, 1.5, 2].filter(() => recipe.ingredients.some(item => item.quantity != null)).map((value) => `<button type="button" data-multiplier="${value}" data-recipe="${recipe.id}" aria-pressed="${value === 1}">${value === 0.5 ? '½' : value === 1.5 ? '1½' : value}×</button>`).join('')}</div><ul class="check-list">${recipe.ingredients.map((ingredient) => ingredientMarkup(ingredient, recipe.id)).join('')}</ul>${recipe.substitutions.length ? `<div class="substitution"><strong>Alternativa</strong>${recipe.substitutions.map((item) => `<p>${escapeHtml(item)}</p>`).join('')}</div>` : ''}<button class="recipe__shopping" type="button" data-shopping="${recipe.id}" aria-pressed="false">Adicionar à lista de compras</button></section>
   <section><div class="section-title"><p class="eyebrow">Passo a passo</p><h3>Modo de preparo</h3></div><ol class="steps">${recipe.preparation.map((step, stepIndex) => `<li><button type="button" data-kind="step" data-recipe="${recipe.id}" data-item="${stepIndex}" aria-pressed="false"><span>${String(stepIndex + 1).padStart(2, '0')}</span><p>${escapeHtml(step)}</p><span class="step-check">✓</span></button></li>`).join('')}</ol></section></div>
   <div class="recipe__notes"><section><h3>Observações</h3>${recipe.notes.map((note) => `<p>${escapeHtml(note)}</p>`).join('')}</section><section><h3>Alergênicos e cuidados</h3><ul class="allergens">${recipe.allergens.map((allergen) => `<li><strong>${escapeHtml(allergen.label)}</strong><span>${escapeHtml(allergen.detail)}</span></li>`).join('')}</ul></section></div><p class="editorial-context">${escapeHtml(recipe.editorialContext)}</p>${recipe.nutrition ? `<p class="editorial-context">Por porção: ${escapeHtml(recipe.nutrition.kcal)} kcal · Proteínas ${escapeHtml(recipe.nutrition.protein)} g · Carboidratos ${escapeHtml(recipe.nutrition.carbs)} g · Gorduras ${escapeHtml(recipe.nutrition.fat)} g. Fonte: ${escapeHtml(recipe.nutrition.source)}</p>` : ''}
@@ -120,14 +123,28 @@ function offlineApp() {
   document.getElementById('search').addEventListener('input', () => filter(false));
   document.getElementById('add-all').addEventListener('click', () => { shopping = DATA.recipes.map((recipe) => recipe.id); write('shopping', shopping); refreshButtons(); renderShopping(); });
   document.getElementById('clear-shopping').addEventListener('click', () => { shopping = []; shoppingChecks = []; write('shopping', shopping); write('shopping-checks', shoppingChecks); refreshButtons(); renderShopping(); });
-  document.getElementById('print').addEventListener('click', () => window.print());
+  let closedForPrint = [];
+  window.addEventListener('beforeprint', () => {
+    closedForPrint = [...document.querySelectorAll('.product-guide details:not([open])')];
+    closedForPrint.forEach(panel => { panel.open = true; });
+  });
+  window.addEventListener('afterprint', () => { closedForPrint.forEach(panel => { panel.open = false; }); closedForPrint = []; });
+  const printBook = () => window.print();
+  document.getElementById('print').addEventListener('click', printBook);
+  document.querySelectorAll('[data-print-guide]').forEach(button => button.addEventListener('click', printBook));
+  document.querySelectorAll('[data-guide-recipe]').forEach(link => link.addEventListener('click', event => {
+    event.preventDefault();
+    document.getElementById('search').value = '';
+    document.querySelectorAll('[data-filter]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.filter === 'todas')));
+    filter(false); showRecipe(link.dataset.guideRecipe);
+  }));
   DATA.recipes.forEach((recipe) => applyMultiplier(recipe.id, multipliers[recipe.id] || 1));
   refreshButtons(); refreshChecks(); renderShopping(); filter(false);
   const initial = document.getElementById(current) ? current : DATA.recipes[0]?.slug || '';
   showRecipe(initial, false);
 }
 
-export function buildOfflineHtml({ data, imageData, heroData, fonts, brandSvg }) {
+export function buildOfflineHtml({ data, imageData, heroData, fonts, brandSvg, guideStyles = '' }) {
   const recipes = data.recipes;
   const offlineData = {
     ...data,
@@ -139,10 +156,11 @@ export function buildOfflineHtml({ data, imageData, heroData, fonts, brandSvg })
   const navigation = recipes.map((recipe, index) => `<a href="#${recipe.slug}" data-nav data-id="${recipe.id}" data-favorite="false"><small>${String(index + 1).padStart(2, '0')}</small><span><strong>${escapeHtml(recipe.name)}</strong><em>${escapeHtml(recipe.category)}</em></span><span class="favorite-indicator" aria-label="Favorita">♥</span></a>`).join('');
   const recipesHtml = recipes.map((recipe, index) => recipeMarkup(recipe, index, imageData)).join('');
   return `<!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; font-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>${escapeHtml(data.title)} · versão offline</title><meta name="description" content="${escapeHtml(data.subtitle)}"><style>${offlineStyles(fonts)}</style></head>
-<body><a class="sr-only" href="#conteudo">Pular para o conteúdo</a><header class="topbar"><div class="shell topbar__inner"><a class="brand" href="#inicio">${brandSvg}<span><strong>Gislaine Duarte</strong><small>Nutricionista · ${escapeHtml(data.shortTitle)}</small></span></a><nav aria-label="Navegação principal"><a href="#receitas">Receitas</a><a href="#lista">Lista de compras</a><a href="#sobre">Sobre a Nutri Gi</a></nav></div></header>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; font-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>${escapeHtml(data.title)} · versão offline</title><meta name="description" content="${escapeHtml(data.subtitle)}"><style>${offlineStyles(fonts)}${guideStyles}</style></head>
+<body><a class="sr-only" href="#conteudo">Pular para o conteúdo</a><header class="topbar"><div class="shell topbar__inner"><a class="brand" href="#inicio">${brandSvg}<span><strong>Gislaine Duarte</strong><small>Nutricionista · ${escapeHtml(data.shortTitle)}</small></span></a><nav aria-label="Navegação principal">${data.guide ? '<a href="#guia-do-livro">Guia</a>' : ''}<a href="#receitas">Receitas</a><a href="#lista">Lista de compras</a><a href="#sobre">Sobre a Nutri Gi</a></nav></div></header>
 <main id="conteudo"><section class="hero" id="inicio"><div class="shell hero__grid"><div class="hero__copy"><p class="eyebrow">Coleção digital de receitas</p><h1>${escapeHtml(data.title)}</h1><p>${escapeHtml(data.subtitle)}</p><div class="hero__stats"><span>${data.recipes.length} receitas${data.recipeCounts?.variations ? ", incluindo varia\u00e7\u00f5es" : ""}</span><span>funciona sem internet</span><span><strong id="progress-value">0</strong> preparadas</span></div></div><div class="hero__art" aria-hidden="true"><div class="cards"></div><img src="${heroData}" width="1200" height="800" alt=""></div></div></section>
 <section class="intro"><div class="shell intro__grid"><div><p class="eyebrow">Como usar</p><h2>Escolha, organize<br />e prepare no <em>seu ritmo.</em></h2></div><div><p>Pesquise por receita ou ingrediente, filtre doces, salgadas e bebidas e marque o que já preparou. Ajustes de quantidade alteram apenas medidas numéricas; o ponto e o tempo ainda devem ser observados.</p><p>Monte a lista de compras a partir das receitas escolhidas. Seus favoritos, checklists e progresso ficam somente neste arquivo, no armazenamento local do navegador quando disponível.</p></div></div></section>
+${guideMarkup(data.guide, recipes)}
 <section class="toolbar" aria-label="Ferramentas"><div class="shell toolbar__inner"><label class="search"><span class="sr-only">Pesquisar receita ou ingrediente</span><input id="search" type="search" placeholder="Buscar receita ou ingrediente"></label><div class="filters" aria-label="Filtrar categoria"><button type="button" data-filter="todas" aria-pressed="true">Todas</button><button type="button" data-filter="doce" aria-pressed="false">Doces</button><button type="button" data-filter="salgada" aria-pressed="false">Salgadas</button><button type="button" data-filter="bebida" aria-pressed="false">Bebidas</button></div><div class="toolbar__actions"><button id="print" type="button">Imprimir</button><a href="#lista">Lista de compras</a></div></div></section>
 <section class="journey" id="receitas"><div class="shell journey__layout"><aside><nav class="recipe-nav" aria-label="Receitas do livro">${navigation}</nav></aside><div><p id="no-results" class="no-results" hidden>Nenhuma receita corresponde à busca. Tente outro termo ou remova o filtro.</p>${recipesHtml}</div></div></section>
 <section class="shopping" id="lista"><div class="shell"><div class="shopping__head"><div><p class="eyebrow">Organização</p><h2>Lista de compras</h2><p>As medidas numéricas iguais são somadas quando usam a mesma unidade. Ingredientes “a gosto” permanecem sem quantidade.</p></div><div><button id="add-all" type="button">Adicionar todas</button> <button id="clear-shopping" type="button">Limpar</button></div></div><div id="shopping-content"><p class="shopping__empty">Adicione uma receita para montar sua lista.</p></div></div></section>

@@ -30,6 +30,7 @@ export async function getStore(env = process.env) {
           [RECIPES_PRODUCT_ID, 'recipes', recipesProduct.title, recipesProduct.description]);
         await client.query('INSERT INTO recipe_products (id, kind, title, description) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO NOTHING', [glpRecipesProduct.id, 'recipes', glpRecipesProduct.title, glpRecipesProduct.description]);
         await client.query('UPDATE recipe_products SET title = $1, description = $2 WHERE id = $3 AND title = $4', [recipesProduct.title, recipesProduct.description, RECIPES_PRODUCT_ID, '7 receitas para ajudar você a desinflamar!']);
+        await client.query('UPDATE recipe_products SET title = $1, description = $2 WHERE id = $3 AND title = $4', [glpRecipesProduct.title, glpRecipesProduct.description, glpRecipesProduct.id, 'Receitas para GLP-1']);
         await initializeRecipeContent(client);
         await client.query(`CREATE TABLE IF NOT EXISTS recipe_login_challenges (
           id text PRIMARY KEY, secret_hash text NOT NULL, email text NOT NULL,

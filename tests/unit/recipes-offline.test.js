@@ -9,6 +9,7 @@ test('offline HTML initializes, filters, remembers progress and safely builds sh
   const data = buildProtectedProductPayload({ ...glpRecipesProduct, recipes: glpRecipesProduct.recipes.slice(0, 2).map(recipe => ({ ...recipe, published: true })) });
   data.recipes = structuredClone(data.recipes.slice(0, 2));
   data.recipes[0].ingredients[0].display = '1 porção <img src=x onerror=alert(1)> "especial"';
+  data.recipes[0].ingredients[0].quantity = null;
   data.recipes[0].ingredients[0].shoppingKey = '" onfocus="alert(1)';
   const html = buildOfflineHtml({ data, imageData: Object.fromEntries(data.recipes.map(recipe => [recipe.slug, 'data:image/jpeg;base64,'])), heroData: 'data:image/jpeg;base64,', fonts: {}, brandSvg: '<svg></svg>' });
   const { window, document } = parseHTML(html);
@@ -34,5 +35,8 @@ test('offline HTML initializes, filters, remembers progress and safely builds sh
   assert.equal(document.getElementById(data.recipes[1].slug).hidden, false);
   document.querySelector('[data-filter="bebida"]').click();
   assert.equal(document.getElementById('no-results').hidden, false);
+  document.querySelector(`[data-guide-recipe="${data.recipes[0].slug}"]`).click();
+  assert.equal(document.getElementById(data.recipes[0].slug).hidden, false);
+  assert.equal(document.querySelector('[data-filter="todas"]').getAttribute('aria-pressed'), 'true');
   assert.ok([...storage.keys()].every(key => key.includes(data.id)));
 });
