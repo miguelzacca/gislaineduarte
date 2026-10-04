@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { allergies, clinicalProfiles, conditions, foodById, foods, planTemplates } from '../data/nutrition.js';
 import { curatedContentIdeas, goalOptions } from '../data/nutrition-journey.js';
-import { createCalculationRecords, curatedModuleAllowed, formatFoodPortion, moduleEligibility, searchPlanTemplates } from '../lib/nutrition-journey.js';
+import { createCalculationRecords, curatedModuleAllowed, formatFoodPortion, moduleEligibility, searchPlanTemplateMatches } from '../lib/nutrition-journey.js';
 import { foodAllowed, recommendedTemplate, sumItems } from '../lib/nutrition.js';
 import { nutritionApi } from './NutritionPublic.jsx';
 import { teaIdeas } from '../data/nutrition-teas.js';
@@ -45,14 +45,15 @@ export function TemplateFinder({ value, custom = [], onChange, disabled, intake 
   const [query, setQuery] = useState(''); const [goal, setGoal] = useState(contextGoal); const [profile, setProfile] = useState(initialProfile);
   useEffect(() => { setGoal(contextGoal); }, [contextGoal]);
   const catalogue = [...planTemplates, ...custom.map(item => ({ ...item, name: item.title, custom: true }))];
-  const results = searchPlanTemplates(catalogue.filter(item => profile !== 'custom' || item.custom), { query, goal, profile: profile === 'custom' ? 'all' : profile });
+  const matches = searchPlanTemplateMatches(catalogue.filter(item => profile !== 'custom' || item.custom), { query, goal, profile: profile === 'custom' ? 'all' : profile });
+  const results = matches.map(match => match.template);
   const selected = catalogue.find(item => item.id === value);
   return <section className="nj-template-finder" aria-label="Escolher base para este atendimento">
     <div className="nj-section-heading"><div><p className="admin-label">01 / Encontre um ponto de partida</p><h3>Uma biblioteca para cada momento.</h3></div>{intake?.goal && <button className="nw-button nw-button--quiet" type="button" disabled={disabled} onClick={() => setGoal(intake.goal)}>Filtrar pelo objetivo da pessoa</button>}</div>
-    <div className="nj-filters"><label>Buscar modelo<input type="search" placeholder="Emagrecimento, hipertrofia, GLP-1…" value={query} disabled={disabled} onChange={event => setQuery(event.target.value)} /></label><label>Objetivo<select value={goal} disabled={disabled} onChange={event => setGoal(event.target.value)}><option value="all">Todos os objetivos</option>{goalOptions.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label><label>Contexto<select value={profile} disabled={disabled} onChange={event => setProfile(event.target.value)}><option value="all">Todos os contextos</option>{clinicalProfiles.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}<option value="custom">Meus modelos</option></select></label></div>
-    <p className="nw-fine" role="status">{results.length} bases encontradas. A escolha organiza refeições; metas e adequação dependem da sua avaliação.</p>
-    <div className="nj-template-results">{results.map(item => <button type="button" key={item.id} disabled={disabled} aria-pressed={value === item.id} className={value === item.id ? 'is-selected' : ''} onClick={() => onChange(item.id)}><span>{item.custom ? 'Seu modelo' : clinicalProfiles.find(context => context.id === item.profile)?.name}</span><strong>{item.name}</strong><small>{item.meals ? `${item.meals} refeições por dia` : 'Semana personalizada'} <span aria-hidden="true">{value === item.id ? '✓' : '↗'}</span></small></button>)}</div>
-    {!results.length && <p>Nenhum modelo encontrado. Tente outro objetivo, contexto ou termo.</p>}
+    <div className="nj-filters"><label>Buscar modelo<input type="search" placeholder="Ex.: ganhar massa, perder gordura, refeições rápidas…" value={query} disabled={disabled} onChange={event => setQuery(event.target.value)} /></label><label>Objetivo<select value={goal} disabled={disabled} onChange={event => setGoal(event.target.value)}><option value="all">Todos os objetivos</option>{goalOptions.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label><label>Contexto<select value={profile} disabled={disabled} onChange={event => setProfile(event.target.value)}><option value="all">Todos os contextos</option>{clinicalProfiles.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}<option value="custom">Meus modelos</option></select></label></div>
+    <p className="nw-fine" role="status">{results.length} bases encontradas{query.trim() ? ', em ordem de relevância' : ''}. A busca considera objetivo, contexto, descrição e rotina. Metas e adequação dependem da sua avaliação.</p>
+    <div className="nj-template-results">{matches.map(({ template: item, reasons }) => <button type="button" key={item.id} disabled={disabled} aria-pressed={value === item.id} className={value === item.id ? 'is-selected' : ''} onClick={() => onChange(item.id)}><span>{item.custom ? 'Seu modelo' : clinicalProfiles.find(context => context.id === item.profile)?.name}</span><strong>{item.name}</strong>{reasons.length > 0 && <span className="nj-template-match">Relacionado por {reasons.join(' · ')}</span>}<small>{item.meals ? `${item.meals} refeições por dia` : 'Semana personalizada'} <span aria-hidden="true">{value === item.id ? '✓' : '↗'}</span></small></button>)}</div>
+    {!results.length && <p>Nenhum modelo encontrado nos filtros atuais. <button type="button" className="nw-button nw-button--quiet" disabled={disabled} onClick={() => { setGoal('all'); setProfile('all'); }}>Buscar em todos os objetivos e contextos</button></p>}
     <p className="nj-selected-base"><strong>Base selecionada:</strong> {selected?.name || 'Selecione uma base'}{selected && !results.some(item => item.id === selected.id) && ' · Fora dos filtros atuais'}</p>
   </section>;
 }

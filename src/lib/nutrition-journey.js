@@ -1,6 +1,6 @@
 import { foodById } from '../data/nutrition.js';
-import { curatedModuleTypes, goalOptions } from '../data/nutrition-journey.js';
-import { calculateAnthropometry, foodAllowed, normalizeText, round } from './nutrition.js';
+import { curatedModuleTypes } from '../data/nutrition-journey.js';
+import { calculateAnthropometry, foodAllowed, round } from './nutrition.js';
 import { bmiInterpretation, clinicalSources, curatedImageAllowed, plateGuideErrors, skinfoldEvaluation, skinfoldInputErrors, skinfoldLabels, validMeasurementDate } from './nutrition-clinical.js';
 
 const decimal = value => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value);
@@ -15,17 +15,7 @@ export function formatFoodPortion(foodId, grams) {
   return `Quantidade: ${decimal(Number(grams))} g · Medida caseira: ≈ ${decimal(count)} ${label} (1 ${single} ≈ ${decimal(food.portionGrams)} g)`;
 }
 
-export function searchPlanTemplates(templates, { query = '', goal = '', profile = '' } = {}) {
-  const words = normalizeText(query).split(/\s+/).filter(Boolean);
-  return templates.filter(template => {
-    const goals = template.goals || goalOptions.map(option => option.id);
-    if (goal && goal !== 'all' && !goals.includes(goal)) return false;
-    if (profile && profile !== 'all' && template.profile !== profile) return false;
-    const goalLabels = goalOptions.filter(option => goals.includes(option.id)).map(option => option.label);
-    const text = normalizeText([template.name, template.title, template.description, template.profile, ...(template.tags || []), ...goalLabels].join(' '));
-    return words.every(word => text.includes(word));
-  });
-}
+export { searchPlanTemplateMatches, searchPlanTemplates } from './nutrition-template-search.js';
 
 export const calculationFields = ['weight', 'height', 'age', 'sex', 'activity', 'usualWeight', 'waist', 'hip', 'bodyFat', 'proteinRatio', 'waterRatio', 'energy', 'carbPercent', 'fatPercent', 'pregnant', 'skinfoldMethod', 'skinfolds', 'bodyFatMethod', 'measurementDate'];
 const numericRanges = { weight: [25, 350], height: [120, 230], age: [18, 100], usualWeight: [25, 350], waist: [31, 250], hip: [31, 250], bodyFat: [0.1, 69.9], proteinRatio: [0.1, 4], waterRatio: [1, 60], energy: [1, 6000], carbPercent: [1, 100], fatPercent: [1, 100] };

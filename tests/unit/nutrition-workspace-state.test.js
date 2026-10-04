@@ -29,7 +29,47 @@ test('workspace preserves unrecorded calculations across tabs and guards commerc
     });
   };
   try {
-    const { PlanWorkspace, OfferSettings } = await server.ssrLoadModule('/src/components/NutritionWorkspace.jsx');
+    const { PlanWorkspace, OfferSettings, NutritionWorkspace } = await server.ssrLoadModule('/src/components/NutritionWorkspace.jsx');
+    const { TemplateFinder } = await server.ssrLoadModule('/src/components/NutritionProfessionalJourney.jsx');
+    await t.test('model library searches related objectives and descriptions as the professional types without API calls', async () => {
+      const calls = [];
+      globalThis.fetch = async url => {
+        calls.push(url);
+        assert.equal(new URL(url, 'https://nutrition.example').searchParams.get('action'), 'list');
+        return Response.json({ patients: [], stats: { total: 0, waiting: 0, approved: 0, revenue: 0 }, templates: [{ id: 'custom-search', title: 'Minha semana de trabalho', profile: 'balanced', goals: ['muscle'], description: 'Preparos com raízes brasileiras.', tags: [] }], integrations: { ai: false } });
+      };
+      await act(async () => { root.render(createElement(NutritionWorkspace, { key: 'smart-library' })); });
+      await click(button('Modelos de planos'));
+      await input(field('Encontrar modelo'), 'quero ganhar massa');
+      assert.equal(document.querySelectorAll('.nw-template').length, 6);
+      assert.match(document.querySelector('.nw-template h3').textContent, /Hipertrofia/);
+      assert.match(document.querySelector('.nw-template-match').textContent, /Objetivo: Hipertrofia/);
+      assert.match(document.querySelector('.nw-template-grid').textContent, /Minha semana de trabalho/);
+      await input(field('Encontrar modelo'), 'hipetrofia');
+      assert.equal(document.querySelectorAll('.nw-template').length, 6);
+      await input(field('Encontrar modelo'), 'raízes');
+      const custom = [...document.querySelectorAll('.nw-template')].find(item => item.textContent.includes('Minha semana de trabalho'));
+      assert.ok(custom); assert.match(custom.textContent, /Preparos com raízes brasileiras/);
+      assert.match(custom.querySelector('.nw-template-match').textContent, /Descrição/);
+      await input(field('Encontrar modelo'), 'pressão alta');
+      assert.equal(document.querySelectorAll('.nw-template').length, 5);
+      assert.match(document.querySelector('.nw-template-match').textContent, /Contexto: Hipertensão/);
+      assert.equal(calls.length, 1, 'typing does not consume NVIDIA requests or refetch the library');
+    });
+    await t.test('patient base finder combines everyday phrasing with routine and can broaden visible filters', async () => {
+      let selected; globalThis.fetch = async () => { throw new Error('Searching should remain local'); };
+      await act(async () => { root.render(createElement(TemplateFinder, { key: 'smart-finder', onChange: id => { selected = id; } })); });
+      await input(field('Buscar modelo'), 'ganhar massa com refeições rápidas');
+      assert.equal(document.querySelectorAll('.nj-template-results button').length, 1);
+      assert.match(document.querySelector('.nj-template-match').textContent, /Objetivo: Hipertrofia.*Rotina: Rotina prática/);
+      await click(document.querySelector('.nj-template-results button')); assert.equal(selected, 'muscle-pratica');
+      await act(async () => { root.render(createElement(TemplateFinder, { key: 'smart-finder-filter', intake: { goal: 'muscle', conditions: [] }, onChange() {} })); });
+      await input(field('Buscar modelo'), 'pressão alta');
+      assert.equal(document.querySelectorAll('.nj-template-results button').length, 0);
+      await click(button('Buscar em todos os objetivos e contextos'));
+      assert.equal(document.querySelectorAll('.nj-template-results button').length, 5);
+      assert.equal(field('Buscar modelo').value, 'pressão alta');
+    });
     await t.test('measurements survive opening the intake and returning; leaving prompts before losing them', async () => {
       const intake = { name: 'Pessoa de demonstração', age: 34, weight: 70, height: 165, sex: 'female', activity: 1.2, conditions: [], allergies: [], excludedFoodIds: [], symptoms: [], diet: 'omnivore', aiConsent: false };
       let editing; let leaves = 0;

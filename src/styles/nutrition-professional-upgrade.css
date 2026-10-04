@@ -36,3 +36,4 @@
   .nw-recipe-list { max-height:320px; }
   .nw-content-library .nj-content-ideas { grid-template-columns:1fr; }
 }
+.nj-template-results>button>.nj-template-match{font-size:.73rem;line-height:1.6;margin:0;overflow-wrap:anywhere;text-transform:none;letter-spacing:normal}.nw-template .nw-template-match{font-size:11px;line-height:1.7;color:var(--leaf)}
