@@ -17,27 +17,18 @@ export const recipesProductPreview = Object.freeze({
   },
   "hero": {
     "image": {
-      "src": "/images/foods/oats.jpg",
-      "width": 960,
-      "height": 720,
-      "alt": "Fotografia real de aveia, um ingrediente do livro de receitas.",
+      "src": "/images/recipes/bolo-maca-800.webp",
+      "srcSet": "/images/recipes/bolo-maca-480.webp 480w, /images/recipes/bolo-maca-800.webp 800w, /images/recipes/bolo-maca-1024.webp 1024w",
+      "avifSrcSet": "/images/recipes/bolo-maca-480.avif 480w, /images/recipes/bolo-maca-800.avif 800w, /images/recipes/bolo-maca-1024.avif 1024w",
+      "width": 800,
+      "height": 1200,
+      "alt": "Imagem ilustrativa de bolo de maçã com aveia, mostrando a preparação pronta.",
       "credit": {
-        "id": "oats",
-        "name": "Aveia em flocos",
-        "file": "/images/foods/oats.jpg",
-        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Havregryn2.JPG",
-        "author": "Sten Porse",
-        "license": "CC BY-SA 3.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-        "caption": "Aveia em flocos em uma tigela. Fotografia de referência, sem correspondência com a porção prescrita.",
-        "title": "File:Havregryn2.JPG",
-        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Havregryn2.JPG/960px-Havregryn2.JPG",
-        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Havregryn2.JPG",
-        "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-        "sha256": "6d413d8a96dc20f39d902db7dfe9bd6a3185fe24dca7d7882f269139e28dcbca",
-        "bytes": 50278
+        "author": "Imagem ilustrativa gerada com IA",
+        "license": "Uso editorial no projeto"
       },
-      "reference": true
+      "reference": false,
+      "generated": true
     },
     "socialImage": "/images/og-7-receitas.jpg"
   },
@@ -91,6 +82,11 @@ export const recipesProductPreview = Object.freeze({
       "answer": "Valores nutricionais aparecem apenas quando a profissional cadastra um cálculo com fonte, rendimento e porções definidos. Receitas sem esse cálculo não exibem estimativas."
     }
   ],
+  "recipeCounts": {
+    "total": 31,
+    "preparations": 30,
+    "variations": 1
+  },
   "recipes": [
     {
       "id": "recipe-01",
@@ -105,33 +101,51 @@ export const recipesProductPreview = Object.freeze({
         "Aveia"
       ],
       "image": {
-        "src": "/images/foods/oats.jpg",
-        "width": 960,
-        "height": 720,
-        "alt": "Fotografia real de ingrediente de referência; não representa o resultado da receita.",
+        "src": "/images/recipes/bolinho-cacau-curcuma-800.webp",
+        "srcSet": "/images/recipes/bolinho-cacau-curcuma-480.webp 480w, /images/recipes/bolinho-cacau-curcuma-800.webp 800w, /images/recipes/bolinho-cacau-curcuma-1024.webp 1024w",
+        "avifSrcSet": "/images/recipes/bolinho-cacau-curcuma-480.avif 480w, /images/recipes/bolinho-cacau-curcuma-800.avif 800w, /images/recipes/bolinho-cacau-curcuma-1024.avif 1024w",
+        "width": 800,
+        "height": 1200,
+        "alt": "Imagem ilustrativa de bolinho de cacau com cúrcuma, mostrando a preparação pronta.",
         "credit": {
-          "id": "oats",
-          "name": "Aveia em flocos",
-          "file": "/images/foods/oats.jpg",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Havregryn2.JPG",
-          "author": "Sten Porse",
-          "license": "CC BY-SA 3.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-          "caption": "Aveia em flocos em uma tigela. Fotografia de referência, sem correspondência com a porção prescrita.",
-          "title": "File:Havregryn2.JPG",
-          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Havregryn2.JPG/960px-Havregryn2.JPG",
-          "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Havregryn2.JPG",
-          "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-          "sha256": "6d413d8a96dc20f39d902db7dfe9bd6a3185fe24dca7d7882f269139e28dcbca",
-          "bytes": 50278
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
         },
-        "reference": true
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "recipe-02",
+      "slug": "bolinho-coco-maca",
+      "number": 2,
+      "name": "Bolinho de coco com maca peruana",
+      "category": "doce",
+      "introduction": "Bolinhos de coco, aveia e baunilha com maca peruana, pensados para uma preparação simples e aromática.",
+      "tags": [
+        "Doce",
+        "Coco",
+        "Aveia"
+      ],
+      "image": {
+        "src": "/images/recipes/bolinho-coco-maca-800.webp",
+        "srcSet": "/images/recipes/bolinho-coco-maca-480.webp 480w, /images/recipes/bolinho-coco-maca-800.webp 800w, /images/recipes/bolinho-coco-maca-1024.webp 1024w",
+        "avifSrcSet": "/images/recipes/bolinho-coco-maca-480.avif 480w, /images/recipes/bolinho-coco-maca-800.avif 800w, /images/recipes/bolinho-coco-maca-1024.avif 1024w",
+        "width": 800,
+        "height": 1200,
+        "alt": "Imagem ilustrativa de bolinho de coco com maca peruana, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
       }
     },
     {
       "id": "recipe-03",
       "slug": "bolo-maca",
-      "number": 2,
+      "number": 3,
       "name": "Bolo de maçã com quatro ingredientes",
       "category": "doce",
       "introduction": "Um bolo de maçã e aveia sem adição de açúcar, leite ou óleo, com quatro ingredientes na base.",
@@ -141,267 +155,708 @@ export const recipesProductPreview = Object.freeze({
         "Quatro ingredientes"
       ],
       "image": {
-        "src": "/images/foods/apple.jpg",
-        "width": 960,
-        "height": 720,
-        "alt": "Fotografia real de ingrediente de referência; não representa o resultado da receita.",
+        "src": "/images/recipes/bolo-maca-800.webp",
+        "srcSet": "/images/recipes/bolo-maca-480.webp 480w, /images/recipes/bolo-maca-800.webp 800w, /images/recipes/bolo-maca-1024.webp 1024w",
+        "avifSrcSet": "/images/recipes/bolo-maca-480.avif 480w, /images/recipes/bolo-maca-800.avif 800w, /images/recipes/bolo-maca-1024.avif 1024w",
+        "width": 800,
+        "height": 1200,
+        "alt": "Imagem ilustrativa de bolo de maçã com quatro ingredientes, mostrando a preparação pronta.",
         "credit": {
-          "id": "apple",
-          "name": "Maçã Fuji com casca",
-          "file": "/images/foods/apple.jpg",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Apfel-Fuji.jpg",
-          "author": "Superbass",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-          "caption": "Maçã Fuji com casca.",
-          "title": "File:Apfel-Fuji.jpg",
-          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Apfel-Fuji.jpg/960px-Apfel-Fuji.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-          "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/67/Apfel-Fuji.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-          "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-          "sha256": "f96de69239fb8a2de0d4feb32bb6af80bf713991f9e96abf8ddbe2e11c23b6dc",
-          "bytes": 35808
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
         },
-        "reference": true
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "recipe-04",
+      "slug": "paozinho-fitness",
+      "number": 4,
+      "name": "Pãozinho fitness rápido",
+      "category": "salgada",
+      "introduction": "Uma porção pequena e rápida com ovo, leite em pó e aveia, preparada no micro-ondas e opcionalmente dourada depois.",
+      "tags": [
+        "Salgada",
+        "Rápida",
+        "Micro-ondas"
+      ],
+      "image": {
+        "src": "/images/recipes/paozinho-fitness-800.webp",
+        "srcSet": "/images/recipes/paozinho-fitness-480.webp 480w, /images/recipes/paozinho-fitness-800.webp 800w, /images/recipes/paozinho-fitness-1024.webp 1024w",
+        "avifSrcSet": "/images/recipes/paozinho-fitness-480.avif 480w, /images/recipes/paozinho-fitness-800.avif 800w, /images/recipes/paozinho-fitness-1024.avif 1024w",
+        "width": 800,
+        "height": 1200,
+        "alt": "Imagem ilustrativa de pãozinho fitness rápido, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "recipe-05",
+      "slug": "pao-abobrinha",
+      "number": 5,
+      "name": "Pão de abobrinha com farinha de mandioca",
+      "category": "salgada",
+      "introduction": "Um pão de forma úmido e versátil à base de abobrinha, ovos e farinha de mandioca, com alternativa de farinha de amêndoas.",
+      "tags": [
+        "Salgada",
+        "Abobrinha",
+        "Forno"
+      ],
+      "image": {
+        "src": "/images/recipes/pao-abobrinha-800.webp",
+        "srcSet": "/images/recipes/pao-abobrinha-480.webp 480w, /images/recipes/pao-abobrinha-800.webp 800w, /images/recipes/pao-abobrinha-1024.webp 1024w",
+        "avifSrcSet": "/images/recipes/pao-abobrinha-480.avif 480w, /images/recipes/pao-abobrinha-800.avif 800w, /images/recipes/pao-abobrinha-1024.avif 1024w",
+        "width": 800,
+        "height": 1200,
+        "alt": "Imagem ilustrativa de pão de abobrinha com farinha de mandioca, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "pao-abobrinha-amendoas",
+      "slug": "pao-abobrinha-amendoas",
+      "number": 6,
+      "name": "Pão de abobrinha com farinha de amêndoas",
+      "category": "salgada",
+      "variantOf": "recipe-05",
+      "introduction": "A variação do pão de abobrinha com farinha de amêndoas, apresentada com ingredientes e preparo próprios.",
+      "tags": [
+        "Salgada",
+        "Abobrinha",
+        "Amêndoas"
+      ],
+      "image": {
+        "src": "/images/recipes/pao-abobrinha-800.webp",
+        "srcSet": "/images/recipes/pao-abobrinha-480.webp 480w, /images/recipes/pao-abobrinha-800.webp 800w, /images/recipes/pao-abobrinha-1024.webp 1024w",
+        "avifSrcSet": "/images/recipes/pao-abobrinha-480.avif 480w, /images/recipes/pao-abobrinha-800.avif 800w, /images/recipes/pao-abobrinha-1024.avif 1024w",
+        "width": 800,
+        "height": 1200,
+        "alt": "Imagem ilustrativa de pão de abobrinha com farinha de amêndoas, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "recipe-06",
+      "slug": "paozinho-tapioca",
+      "number": 7,
+      "name": "Pãozinho de tapioca",
+      "category": "salgada",
+      "introduction": "Pãezinhos macios de tapioca granulada e parmesão, modelados depois da hidratação da massa.",
+      "tags": [
+        "Salgada",
+        "Tapioca",
+        "Parmesão"
+      ],
+      "image": {
+        "src": "/images/recipes/paozinho-tapioca-800.webp",
+        "srcSet": "/images/recipes/paozinho-tapioca-480.webp 480w, /images/recipes/paozinho-tapioca-800.webp 800w, /images/recipes/paozinho-tapioca-1024.webp 1024w",
+        "avifSrcSet": "/images/recipes/paozinho-tapioca-480.avif 480w, /images/recipes/paozinho-tapioca-800.avif 800w, /images/recipes/paozinho-tapioca-1024.avif 1024w",
+        "width": 800,
+        "height": 1200,
+        "alt": "Imagem ilustrativa de pãozinho de tapioca, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "recipe-07",
+      "slug": "torta-frango",
+      "number": 8,
+      "name": "Torta de frango sem glúten",
+      "category": "salgada",
+      "introduction": "Uma torta prática de base de ovos e tapioca, recheada com frango desfiado e finalizada com muçarela.",
+      "tags": [
+        "Salgada",
+        "Frango",
+        "Tapioca"
+      ],
+      "image": {
+        "src": "/images/recipes/torta-frango-800.webp",
+        "srcSet": "/images/recipes/torta-frango-480.webp 480w, /images/recipes/torta-frango-800.webp 800w, /images/recipes/torta-frango-1024.webp 1024w",
+        "avifSrcSet": "/images/recipes/torta-frango-480.avif 480w, /images/recipes/torta-frango-800.avif 800w, /images/recipes/torta-frango-1024.avif 1024w",
+        "width": 800,
+        "height": 1200,
+        "alt": "Imagem ilustrativa de torta de frango sem glúten, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
       }
     },
     {
       "id": "chocolate-caseiro",
       "slug": "chocolate-caseiro",
-      "number": 3,
+      "number": 9,
       "name": "Chocolate caseiro com sementes e oleaginosas",
       "category": "doce",
-      "introduction": "Uma preparação para variar a rotina, com ingredientes e etapas organizados.",
+      "introduction": "Pedacinhos de chocolate com crocância de sementes, coco e oleaginosas, para manter refrigerados.",
       "tags": [
         "doce"
       ],
       "image": {
-        "src": "/images/foods/walnut.jpg",
-        "width": 960,
-        "height": 720,
-        "alt": "Fotografia real de ingrediente de referência para Chocolate caseiro com sementes e oleaginosas; não representa o resultado da receita.",
+        "src": "/images/recipes-editorial/chocolate-caseiro-1200.jpg",
+        "srcSet": "/images/recipes-editorial/chocolate-caseiro-480.jpg 480w, /images/recipes-editorial/chocolate-caseiro-800.jpg 800w, /images/recipes-editorial/chocolate-caseiro-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de chocolate caseiro com sementes e oleaginosas, mostrando a preparação pronta.",
         "credit": {
-          "id": "walnut",
-          "name": "Noz",
-          "file": "/images/foods/walnut.jpg",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Walnuts_-_whole_and_open_with_halved_kernel.jpg",
-          "author": "Ivar Leidus",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-          "caption": "Nozes inteiras e sem casca.",
-          "title": "File:Walnuts_-_whole_and_open_with_halved_kernel.jpg",
-          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/Walnuts_-_whole_and_open_with_halved_kernel.jpg/960px-Walnuts_-_whole_and_open_with_halved_kernel.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-          "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Walnuts_-_whole_and_open_with_halved_kernel.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-          "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-          "sha256": "81da6744d6ab465a44f924b9047bfc11588fe3a04308f0717c0a0a299e0c117a",
-          "bytes": 37981
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
         },
-        "reference": true
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "suco-laranja-cenoura-mamao",
+      "slug": "suco-laranja-cenoura-mamao",
+      "number": 10,
+      "name": "Suco de laranja, cenoura e mamão",
+      "category": "bebida",
+      "introduction": "Laranja, cenoura e mamão em uma bebida encorpada, com um toque de gengibre.",
+      "tags": [
+        "bebida"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/suco-laranja-cenoura-mamao-1200.jpg",
+        "srcSet": "/images/recipes-editorial/suco-laranja-cenoura-mamao-480.jpg 480w, /images/recipes-editorial/suco-laranja-cenoura-mamao-800.jpg 800w, /images/recipes-editorial/suco-laranja-cenoura-mamao-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de suco de laranja, cenoura e mamão, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "suco-couve-hortela",
+      "slug": "suco-couve-hortela",
+      "number": 11,
+      "name": "Suco de couve, limão e hortelã",
+      "category": "bebida",
+      "introduction": "Uma bebida verde refrescante de couve, limão, água de coco e hortelã.",
+      "tags": [
+        "bebida"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/suco-couve-hortela-1200.jpg",
+        "srcSet": "/images/recipes-editorial/suco-couve-hortela-480.jpg 480w, /images/recipes-editorial/suco-couve-hortela-800.jpg 800w, /images/recipes-editorial/suco-couve-hortela-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de suco de couve, limão e hortelã, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "vitamina-mamao-ameixa",
+      "slug": "vitamina-mamao-ameixa",
+      "number": 12,
+      "name": "Bebida de mamão, ameixa e aveia",
+      "category": "bebida",
+      "introduction": "Mamão e ameixas secas dão textura a esta bebida de laranja com aveia e sementes.",
+      "tags": [
+        "bebida"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/vitamina-mamao-ameixa-1200.jpg",
+        "srcSet": "/images/recipes-editorial/vitamina-mamao-ameixa-480.jpg 480w, /images/recipes-editorial/vitamina-mamao-ameixa-800.jpg 800w, /images/recipes-editorial/vitamina-mamao-ameixa-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de bebida de mamão, ameixa e aveia, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "bolo-cacau-nozes",
+      "slug": "bolo-cacau-nozes",
+      "number": 13,
+      "name": "Bolo de cacau e nozes",
+      "category": "doce",
+      "introduction": "Um bolo de cacau adoçado com tâmaras, com nozes picadas no miolo.",
+      "tags": [
+        "doce"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/bolo-cacau-nozes-1200.jpg",
+        "srcSet": "/images/recipes-editorial/bolo-cacau-nozes-480.jpg 480w, /images/recipes-editorial/bolo-cacau-nozes-800.jpg 800w, /images/recipes-editorial/bolo-cacau-nozes-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de bolo de cacau e nozes, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "supercoffee-caseiro",
+      "slug": "supercoffee-caseiro",
+      "number": 14,
+      "name": "Mistura de café com especiarias",
+      "category": "bebida",
+      "introduction": "Uma mistura seca de café e especiarias, com preparo de uma xícara explicado separadamente.",
+      "tags": [
+        "bebida"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/supercoffee-caseiro-1200.jpg",
+        "srcSet": "/images/recipes-editorial/supercoffee-caseiro-480.jpg 480w, /images/recipes-editorial/supercoffee-caseiro-800.jpg 800w, /images/recipes-editorial/supercoffee-caseiro-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de mistura de café com especiarias, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "bombom-banana-cacau",
+      "slug": "bombom-banana-cacau",
+      "number": 15,
+      "name": "Bombom de banana e cacau",
+      "category": "doce",
+      "introduction": "Recheio macio de banana e cacau envolvido por uma casquinha de chocolate.",
+      "tags": [
+        "doce"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/bombom-banana-cacau-1200.jpg",
+        "srcSet": "/images/recipes-editorial/bombom-banana-cacau-480.jpg 480w, /images/recipes-editorial/bombom-banana-cacau-800.jpg 800w, /images/recipes-editorial/bombom-banana-cacau-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de bombom de banana e cacau, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "torta-proteica-frango",
+      "slug": "torta-proteica-frango",
+      "number": 16,
+      "name": "Torta de frango com tapioca e aveia",
+      "category": "salgada",
+      "introduction": "Frango desfiado, tomate e ervas em uma torta de ovos, tapioca e aveia.",
+      "tags": [
+        "salgada"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/torta-proteica-frango-1200.jpg",
+        "srcSet": "/images/recipes-editorial/torta-proteica-frango-480.jpg 480w, /images/recipes-editorial/torta-proteica-frango-800.jpg 800w, /images/recipes-editorial/torta-proteica-frango-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de torta de frango com tapioca e aveia, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
       }
     },
     {
       "id": "kafta-batatas",
       "slug": "kafta-batatas",
-      "number": 4,
+      "number": 17,
       "name": "Carne moída assada com batatas",
       "category": "salgada",
-      "introduction": "Uma preparação para variar a rotina, com ingredientes e etapas organizados.",
+      "introduction": "Porções de carne temperada assadas sobre batatas, em uma única travessa.",
       "tags": [
         "salgada"
       ],
       "image": {
-        "src": "/images/foods/ground-beef.jpg",
-        "width": 960,
-        "height": 720,
-        "alt": "Fotografia real de ingrediente de referência para Carne moída assada com batatas; não representa o resultado da receita.",
+        "src": "/images/recipes-editorial/kafta-batatas-1200.jpg",
+        "srcSet": "/images/recipes-editorial/kafta-batatas-480.jpg 480w, /images/recipes-editorial/kafta-batatas-800.jpg 800w, /images/recipes-editorial/kafta-batatas-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de carne moída assada com batatas, mostrando a preparação pronta.",
         "credit": {
-          "id": "ground-beef",
-          "name": "Acém moído cozido",
-          "file": "/images/foods/ground-beef.jpg",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hackfleisch-1.jpg",
-          "author": "No machine-readable author provided. Rainer Zenz assumed (based on copyright claims).",
-          "license": "CC BY-SA 3.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
-          "caption": "Carne bovina moída crua, antes do preparo. Os valores do catálogo correspondem ao acém moído cozido.",
-          "title": "File:Hackfleisch-1.jpg",
-          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d1/Hackfleisch-1.jpg/960px-Hackfleisch-1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-          "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Hackfleisch-1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-          "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-          "sha256": "d3fc37347be4a986b1602c833692aaf7370e15bd63c9eaafac4d353ec24ea471",
-          "bytes": 47104
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
         },
-        "reference": true
+        "reference": false,
+        "generated": true
       }
     },
     {
       "id": "maca-cozida-especiarias",
       "slug": "maca-cozida-especiarias",
-      "number": 5,
+      "number": 18,
       "name": "Maçã cozida com especiarias",
       "category": "doce",
-      "introduction": "Uma preparação para variar a rotina, com ingredientes e etapas organizados.",
+      "introduction": "Maçã macia cozida em água, perfumada com canela, cravo e noz-moscada.",
       "tags": [
         "doce"
       ],
       "image": {
-        "src": "/images/foods/apple.jpg",
-        "width": 960,
-        "height": 720,
-        "alt": "Fotografia real de ingrediente de referência para Maçã cozida com especiarias; não representa o resultado da receita.",
+        "src": "/images/recipes-editorial/maca-cozida-especiarias-1200.jpg",
+        "srcSet": "/images/recipes-editorial/maca-cozida-especiarias-480.jpg 480w, /images/recipes-editorial/maca-cozida-especiarias-800.jpg 800w, /images/recipes-editorial/maca-cozida-especiarias-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de maçã cozida com especiarias, mostrando a preparação pronta.",
         "credit": {
-          "id": "apple",
-          "name": "Maçã Fuji com casca",
-          "file": "/images/foods/apple.jpg",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Apfel-Fuji.jpg",
-          "author": "Superbass",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-          "caption": "Maçã Fuji com casca.",
-          "title": "File:Apfel-Fuji.jpg",
-          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Apfel-Fuji.jpg/960px-Apfel-Fuji.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-          "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/67/Apfel-Fuji.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-          "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-          "sha256": "f96de69239fb8a2de0d4feb32bb6af80bf713991f9e96abf8ddbe2e11c23b6dc",
-          "bytes": 35808
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
         },
-        "reference": true
+        "reference": false,
+        "generated": true
       }
     },
     {
       "id": "pure-mandioquinha-alecrim",
       "slug": "pure-mandioquinha-alecrim",
-      "number": 6,
+      "number": 19,
       "name": "Purê de mandioquinha com alecrim",
       "category": "salgada",
-      "introduction": "Uma preparação para variar a rotina, com ingredientes e etapas organizados.",
+      "introduction": "Purê cremoso de mandioquinha, finalizado com azeite e alecrim.",
       "tags": [
         "salgada"
       ],
       "image": {
-        "src": "/images/foods/arracacha.jpg",
-        "width": 960,
-        "height": 720,
-        "alt": "Fotografia real de ingrediente de referência para Purê de mandioquinha com alecrim; não representa o resultado da receita.",
+        "src": "/images/recipes-editorial/pure-mandioquinha-alecrim-1200.jpg",
+        "srcSet": "/images/recipes-editorial/pure-mandioquinha-alecrim-480.jpg 480w, /images/recipes-editorial/pure-mandioquinha-alecrim-800.jpg 800w, /images/recipes-editorial/pure-mandioquinha-alecrim-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de purê de mandioquinha com alecrim, mostrando a preparação pronta.",
         "credit": {
-          "id": "arracacha",
-          "name": "Mandioquinha cozida",
-          "file": "/images/foods/arracacha.jpg",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Arracacia_xanthorrhiza_(boiled_and_peeled).JPG",
-          "author": "Dtarazona",
-          "license": "Public domain",
-          "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-          "caption": "Mandioquinha descascada e cozida. Fotografia de referência, sem correspondência com a porção prescrita.",
-          "title": "File:Arracacia xanthorrhiza (boiled and peeled).JPG",
-          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Arracacia_xanthorrhiza_%28boiled_and_peeled%29.JPG/960px-Arracacia_xanthorrhiza_%28boiled_and_peeled%29.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-          "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/90/Arracacia_xanthorrhiza_%28boiled_and_peeled%29.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-          "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-          "sha256": "62bf3f125cf6026c1b47d78ab8c504310c22153ecce85791738bc4b6307012de",
-          "bytes": 36215
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
         },
-        "reference": true
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "pao-aveia-iogurte",
+      "slug": "pao-aveia-iogurte",
+      "number": 20,
+      "name": "Pão de aveia e iogurte",
+      "category": "salgada",
+      "introduction": "Um pão de preparo direto, com aveia, ovos e iogurte natural.",
+      "tags": [
+        "salgada"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/pao-aveia-iogurte-1200.jpg",
+        "srcSet": "/images/recipes-editorial/pao-aveia-iogurte-480.jpg 480w, /images/recipes-editorial/pao-aveia-iogurte-800.jpg 800w, /images/recipes-editorial/pao-aveia-iogurte-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de pão de aveia e iogurte, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "pao-amendoas-sementes",
+      "slug": "pao-amendoas-sementes",
+      "number": 21,
+      "name": "Pão de amêndoas e sementes",
+      "category": "salgada",
+      "introduction": "Pão de miolo delicado com farinha de amêndoas e sementes variadas.",
+      "tags": [
+        "salgada"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/pao-amendoas-sementes-1200.jpg",
+        "srcSet": "/images/recipes-editorial/pao-amendoas-sementes-480.jpg 480w, /images/recipes-editorial/pao-amendoas-sementes-800.jpg 800w, /images/recipes-editorial/pao-amendoas-sementes-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de pão de amêndoas e sementes, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "pao-quinoa-chia",
+      "slug": "pao-quinoa-chia",
+      "number": 22,
+      "name": "Pão de quinoa e chia",
+      "category": "salgada",
+      "introduction": "Quinoa cozida, chia e aveia em um pão pequeno de textura compacta.",
+      "tags": [
+        "salgada"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/pao-quinoa-chia-1200.jpg",
+        "srcSet": "/images/recipes-editorial/pao-quinoa-chia-480.jpg 480w, /images/recipes-editorial/pao-quinoa-chia-800.jpg 800w, /images/recipes-editorial/pao-quinoa-chia-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de pão de quinoa e chia, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "bolo-coco-tres-ingredientes",
+      "slug": "bolo-coco-tres-ingredientes",
+      "number": 23,
+      "name": "Bolo de coco com três ingredientes",
+      "category": "doce",
+      "introduction": "Um bolo úmido e compacto de coco, feito com ovos e iogurte natural.",
+      "tags": [
+        "doce"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/bolo-coco-tres-ingredientes-1200.jpg",
+        "srcSet": "/images/recipes-editorial/bolo-coco-tres-ingredientes-480.jpg 480w, /images/recipes-editorial/bolo-coco-tres-ingredientes-800.jpg 800w, /images/recipes-editorial/bolo-coco-tres-ingredientes-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de bolo de coco com três ingredientes, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
       }
     },
     {
       "id": "pao-australiano-vegano",
       "slug": "pao-australiano-vegano",
-      "number": 7,
+      "number": 24,
       "name": "Pão australiano com amêndoas e cacau",
       "category": "salgada",
-      "introduction": "Uma preparação para variar a rotina, com ingredientes e etapas organizados.",
+      "introduction": "Pão escuro de amêndoas, linhaça e coco, com notas de cacau, café e canela.",
       "tags": [
         "Salgada",
         "Vegano",
         "Forno"
       ],
       "image": {
-        "src": "/images/foods/bread.jpg",
-        "width": 960,
-        "height": 720,
-        "alt": "Fotografia real de ingrediente de referência para Pão australiano com amêndoas e cacau; não representa o resultado da receita.",
+        "src": "/images/recipes-editorial/pao-australiano-vegano-1200.jpg",
+        "srcSet": "/images/recipes-editorial/pao-australiano-vegano-480.jpg 480w, /images/recipes-editorial/pao-australiano-vegano-800.jpg 800w, /images/recipes-editorial/pao-australiano-vegano-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de pão australiano com amêndoas e cacau, mostrando a preparação pronta.",
         "credit": {
-          "id": "bread",
-          "name": "Pão integral",
-          "file": "/images/foods/bread.jpg",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vegan_no-knead_whole_wheat_bread_loaf,_sliced,_September_2010.jpg",
-          "author": "Veganbaking.net",
-          "license": "CC BY-SA 2.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
-          "caption": "Pão integral cortado em fatias. Fotografia de referência, sem correspondência com a porção prescrita.",
-          "title": "File:Vegan no-knead whole wheat bread loaf, sliced, September 2010.jpg",
-          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Vegan_no-knead_whole_wheat_bread_loaf%2C_sliced%2C_September_2010.jpg/960px-Vegan_no-knead_whole_wheat_bread_loaf%2C_sliced%2C_September_2010.jpg",
-          "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/79/Vegan_no-knead_whole_wheat_bread_loaf%2C_sliced%2C_September_2010.jpg",
-          "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-          "sha256": "6cc42300dda1826265b2d1749ddeb80212c1fb602f04d332dc9d1d37928c8488",
-          "bytes": 47198
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
         },
-        "reference": true
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "pao-fuba",
+      "slug": "pao-fuba",
+      "number": 25,
+      "name": "Pão de fubá com farinha de arroz",
+      "category": "salgada",
+      "introduction": "Pão dourado de fubá e farinha de arroz, fermentado antes de ir ao forno.",
+      "tags": [
+        "salgada"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/pao-fuba-1200.jpg",
+        "srcSet": "/images/recipes-editorial/pao-fuba-480.jpg 480w, /images/recipes-editorial/pao-fuba-800.jpg 800w, /images/recipes-editorial/pao-fuba-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de pão de fubá com farinha de arroz, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
       }
     },
     {
       "id": "tamaras-recheadas",
       "slug": "tamaras-recheadas",
-      "number": 8,
+      "number": 26,
       "name": "Tâmaras recheadas com nozes e chocolate branco",
       "category": "doce",
-      "introduction": "Uma preparação para variar a rotina, com ingredientes e etapas organizados.",
+      "introduction": "Tâmaras com recheio de nozes, cobertura de chocolate branco e fios de chocolate.",
       "tags": [
         "doce"
       ],
       "image": {
-        "src": "/images/foods/walnut.jpg",
-        "width": 960,
-        "height": 720,
-        "alt": "Fotografia real de ingrediente de referência para Tâmaras recheadas com nozes e chocolate branco; não representa o resultado da receita.",
+        "src": "/images/recipes-editorial/tamaras-recheadas-1200.jpg",
+        "srcSet": "/images/recipes-editorial/tamaras-recheadas-480.jpg 480w, /images/recipes-editorial/tamaras-recheadas-800.jpg 800w, /images/recipes-editorial/tamaras-recheadas-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de tâmaras recheadas com nozes e chocolate branco, mostrando a preparação pronta.",
         "credit": {
-          "id": "walnut",
-          "name": "Noz",
-          "file": "/images/foods/walnut.jpg",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Walnuts_-_whole_and_open_with_halved_kernel.jpg",
-          "author": "Ivar Leidus",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-          "caption": "Nozes inteiras e sem casca.",
-          "title": "File:Walnuts_-_whole_and_open_with_halved_kernel.jpg",
-          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/Walnuts_-_whole_and_open_with_halved_kernel.jpg/960px-Walnuts_-_whole_and_open_with_halved_kernel.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-          "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Walnuts_-_whole_and_open_with_halved_kernel.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-          "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-          "sha256": "81da6744d6ab465a44f924b9047bfc11588fe3a04308f0717c0a0a299e0c117a",
-          "bytes": 37981
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
         },
-        "reference": true
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "docinho-uva",
+      "slug": "docinho-uva",
+      "number": 27,
+      "name": "Docinho de uva com coco",
+      "category": "doce",
+      "introduction": "Uvas verdes envolvidas em massa de leite em pó e leite de coco.",
+      "tags": [
+        "doce"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/docinho-uva-1200.jpg",
+        "srcSet": "/images/recipes-editorial/docinho-uva-480.jpg 480w, /images/recipes-editorial/docinho-uva-800.jpg 800w, /images/recipes-editorial/docinho-uva-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de docinho de uva com coco, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "docinho-morango",
+      "slug": "docinho-morango",
+      "number": 28,
+      "name": "Docinho de morango e coco",
+      "category": "doce",
+      "introduction": "Bolinhas de morango, leite em pó e coco, servidas refrigeradas.",
+      "tags": [
+        "doce"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/docinho-morango-1200.jpg",
+        "srcSet": "/images/recipes-editorial/docinho-morango-480.jpg 480w, /images/recipes-editorial/docinho-morango-800.jpg 800w, /images/recipes-editorial/docinho-morango-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de docinho de morango e coco, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "beijinho-coco",
+      "slug": "beijinho-coco",
+      "number": 29,
+      "name": "Beijinho de coco sem adição de açúcar",
+      "category": "doce",
+      "introduction": "Docinhos de coco e leite em pó, com leite de coco adicionado até dar ponto.",
+      "tags": [
+        "doce"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/beijinho-coco-1200.jpg",
+        "srcSet": "/images/recipes-editorial/beijinho-coco-480.jpg 480w, /images/recipes-editorial/beijinho-coco-800.jpg 800w, /images/recipes-editorial/beijinho-coco-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de beijinho de coco sem adição de açúcar, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
       }
     },
     {
       "id": "brigadeiro-banana",
       "slug": "brigadeiro-banana",
-      "number": 9,
+      "number": 30,
       "name": "Brigadeiro de banana com cacau",
       "category": "doce",
-      "introduction": "Uma preparação para variar a rotina, com ingredientes e etapas organizados.",
+      "introduction": "Banana madura, cacau e leite em pó em um docinho de panela.",
       "tags": [
         "doce"
       ],
       "image": {
-        "src": "/images/foods/banana.jpg",
-        "width": 960,
-        "height": 720,
-        "alt": "Fotografia real de ingrediente de referência para Brigadeiro de banana com cacau; não representa o resultado da receita.",
+        "src": "/images/recipes-editorial/brigadeiro-banana-1200.jpg",
+        "srcSet": "/images/recipes-editorial/brigadeiro-banana-480.jpg 480w, /images/recipes-editorial/brigadeiro-banana-800.jpg 800w, /images/recipes-editorial/brigadeiro-banana-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de brigadeiro de banana com cacau, mostrando a preparação pronta.",
         "credit": {
-          "id": "banana",
-          "name": "Banana-nanica",
-          "file": "/images/foods/banana.jpg",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cavendish_Banana_DS.jpg",
-          "author": "Augustus Binu : flickr",
-          "license": "CC BY-SA 3.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-          "caption": "Bananas do grupo Cavendish, que inclui a banana-nanica.",
-          "title": "File:Cavendish_Banana_DS.jpg",
-          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Cavendish_Banana_DS.jpg/960px-Cavendish_Banana_DS.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-          "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Cavendish_Banana_DS.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-          "changes": "Recorte, redimensionamento e compressão JPEG; a fotografia mantém a licença indicada.",
-          "sha256": "c5823f4f56d4013e9742571c33e89765af00b73622165a4cdda093320cff5259",
-          "bytes": 18255
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
         },
-        "reference": true
+        "reference": false,
+        "generated": true
+      }
+    },
+    {
+      "id": "bolo-banana-aveia",
+      "slug": "bolo-banana-aveia",
+      "number": 31,
+      "name": "Bolo de banana e aveia sem adição de açúcar",
+      "category": "doce",
+      "introduction": "Bolo de banana madura e aveia, com passas e decoração opcionais.",
+      "tags": [
+        "doce"
+      ],
+      "image": {
+        "src": "/images/recipes-editorial/bolo-banana-aveia-1200.jpg",
+        "srcSet": "/images/recipes-editorial/bolo-banana-aveia-480.jpg 480w, /images/recipes-editorial/bolo-banana-aveia-800.jpg 800w, /images/recipes-editorial/bolo-banana-aveia-1200.jpg 1200w",
+        "width": 1200,
+        "height": 900,
+        "alt": "Imagem ilustrativa de bolo de banana e aveia sem adição de açúcar, mostrando a preparação pronta.",
+        "credit": {
+          "author": "Imagem ilustrativa gerada com IA",
+          "license": "Uso editorial no projeto"
+        },
+        "reference": false,
+        "generated": true
       }
     }
   ]
@@ -498,5 +953,10 @@ export const glpRecipesProductPreview = Object.freeze({
       "answer": "Valores nutricionais aparecem apenas quando a profissional cadastra um cálculo com fonte, rendimento e porções definidos. Receitas sem esse cálculo não exibem estimativas."
     }
   ],
+  "recipeCounts": {
+    "total": 0,
+    "preparations": 0,
+    "variations": 0
+  },
   "recipes": []
 });

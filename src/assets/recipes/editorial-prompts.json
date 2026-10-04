@@ -1,0 +1,122 @@
+{
+  "date": "2026-10-04",
+  "generator": "Ferramenta imagegen integrada; OpenRouter não configurado",
+  "description": "Imagens ilustrativas das preparações. Foram reutilizadas também as sete imagens existentes em public/images/recipes.",
+  "images": [
+    {
+      "slug": "pure-mandioquinha-alecrim",
+      "prompt": "Use case: photorealistic-natural. Asset type: photograph for a Brazilian recipe book. Create a beautiful premium editorial food photograph of purê de mandioquinha com alecrim (Brazilian arracacha root mash, not cassava), prepared only with cooked yellow arracacha, olive oil, rosemary, salt and pepper. A smooth pale golden mash with gently swirled texture, a subtle drizzle of olive oil and tiny rosemary leaves, in a tasteful shallow ivory ceramic bowl on a warm limestone table with a folded natural linen napkin. Three-quarter close view, appetizing tactile detail, soft side window light, natural color, understated styling, clean composition, real-looking texture, balanced landscape 4:3 frame. The finished dish is the main subject and fills most of the frame. No text, no lettering, no logos, no watermark, no hands, no cutlery distortion, no floating objects, no raw unpeeled roots, no butter, no cream, no cheese. Save the generated full-resolution photograph for use as a project asset.",
+      "output": "public/images/recipes-editorial/pure-mandioquinha-alecrim-1200.jpg"
+    },
+    {
+      "slug": "chocolate-caseiro",
+      "prompt": "Use case: photorealistic-natural. Asset type: image for a Brazilian recipe book. Beautiful premium editorial food photograph, very appetizing and realistic, warm ivory ceramic dish, warm limestone table, subtle natural linen napkin, soft side window light, clean tasteful styling, true food textures, three-quarter close view, finished dish fills most of landscape 4:3 composition. No text, no letters, no logos, no watermarks, no hands, no floating objects. Avoid extra toppings or ingredients not specified. Small handmade dark cocoa chocolate squares made from cocoa, coconut oil, honey and whey, with visible chopped walnuts, peanuts, pistachios, Brazil nuts, pumpkin seeds, sesame, flax and toasted coconut set inside the squares. Neat appetizing chocolate pieces arranged on a ceramic plate, one piece showing the mixed crunchy cross section. No packaging.",
+      "output": "public/images/recipes-editorial/chocolate-caseiro-1200.jpg"
+    },
+    {
+      "slug": "kafta-batatas",
+      "prompt": "Use case: photorealistic-natural. Asset type: image for a Brazilian recipe book. Beautiful premium editorial food photograph, very appetizing and realistic, warm ivory ceramic dish, warm limestone table, subtle natural linen napkin, soft side window light, clean tasteful styling, true food textures, three-quarter close view, finished dish fills most of landscape 4:3 composition. No text, no letters, no logos, no watermarks, no hands, no floating objects. Avoid extra toppings or ingredients not specified. Brazilian baked patinho ground beef kafta portions on sliced roasted potatoes, with minced onion, red bell pepper, fresh herbs, paprika, salt, pepper and olive oil. Five beautifully browned elongated beef portions on golden tender sliced potatoes in a simple elegant ivory ceramic oven dish. Juicy cooked interior, subtle caramelization. Not raw beef. No sauce, no cheese.",
+      "output": "public/images/recipes-editorial/kafta-batatas-1200.jpg"
+    },
+    {
+      "slug": "maca-cozida-especiarias",
+      "prompt": "Use case: photorealistic-natural. Asset type: image for a Brazilian recipe book. Beautiful premium editorial food photograph, very appetizing and realistic, warm ivory ceramic dish, warm limestone table, subtle natural linen napkin, soft side window light, clean tasteful styling, true food textures, three-quarter close view, finished dish fills most of landscape 4:3 composition. No text, no letters, no logos, no watermarks, no hands, no floating objects. Avoid extra toppings or ingredients not specified. One soft cooked apple with cinnamon, cloves and nutmeg, served in a shallow ivory ceramic bowl, peeled apple segments lightly softened and glossy with their own cooking liquid, warm amber cinnamon color, small cinnamon stick on the edge. No sugar, no syrup, no ice cream, no cream, no pastry.",
+      "output": "public/images/recipes-editorial/maca-cozida-especiarias-1200.jpg"
+    },
+    {
+      "slug": "pao-australiano-vegano",
+      "prompt": "Use case: photorealistic-natural. Asset type: image for a Brazilian recipe book. Beautiful premium editorial food photograph, very appetizing and realistic, warm ivory ceramic dish, warm limestone table, subtle natural linen napkin, soft side window light, clean tasteful styling, true food textures, three-quarter close view, finished dish fills most of landscape 4:3 composition. No text, no letters, no logos, no watermarks, no hands, no floating objects. Avoid extra toppings or ingredients not specified. Rustic Australian-style vegan dark bread loaf made from almond flour, golden flax, coconut flour, psyllium, cocoa, coffee, yeast, cinnamon and olive oil. Small elongated dark brown loaf, several slices showing dense realistic crumb without huge airy holes, delicate natural crust. No wheat, no butter, no cheese, no eggs. Tasteful ceramic bread platter.",
+      "output": "public/images/recipes-editorial/pao-australiano-vegano-1200.jpg"
+    },
+    {
+      "slug": "tamaras-recheadas",
+      "prompt": "Use case: photorealistic-natural. Asset type: image for a Brazilian recipe book. Beautiful premium editorial food photograph, very appetizing and realistic, warm ivory ceramic dish, warm limestone table, subtle natural linen napkin, soft side window light, clean tasteful styling, true food textures, three-quarter close view, finished dish fills most of landscape 4:3 composition. No text, no letters, no logos, no watermarks, no hands, no floating objects. Avoid extra toppings or ingredients not specified. Large Medjool dates stuffed with pecan walnut halves, covered in a smooth white chocolate shell and decorated with fine dark chocolate threads. Several attractive oblong confections on an ivory plate, one cut in half showing amber date and pecan center with thin white chocolate coating. No sprinkles, no cherries, no powdered sugar.",
+      "output": "public/images/recipes-editorial/tamaras-recheadas-1200.jpg"
+    },
+    {
+      "slug": "brigadeiro-banana",
+      "prompt": "Use case: photorealistic-natural. Asset type: image for a Brazilian recipe book. Beautiful premium editorial food photograph, very appetizing and realistic, warm ivory ceramic dish, warm limestone table, subtle natural linen napkin, soft side window light, clean tasteful styling, true food textures, three-quarter close view, finished dish fills most of landscape 4:3 composition. No text, no letters, no logos, no watermarks, no hands, no floating objects. Avoid extra toppings or ingredients not specified. Small homemade Brazilian brigadeiro truffles made from cooked mashed banana, 100% cocoa and powdered milk, rolled in pure cocoa powder. Eight round dark chocolate-brown truffles on an ivory ceramic saucer with one cut showing dense soft interior. Natural understated styling. No sprinkles, no condensed milk, no nuts, no banana slices as toppings.",
+      "output": "public/images/recipes-editorial/brigadeiro-banana-1200.jpg"
+    },
+    {
+      "slug": "suco-laranja-cenoura-mamao",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Fresh orange, carrot and ripe papaya juice with a little ginger. A single elegant clear glass of thick bright orange juice, tiny natural bubbles at surface, small orange wedge and subtle carrot section nearby. No milk, no cream, no mint.",
+      "output": "public/images/recipes-editorial/suco-laranja-cenoura-mamao-1200.jpg"
+    },
+    {
+      "slug": "suco-couve-hortela",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Fresh green juice of kale, peeled lime, coconut water and mint. One elegant transparent glass of naturally vibrant medium green juice, tiny natural bubbles, a small mint sprig beside glass and subtle lime wedge nearby. No kale leaf standing inside glass, no bizarre garnish.",
+      "output": "public/images/recipes-editorial/suco-couve-hortela-1200.jpg"
+    },
+    {
+      "slug": "vitamina-mamao-ameixa",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Thick orange-papaya smoothie made from orange juice, ripe papaya, dried prunes, oats and chia. An elegant clear glass of naturally peach-orange smoothie with fine tiny dark prune specks. No milk, no cream, no artificial purple hue, no extravagant decoration.",
+      "output": "public/images/recipes-editorial/vitamina-mamao-ameixa-1200.jpg"
+    },
+    {
+      "slug": "bolo-cacau-nozes",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Homemade cocoa and walnut cake made with eggs, dates, sweet cassava starch, rice flour and chopped walnuts. Small round dark chocolate cake with a slice removed, cut slice showing realistic cocoa crumb with chopped walnuts on an ivory cake plate. No icing, no chocolate ganache, no powdered sugar.",
+      "output": "public/images/recipes-editorial/bolo-cacau-nozes-1200.jpg"
+    },
+    {
+      "slug": "supercoffee-caseiro",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Simple warm coffee drink with cinnamon, ginger, cayenne and a small amount of coconut oil. One ivory ceramic coffee cup holding deep brown coffee with subtle natural surface sheen, no milk foam, no latte art. A small elegant dish of powdered coffee mixture and one cinnamon stick nearby. No coffee beans as primary subject.",
+      "output": "public/images/recipes-editorial/supercoffee-caseiro-1200.jpg"
+    },
+    {
+      "slug": "bombom-banana-cacau",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Homemade banana and cocoa bonbons with a thin dark chocolate shell, several bite-size spherical chocolates on an ivory plate, one cut in half showing dense light brown banana-cocoa filling. No nuts, no sprinkles, no coconut coating.",
+      "output": "public/images/recipes-editorial/bombom-banana-cacau-1200.jpg"
+    },
+    {
+      "slug": "torta-proteica-frango",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Baked Brazilian chicken pie with eggs, hydrated tapioca starch, oats, fully cooked shredded chicken, chopped tomato and green herbs, topped with mozzarella and oregano. Round golden savory pie in an ivory baking dish with one wedge served showing moist shredded chicken interior. No puff pastry crust.",
+      "output": "public/images/recipes-editorial/torta-proteica-frango-1200.jpg"
+    },
+    {
+      "slug": "pao-aveia-iogurte",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Homemade loaf of oat and plain yogurt bread made with eggs, baking powder and salt. Small golden rustic loaf sliced, moist dense pale oat crumb visible, ivory serving board. No wheat flour, no cheese filling, no seeds or nuts.",
+      "output": "public/images/recipes-editorial/pao-aveia-iogurte-1200.jpg"
+    },
+    {
+      "slug": "pao-amendoas-sementes",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Small rustic almond-flour loaf with eggs, mixed pumpkin, sunflower and flax seeds, baking powder and olive oil. Golden loaf topped with sparse seeds, two slices showing dense pale almond crumb with tiny embedded seeds on ivory bread platter. No huge air pockets.",
+      "output": "public/images/recipes-editorial/pao-amendoas-sementes-1200.jpg"
+    },
+    {
+      "slug": "pao-quinoa-chia",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Small rustic quick bread made from cooked quinoa, eggs, chia seeds, ground oats and baking powder. Golden compact loaf, several slices revealing dense moist crumb with fine chia specks and quinoa grains, ivory ceramic platter. No cheese, no icing.",
+      "output": "public/images/recipes-editorial/pao-quinoa-chia-1200.jpg"
+    },
+    {
+      "slug": "bolo-coco-tres-ingredientes",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Simple small crustless coconut cake made only with eggs, plain yogurt and unsweetened shredded coconut. Low round golden cake, one cut wedge showing dense moist pale custard-like coconut interior, ivory plate. No baking powder, no icing, no toppings, no powdered sugar.",
+      "output": "public/images/recipes-editorial/bolo-coco-tres-ingredientes-1200.jpg"
+    },
+    {
+      "slug": "pao-fuba",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Brazilian yellow cornmeal loaf bread made with rice flour, sweet cassava starch, potato starch, eggs, milk, oil, a little sugar, salt and yeast. Beautiful small golden loaf sliced on an ivory ceramic platter, fine pale yellow soft crumb. No green garnish, no frosting.",
+      "output": "public/images/recipes-editorial/pao-fuba-1200.jpg"
+    },
+    {
+      "slug": "docinho-uva",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Brazilian green grape sweets with a soft white milk-powder and coconut-milk coating, finished with finely shredded coconut. Several small white round confections on an ivory plate, one halved clearly revealing a single seedless green grape inside a thin white coating. No chocolate, no dark grapes.",
+      "output": "public/images/recipes-editorial/docinho-uva-1200.jpg"
+    },
+    {
+      "slug": "docinho-morango",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Small pink Brazilian strawberry coconut truffles made from mashed strawberries, milk powder and shredded coconut, rolled in shredded coconut. Several naturally pale pink irregular handmade balls on an ivory plate, one halved showing smooth pale pink interior with tiny strawberry flecks. No whole strawberry filling.",
+      "output": "public/images/recipes-editorial/docinho-morango-1200.jpg"
+    },
+    {
+      "slug": "beijinho-coco",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Brazilian coconut beijinho sweets made with milk powder, unsweetened shredded coconut and coconut milk, no added sugar. Eight small naturally ivory balls coated in fine shredded coconut on an ivory ceramic plate. No condensed milk, no cloves, no sprinkles, no chocolate.",
+      "output": "public/images/recipes-editorial/beijinho-coco-1200.jpg"
+    },
+    {
+      "slug": "bolo-banana-aveia",
+      "prompt": "Use case: photorealistic-natural. Asset type: Brazilian recipe-book editorial food photograph. Beautiful, appetizing, realistic professional photography. Warm limestone tabletop, subtle natural linen, warm ivory ceramics, soft side window light, gentle shadows, accurate natural food texture, uncluttered refined styling, three-quarter close view, finished preparation large in the frame, balanced landscape 4:3 composition. No text, labels, logos, watermarks, hands, floating objects, or distorted utensils. No toppings or ingredients other than specified. Small banana and oat cake made from ripe bananas, eggs, butter, oats, baking powder and optional raisins. Rustic golden round cake, one cut slice showing moist oat-banana crumb with a few raisins, simple ivory plate. No frosting, no chocolate or nut garnish, no sugar dusting.",
+      "output": "public/images/recipes-editorial/bolo-banana-aveia-1200.jpg"
+    }
+  ]
+}

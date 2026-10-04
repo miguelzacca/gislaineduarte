@@ -10,6 +10,7 @@ async function photograph(image) {
   return curatedImageBuffer(image.src);
 }
 const attribution = image => {
+  if (image.generated) return 'Imagem ilustrativa gerada com IA. A aparência final pode variar conforme o preparo.';
   const credit = image.credit;
   return [image.reference ? 'Ingrediente de referência; não representa o prato pronto.' : '', credit?.author, credit?.license, credit?.sourceUrl, credit?.licenseUrl].filter(Boolean).join(' · ');
 };
@@ -35,6 +36,7 @@ export async function buildRecipePdf(data) {
   doc.registerFont('Body', body); doc.registerFont('Editorial', editorial);
   const width = 503, left = 46;
   let continuedTitle = '';
+  let compactRecipe = false;
   const ensure = height => {
     if (doc.y + height > 752) {
       doc.addPage(); doc.x = left; doc.y = 52;
@@ -42,12 +44,13 @@ export async function buildRecipePdf(data) {
     }
   };
   const text = (value, size = 10, color = '#173f35', gap = 3) => {
+    if (compactRecipe) { size = Math.min(size, 9.5); gap = Math.min(gap, 2); }
     const str = String(value || '');
     doc.font('Body').fontSize(size);
     ensure(Math.min(660, doc.heightOfString(str, { width, lineGap: gap }) + 8));
     doc.font('Body').fontSize(size).fillColor(color).text(str, left, doc.y, { width, lineGap: gap });
   };
-  const heading = value => { ensure(50); doc.moveDown(.4); doc.font('Editorial').fontSize(22).fillColor('#173f35').text(value, left, doc.y, { width }); doc.moveDown(.25); };
+  const heading = value => { ensure(compactRecipe ? 42 : 50); doc.moveDown(compactRecipe ? .2 : .4); doc.font('Editorial').fontSize(compactRecipe ? 20 : 22).fillColor('#173f35').text(value, left, doc.y, { width }); doc.moveDown(.25); };
   doc.rect(0, 0, 595.28, 330).fill('#173f35');
   doc.font('Body').fontSize(10).fillColor('#d9bf85').text('GISLAINE DUARTE · NUTRIÇÃO & CUIDADO', left, 50);
   let titleSize = 48;
@@ -57,7 +60,8 @@ export async function buildRecipePdf(data) {
   const subtitleY = doc.y + 18;
   doc.font('Body').fontSize(11).fillColor('#fffdf7').text(data.subtitle, left, subtitleY, { width: 450, lineGap: 3 });
   doc.y = 360;
-  text(`${data.recipes.length} receitas · Edição consultada em ${new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`, 10);
+  text(`${data.recipes.length} receitas${data.recipeCounts?.variations ? ` · ${data.recipeCounts.preparations} preparações + ${data.recipeCounts.variations} variação com ficha própria` : ''}`, 10);
+  text(`Edição consultada em ${new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`, 9);
   heading('Cozinhar também é cuidar.');
   text(data.description, 11);
   doc.moveDown(); text(data.educationalNotice, 10);
@@ -67,8 +71,9 @@ export async function buildRecipePdf(data) {
   for (const [index, recipe] of data.recipes.entries()) text(`${String(index + 1).padStart(2, '0')}  ${recipe.name}`, 11);
   for (const [index, recipe] of data.recipes.entries()) {
     doc.addPage();
+    compactRecipe = recipe.ingredients.length >= 10 || recipe.preparation.length >= 8;
     continuedTitle = recipe.name;
-    text(`RECEITA ${String(index + 1).padStart(2, '0')} · ${recipe.category.toLocaleUpperCase('pt-BR')}`, 9, '#806624');
+    text(`RECEITA ${String(index + 1).padStart(2, '0')} · ${recipe.category.toLocaleUpperCase('pt-BR')}${recipe.variantOf ? ' · VARIAÇÃO' : ''}`, 9, '#806624');
     const photo = await photograph(recipe.image);
     const headerY = doc.y + 10;
     doc.font('Editorial').fontSize(28).fillColor('#173f35').text(recipe.name, left, headerY, { width: photo ? 315 : width });
@@ -91,6 +96,7 @@ export async function buildRecipePdf(data) {
     if (recipe.allergens.length) { doc.moveDown(.5); text(`Alergênicos e cuidados: ${recipe.allergens.map(allergen => allergen.label).join('; ')}. Consulte as orientações ao final do livro.`, 9); }
     doc.moveDown(); text(recipe.editorialContext, 8, '#496b56');
   }
+  compactRecipe = false;
   continuedTitle = 'Alergênicos e cuidados';
   const allergens = [...new Map(data.recipes.flatMap(recipe => recipe.allergens).map(allergen => [allergen.id, allergen])).values()];
   if (allergens.length) {
@@ -107,7 +113,7 @@ export async function buildRecipePdf(data) {
   text(`${site.fullName} · ${site.profession} · ${site.registration}`, 12);
   text(data.educationalNotice, 10);
   doc.moveDown(); doc.font('Body').fontSize(11).fillColor('#173f35').text('Conheça o acompanhamento nutricional', left, doc.y, { width, link: `${site.url}/atendimentos` });
-  doc.moveDown(); text('As fotografias de ingredientes são referências visuais e estão identificadas junto das receitas. Créditos, autoria e licença acompanham as imagens.', 9);
+  doc.moveDown(); text('As imagens ilustrativas das preparações foram geradas com IA. O resultado real pode variar conforme ingredientes, utensílios e preparo. Complementos editoriais estão identificados nas receitas.', 9);
   const range = doc.bufferedPageRange();
   for (let index = 0; index < range.count; index++) {
     doc.switchToPage(index); doc.font('Body').fontSize(7).fillColor('#496b56');

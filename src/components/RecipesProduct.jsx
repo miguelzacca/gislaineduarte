@@ -213,7 +213,8 @@ export function RecipeProductLandingPage({ product: routeProduct } = {}) {
               <a className="text-link" href="#colecao">Conhecer a coleção <Arrow /></a>
             </div>
             {catalog.available && catalog.priceCents ? <p className="product-live-price">Acesso completo por {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(catalog.priceCents / 100)}</p> : null}
-            <p className="product-hero__trust"><span>{product.recipes.length} receitas</span><span>3 formatos</span><span>acesso organizado</span></p>
+            <p className="product-hero__trust"><span>{product.recipes.length} receitas{product.recipeCounts?.variations ? ', incluindo variações' : ''}</span><span>3 formatos</span><span>acesso organizado</span></p>
+            {product.recipeCounts?.variations ? <p className="product-hero__count-detail">{product.recipeCounts.preparations} preparações + {product.recipeCounts.variations} {product.recipeCounts.variations === 1 ? 'variação com ficha própria' : 'variações com fichas próprias'}.</p> : null}
           </div>
           <div className="product-hero-art">
             <div className="product-hero-art__halo" aria-hidden="true" />
@@ -255,11 +256,11 @@ export function RecipeProductLandingPage({ product: routeProduct } = {}) {
                 <span className="product-preview-item__number">{String(recipe.number).padStart(2, '0')}</span>
                 <ProductPhoto image={recipe.image} className="product-preview-item__image" sizes="(min-width: 900px) 34vw, 88vw" />
                 <div className="product-preview-item__copy">
-                  <p className="eyebrow">{recipe.category}</p>
+                  <p className="eyebrow">{recipe.category}{recipe.variantOf ? ' · Variação' : ''}</p>
                   <h3>{recipe.name}</h3>
                   <p>{recipe.introduction}</p>
                   <span>{recipe.tags.join(' · ')}</span>
-                  <small className="recipe-editorial-context">{recipe.image.reference ? 'Ingrediente de referência. ' : ''}{recipe.image.credit?.author} · {recipe.image.credit?.license}{recipe.image.credit?.sourceUrl ? <> · <a href={recipe.image.credit.sourceUrl} target="_blank" rel="noopener noreferrer">Origem</a></> : null}{recipe.image.credit?.licenseUrl ? <> · <a href={recipe.image.credit.licenseUrl} target="_blank" rel="noopener noreferrer">Licença</a></> : null}</small>
+                  <small className="recipe-editorial-context">{recipe.image.generated ? 'Imagem ilustrativa gerada com IA.' : <>{recipe.image.reference ? 'Ingrediente de referência. ' : ''}{recipe.image.credit?.author} · {recipe.image.credit?.license}{recipe.image.credit?.sourceUrl ? <> · <a href={recipe.image.credit.sourceUrl} target="_blank" rel="noopener noreferrer">Origem</a></> : null}{recipe.image.credit?.licenseUrl ? <> · <a href={recipe.image.credit.licenseUrl} target="_blank" rel="noopener noreferrer">Licença</a></> : null}</>}</small>
                 </div>
               </article>
             ))}
@@ -484,7 +485,7 @@ function RecipeDetail({ recipe, index, total, favorites, prepared, multiplier, c
       </div>
       <p className="recipe-editorial-context">{recipe.editorialContext}</p>
       {recipe.nutrition ? <p className="recipe-editorial-context">Por porção: {recipe.nutrition.kcal} kcal · Proteínas {recipe.nutrition.protein} g · Carboidratos {recipe.nutrition.carbs} g · Gorduras {recipe.nutrition.fat} g. Fonte: {recipe.nutrition.source}</p> : null}
-      <p className="recipe-editorial-context">{recipe.image.reference ? 'Ingrediente de referência; não representa o resultado da receita. ' : ''}{recipe.image.credit?.author} · {recipe.image.credit?.license} {recipe.image.credit?.sourceUrl ? <a href={recipe.image.credit.sourceUrl} target="_blank" rel="noopener noreferrer">Origem da foto</a> : null}{recipe.image.credit?.licenseUrl ? <> · <a href={recipe.image.credit.licenseUrl} target="_blank" rel="noopener noreferrer">Licença</a></> : null}</p>
+      <p className="recipe-editorial-context">{recipe.image.generated ? 'Imagem ilustrativa gerada com IA. A aparência final pode variar conforme o preparo.' : <>{recipe.image.reference ? 'Ingrediente de referência; não representa o resultado da receita. ' : ''}{recipe.image.credit?.author} · {recipe.image.credit?.license} {recipe.image.credit?.sourceUrl ? <a href={recipe.image.credit.sourceUrl} target="_blank" rel="noopener noreferrer">Origem da foto</a> : null}{recipe.image.credit?.licenseUrl ? <> · <a href={recipe.image.credit.licenseUrl} target="_blank" rel="noopener noreferrer">Licença</a></> : null}</>}</p>
     </article>
   );
 }

@@ -1,5 +1,7 @@
 import { expandedRecipes, glpRecipes } from './recipes-expanded.js';
 import { recipeAllergens } from './recipe-allergens.js';
+import { completeRecipeBook } from './recipes-editorial.js';
+import { recipePhotograph } from './recipe-photography.js';
 export { recipeAllergens } from './recipe-allergens.js';
 import photoCredits from '../../public/images/foods/credits.json' with { type: 'json' };
 /**
@@ -410,8 +412,26 @@ export const glpRecipesProduct = {
   hero: { ...recipesProduct.hero, image: foodPhoto('papaya') },
 };
 export const recipeProducts = [recipesProduct, glpRecipesProduct];
+const previousImages = new Map(recipesProduct.recipes.map(recipe => [recipe.id, recipe.image.src]));
+completeRecipeBook(recipesProduct.recipes);
+for (const recipe of recipesProduct.recipes) recipe.image = recipePhotograph(recipe.slug, recipe.name);
+recipesProduct.hero.image = recipePhotograph('bolo-maca', 'bolo de maçã com aveia');
+
+// Atualiza somente a fotografia padrão antiga; mantém fotos e conteúdo personalizados.
+export function refreshDefaultRecipeImage(recipe) {
+  const replacement = recipesProduct.recipes.find(item => item.id === recipe.id);
+  return replacement && recipe.image?.src === previousImages.get(recipe.id)
+    ? { ...recipe, image: replacement.image } : recipe;
+}
+
+export function recipeBookCounts(recipes) {
+  const visible = recipes.filter(recipe => recipe.published !== false);
+  const variations = visible.filter(recipe => recipe.variantOf).length;
+  return { total: visible.length, preparations: visible.length - variations, variations };
+}
+
 export const allRecipes = [...recipesProduct.recipes, ...glpRecipes];
-for (const recipe of allRecipes) recipe.seedVersion = '2026-10-02-editorial-audit';
+for (const recipe of allRecipes) recipe.seedVersion = '2026-10-04-recipe-book';
 export function recipeProductById(id = RECIPES_PRODUCT_ID) { return recipeProducts.find(product => product.id === id) || null; }
 export function requestedRecipeProduct(request) { return recipeProductById(new URL(request.url).searchParams.get('product') || RECIPES_PRODUCT_ID); }
 
@@ -420,7 +440,7 @@ export function expandRecipeAllergens(recipe) {
 }
 
 export function buildProtectedProductPayload(recipesProduct = recipeProducts[0]) {
-  const publicImage = ({ src, srcSet, avifSrcSet, width, height, alt, credit, reference }) => ({ src, srcSet, avifSrcSet, width, height, alt, credit, reference });
+  const publicImage = ({ src, srcSet, avifSrcSet, width, height, alt, credit, reference, generated }) => ({ src, srcSet, avifSrcSet, width, height, alt, credit, reference, generated });
   return {
     id: recipesProduct.id,
     title: recipesProduct.title,
@@ -431,6 +451,7 @@ export function buildProtectedProductPayload(recipesProduct = recipeProducts[0])
     publicPath: recipesProduct.publicPath,
     experiencePath: recipesProduct.experiencePath,
     downloadEndpoint: recipesProduct.downloadEndpoint,
+    recipeCounts: recipeBookCounts(recipesProduct.recipes),
     recipes: recipesProduct.recipes.filter(recipe => recipe.published !== false).map(({ validation: _validation, editorialContext, image: recipeImage, ...recipe }) => ({
       ...recipe,
       image: publicImage(recipeImage),
@@ -441,8 +462,8 @@ export function buildProtectedProductPayload(recipesProduct = recipeProducts[0])
 }
 
 export function buildPublicProductPreview(recipesProduct = recipeProducts[0]) {
-  const publicImage = ({ src, srcSet, avifSrcSet, width, height, alt, credit, reference }) => ({
-    src, srcSet, avifSrcSet, width, height, alt, credit, reference,
+  const publicImage = ({ src, srcSet, avifSrcSet, width, height, alt, credit, reference, generated }) => ({
+    src, srcSet, avifSrcSet, width, height, alt, credit, reference, generated,
   });
   return {
     id: recipesProduct.id,
@@ -463,12 +484,14 @@ export function buildPublicProductPreview(recipesProduct = recipeProducts[0]) {
     whatYouFind: recipesProduct.whatYouFind,
     audience: recipesProduct.audience,
     faqs: recipesProduct.faqs,
+    recipeCounts: recipeBookCounts(recipesProduct.recipes),
     recipes: recipesProduct.recipes.filter(recipe => recipe.published !== false).map((recipe, index) => ({
       id: recipe.id,
       slug: recipe.slug,
       number: index + 1,
       name: recipe.name,
       category: recipe.category,
+      variantOf: recipe.variantOf,
       introduction: recipe.introduction,
       tags: recipe.tags.slice(0, 3),
       image: publicImage(recipe.image),

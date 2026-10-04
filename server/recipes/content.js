@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { allRecipes, recipeProducts, recipeProductById, formatIngredient, buildProtectedProductPayload, buildPublicProductPreview, recipeAllergens } from '../../src/data/recipes-product.js';
+import { allRecipes, recipeProducts, recipeProductById, formatIngredient, buildProtectedProductPayload, buildPublicProductPreview, recipeAllergens, refreshDefaultRecipeImage } from '../../src/data/recipes-product.js';
 import { curatedImageAllowed } from '../../src/lib/nutrition-clinical.js';
 
 export async function initializeRecipeContent(db) {
@@ -10,14 +10,14 @@ export async function initializeRecipeContent(db) {
   await db.query(`INSERT INTO recipe_content(id, data)
     SELECT value->>'id', value FROM jsonb_array_elements($1::jsonb)
     ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, revision = recipe_content.revision + 1, updated_at = now()
-    WHERE recipe_content.revision = 1
-      AND COALESCE(recipe_content.data #>> '{validation,status}', '') <> 'professional-reviewed'
+    WHERE (recipe_content.revision = 1 OR recipe_content.data->>'seedVersion' = '2026-10-02-editorial-audit')
+      AND COALESCE(recipe_content.data #>> '{validation,status}', '') NOT IN ('professional-reviewed', 'draft')
       AND COALESCE(recipe_content.data->>'seedVersion', '') <> EXCLUDED.data->>'seedVersion'`, [JSON.stringify(allRecipes)]);
 }
 
 export async function readRecipeRecords(db) {
   const records = await db.query('SELECT data, revision FROM recipe_content ORDER BY id');
-  return records.rows.map(row => ({ ...row.data, revision: row.revision }));
+  return records.rows.map(row => refreshDefaultRecipeImage({ ...row.data, revision: row.revision }));
 }
 
 export async function hasPublishedRecipe(db, productId) {
