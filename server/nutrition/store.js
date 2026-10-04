@@ -49,6 +49,12 @@ export async function getNutritionStore(env = process.env, injectedStore) {
       await client.query('ALTER TABLE nutrition_requests ADD COLUMN IF NOT EXISTS analysis_encrypted text');
       await client.query('CREATE TABLE IF NOT EXISTS nutrition_ai_limit (id integer PRIMARY KEY CHECK (id=1), blocked_until timestamptz NOT NULL DEFAULT now())');
       await client.query('INSERT INTO nutrition_ai_limit (id) VALUES (1) ON CONFLICT (id) DO NOTHING');
+      await client.query(`CREATE TABLE IF NOT EXISTS nutrition_ai_chat_requests (
+        id bigserial PRIMARY KEY, actor_hash text NOT NULL, scope text NOT NULL,
+        created_at timestamptz NOT NULL DEFAULT now()
+      )`);
+      await client.query('CREATE INDEX IF NOT EXISTS nutrition_ai_chat_time_idx ON nutrition_ai_chat_requests(created_at)');
+      await client.query('CREATE INDEX IF NOT EXISTS nutrition_ai_chat_actor_idx ON nutrition_ai_chat_requests(actor_hash,created_at)');
       await client.query(`CREATE TABLE IF NOT EXISTS nutrition_events (
         id bigserial PRIMARY KEY, request_id uuid NOT NULL REFERENCES nutrition_requests(id) ON DELETE CASCADE,
         type text NOT NULL, actor text NOT NULL, created_at timestamptz NOT NULL DEFAULT now()

@@ -55,7 +55,6 @@ export function intakeErrors(input) {
   }
   if (typeof input?.pregnant !== 'boolean') errors.pregnant = 'Confira a informação sobre gestação ou amamentação.';
   if (input?.consent !== true) errors.consent = 'É necessário autorizar o uso destes dados para o seu atendimento.';
-  if (input?.aiConsent !== undefined && typeof input.aiConsent !== 'boolean') errors.aiConsent = 'Confira a autorização opcional de IA.';
   return errors;
 }
 
@@ -65,7 +64,7 @@ export function sanitizeIntake(input) {
   result.email = result.email.toLowerCase();
   for (const key of ['age', 'weight', 'height', 'activity']) result[key] = Number(input[key]);
   for (const key of ['conditions', 'allergies', 'symptoms', 'excludedFoodIds', 'intolerances', 'likedFoodIds', 'dislikedFoodIds']) result[key] = [...new Set(input[key] || [])];
-  result.pregnant = input.pregnant === true; result.consent = true; result.aiConsent = input.aiConsent === true;
+  result.pregnant = input.pregnant === true; result.consent = true;
   result.medicationUse = input.medicationUse === true || Boolean(result.medications);
   result.avoidReadySeasonings = input.avoidReadySeasonings === true;
   result.bristolType = Number.isInteger(input.bristolType) ? input.bristolType : null;

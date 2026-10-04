@@ -150,13 +150,13 @@ test('nutrition flow: isolated PostgreSQL intake → checkout → confirmation �
       assert.equal((await (await request('status')).json()).firstDeliveredAt, before);
     });
     await t.test('logout revokes the stored session as well as clearing the cookie', async () => {
-      // A patient can revoke AI permission without losing access to the paid plan.
+      // The retired patient AI switch cannot change the professional tools.
       const row = (await store.query('SELECT intake_encrypted FROM nutrition_requests WHERE id=$1', [rowId])).rows[0];
       const intake = unseal(row.intake_encrypted, env);
       await store.query('UPDATE nutrition_requests SET intake_encrypted=$1, analysis_encrypted=$3 WHERE id=$2', [seal({ ...intake, aiConsent: true }, env), rowId, seal({ summary: 'Análise em cache' }, env)]);
-      assert.equal((await request('revoke-ai', {})).status, 200);
-      assert.equal((await store.query('SELECT analysis_encrypted FROM nutrition_requests WHERE id=$1', [rowId])).rows[0].analysis_encrypted, null);
-      const status = await (await request('status')).json(); assert.equal(status.aiConsent, false); assert.equal(status.ready, true);
+      assert.equal((await request('revoke-ai', {})).status, 405);
+      assert.ok((await store.query('SELECT analysis_encrypted FROM nutrition_requests WHERE id=$1', [rowId])).rows[0].analysis_encrypted);
+      const status = await (await request('status')).json(); assert.equal('aiConsent' in status, false); assert.equal(status.ready, true);
       const response = await request('logout', {}); assert.equal(response.status, 200);
       assert.ok(response.headers.get('set-cookie').includes('Max-Age=0'));
       assert.equal((await request('status')).status, 401);

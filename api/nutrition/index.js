@@ -8,7 +8,7 @@ import { event, getNutritionStore, seal, unseal } from '../../server/nutrition/s
 import { buildPlanHtml, buildPlanPdf } from '../../server/nutrition/export.js';
 
 const json = (value, status = 200, headers = {}) => Response.json(value, { status, headers: productAccessHeaders(headers) });
-const methods = { offer: 'GET', intake: 'POST', checkout: 'POST', status: 'GET', return: 'GET', webhook: 'POST', redeem: 'POST', download: 'GET', checkin: 'POST', 'revoke-ai': 'POST', logout: 'POST' };
+const methods = { offer: 'GET', intake: 'POST', checkout: 'POST', status: 'GET', return: 'GET', webhook: 'POST', redeem: 'POST', download: 'GET', checkin: 'POST',  logout: 'POST' };
 
 export async function handleNutritionRequest(request, { env = process.env, store, fetcher = fetch } = {}) {
   const url = new URL(request.url); const action = url.searchParams.get('action') || 'offer';
@@ -44,17 +44,6 @@ export async function handleNutritionRequest(request, { env = process.env, store
     }
     const patient = await readPatient(request, db);
     if (!patient) throw new NutritionError('Abra o link privado recebido ou retorne ao dispositivo em que preencheu a anamnese.', 401);
-    if (action === 'revoke-ai') {
-      await transaction(db, async client => {
-        const row = (await client.query('SELECT intake_encrypted FROM nutrition_requests WHERE id=$1 FOR UPDATE', [patient.id])).rows[0];
-        const intake = unseal(row.intake_encrypted, env);
-        if (intake.aiConsent) {
-          await client.query('UPDATE nutrition_requests SET intake_encrypted=$1, analysis_encrypted=NULL, updated_at=now() WHERE id=$2', [seal({ ...intake, aiConsent: false }, env), patient.id]);
-          await event(client, patient.id, 'ai_consent_revoked', 'patient');
-        }
-      });
-      return json({ ok: true });
-    }
     if (action === 'logout') {
       await db.query('UPDATE nutrition_requests SET access_expires_at=now() WHERE id=$1', [patient.id]);
       return json({ ok: true }, 200, { 'Set-Cookie': accessCookie('', request, env).replace('Max-Age=7776000', 'Max-Age=0') });
@@ -64,7 +53,7 @@ export async function handleNutritionRequest(request, { env = process.env, store
       const paid = patient.payment_status === 'paid';
       const ready = paid && patient.stage === 'approved';
       return json({ id: patient.id, payment: patient.payment_status, stage: patient.stage, ready, amountCents: patient.amount_cents,
-        offer: publicOffer(patient.offer_snapshot), createdAt: patient.created_at, paidAt: patient.paid_at, approvedAt: patient.approved_at, aiConsent: unseal(patient.intake_encrypted, env).aiConsent, ...followupStatus(patient),
+        offer: publicOffer(patient.offer_snapshot), createdAt: patient.created_at, paidAt: patient.paid_at, approvedAt: patient.approved_at, ...followupStatus(patient),
         checkoutUrl: !paid ? patient.checkout_url : null,
         whatsappUrl: paid ? `https://wa.me/${site.contact.whatsapp}?text=${encodeURIComponent(`Olá, Gislaine! Preenchi minha anamnese e meu pagamento foi confirmado. Pedido ${patient.id.slice(0, 8)}. Gostaria de combinar os próximos passos.`)}` : null,
       });

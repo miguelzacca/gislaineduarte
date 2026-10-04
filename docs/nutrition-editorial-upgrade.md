@@ -14,7 +14,7 @@ O prato ilustrado usa fotografias reais dos alimentos e identifica porções em 
 
 O painel oferece 60 bases, com imagens, contexto, objetivos e calorias calculadas. A Gi pode copiar, editar e salvar modelos próprios; a reutilização remove os dados de avaliação da pessoa original. Bibliotecas de chás, alimentos, receitas, temperos e suplementos são editáveis e persistidas. Conteúdos novos exigem conferência dos ingredientes e adequação ao paciente antes da aprovação.
 
-A seleção automática considera objetivos e restrições; a assistência da NVIDIA NIM respeita a autorização de IA. Sugestões continuam como rascunho até a revisão. A prévia do paciente permite conferir a entrega antes de aprovar. O compartilhamento pelo WhatsApp abre uma mensagem para revisão e envio, sem enviar automaticamente.
+A seleção automática considera objetivos e restrições; a assistência da NVIDIA NIM permanece habilitada como ferramenta profissional. Sugestões continuam como rascunho até a revisão. A prévia do paciente permite conferir a entrega antes de aprovar. O compartilhamento pelo WhatsApp abre uma mensagem para revisão e envio, sem enviar automaticamente.
 
 ## Livros de receitas
 

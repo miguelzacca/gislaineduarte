@@ -61,7 +61,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
           COALESCE(sum(amount_cents) FILTER (WHERE payment_status='paid'),0)::bigint AS revenue FROM nutrition_requests`);
         const templates = await readTemplates(db, env);
         return json({ patients: result.rows.map(row => { const intake = unseal(row.intake_encrypted, env); return { id: row.id, name: intake.name, conditions: intake.conditions, payment: row.payment_status, stage: row.stage, amountCents: row.amount_cents, createdAt: row.created_at, revision: row.revision, checkins: row.checkins }; }), stats: stats.rows[0], offer: await readOffer(db), templates, page,
-          integrations: { checkout: commerceReady(env), ai: Boolean(env.NVIDIA_NIM_API_KEY), model: nimModel(env), aiRequestsPerMinute: nimRequestsPerMinute } });
+          integrations: { checkout: commerceReady(env), ai: true, aiConfigured: Boolean(env.NVIDIA_NIM_API_KEY), model: nimModel(env), aiRequestsPerMinute: nimRequestsPerMinute } });
       }
       const id = url.searchParams.get('id'); if (!isId(id)) throw new NutritionError('Atendimento inválido.');
       const row = (await db.query('SELECT * FROM nutrition_requests WHERE id=$1', [id])).rows[0];
@@ -72,7 +72,7 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
         const checkins = await db.query('SELECT body_encrypted, created_at AS "createdAt" FROM nutrition_checkins WHERE request_id=$1 ORDER BY created_at DESC LIMIT 20', [id]);
         const versions = await db.query('SELECT revision,stage,reason,created_at AS "createdAt" FROM nutrition_plan_versions WHERE request_id=$1 ORDER BY revision DESC,created_at DESC LIMIT 40', [id]);
         const deliveryWarnings = !plan ? [] : !plan.plateGuide ? ['As proporções do prato ainda não foram definidas. Configure e salve o guia para conferir a fotografia na entrega.'] : !(await plateReferenceForPlan(plan).catch(() => null)) ? ['A biblioteca ainda não tem uma fotografia de prato pronto compatível com esta seleção e suas restrições. A entrega usará os grupos e percentuais escritos, sem fotografia do prato. Confira a prévia antes de liberar.'] : [];
-        return json({ id, intake, plan, deliveryWarnings, analysis: intake.aiConsent ? unseal(row.analysis_encrypted, env) : null, revision: row.revision, stage: row.stage, payment: row.payment_status, offer: row.offer_snapshot, createdAt: row.created_at, approvedAt: row.approved_at, ...followupStatus(row), events: events.rows, versions: versions.rows, checkins: checkins.rows.map(item => ({ ...unseal(item.body_encrypted, env), createdAt: item.createdAt })) });
+        return json({ id, intake, plan, deliveryWarnings, analysis: unseal(row.analysis_encrypted, env), revision: row.revision, stage: row.stage, payment: row.payment_status, offer: row.offer_snapshot, createdAt: row.created_at, approvedAt: row.approved_at, ...followupStatus(row), events: events.rows, versions: versions.rows, checkins: checkins.rows.map(item => ({ ...unseal(item.body_encrypted, env), createdAt: item.createdAt })) });
       }
       if (action === 'download' || action === 'preview') {
         if (!plan) throw new NutritionError('Monte e salve o plano primeiro.');
@@ -140,7 +140,6 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
     }
     if (action === 'save') return json(await savePlan(db, row, body.plan, env, body.revision, 'plan_saved'));
     if (['ai', 'ai-draft', 'analyze'].includes(action)) {
-      if (!intake.aiConsent) throw new NutritionError('Esta pessoa não autorizou o uso opcional de IA.', 403);
       if (!env.NVIDIA_NIM_API_KEY) throw new NutritionError('A chave NVIDIA NIM ainda não foi configurada no servidor.', 503);
       if (body.goal !== undefined && !goalOptions.some(goal => goal.id === body.goal)) throw new NutritionError('Confira o objetivo selecionado para a assistente.');
       if (body.professionalRequest !== undefined && (typeof body.professionalRequest !== 'string' || body.professionalRequest.length > 800)) throw new NutritionError('Use até 800 caracteres para orientar a montagem.');
@@ -148,12 +147,12 @@ export async function handleAdminNutritionRequest(request, { env = process.env, 
       const options = { env, fetcher, professionalRequest: body.professionalRequest?.trim() || '', beforeRequest: () => reserveNimRequest(db, row.id), onRateLimited: seconds => blockNimRequests(db, seconds) };
       const ensureCurrent = async () => {
         const current = (await db.query('SELECT revision,stage,intake_encrypted FROM nutrition_requests WHERE id=$1', [row.id])).rows[0];
-        if (!current || current.revision !== row.revision || current.stage === 'approved' || current.intake_encrypted !== row.intake_encrypted) throw new NutritionError('O atendimento ou a autorização mudou durante a consulta. Recarregue antes de usar a sugestão.', 409);
+        if (!current || current.revision !== row.revision || current.stage === 'approved' || current.intake_encrypted !== row.intake_encrypted) throw new NutritionError('O atendimento mudou durante a consulta. Recarregue antes de usar a sugestão.', 409);
       };
       if (action === 'analyze') {
         const analysis = await analyzeWithNim(context, { ...options, customTemplates: await readTemplates(db, env) });
         const cached = await db.query("UPDATE nutrition_requests SET analysis_encrypted=$1 WHERE id=$2 AND intake_encrypted=$3 AND revision=$4 AND stage<>'approved' RETURNING id", [seal(analysis, env), row.id, row.intake_encrypted, row.revision]);
-        if (!cached.rowCount) throw new NutritionError('A anamnese ou a autorização mudou. Recarregue o atendimento.', 409);
+        if (!cached.rowCount) throw new NutritionError('A anamnese mudou. Recarregue o atendimento.', 409);
         return json({ analysis });
       }
       const source = body.plan || plan;

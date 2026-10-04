@@ -70,6 +70,15 @@ test('workspace preserves unrecorded calculations across tabs and guards commerc
       assert.equal(document.querySelectorAll('.nj-template-results button').length, 5);
       assert.equal(field('Buscar modelo').value, 'pressão alta');
     });
+    await t.test('professional AI starts automatically even for a legacy false switch and disabled integration flag', async () => {
+      const intake = { name: 'Fictional person', goal: 'muscle', diet: 'omnivore', conditions: [], allergies: [], symptoms: [], excludedFoodIds: [], aiConsent: false };
+      const analysis = { contextVersion: 2, goal: 'muscle', templateIds: ['muscle-pratica'], recommendations: [{ templateId: 'muscle-pratica', reason: 'Base para o objetivo.' }], summary: 'Recomendacao real da API.', questions: [], actions: [], model: 'nvidia/test' };
+      let calls = 0;
+      globalThis.fetch = async (url, init) => { assert.equal(new URL(url, 'https://nutrition.example').searchParams.get('action'), 'analyze'); assert.equal(JSON.parse(init.body).goal, 'muscle'); calls++; return Response.json({ analysis }); };
+      await act(async () => root.render(createElement(PlanWorkspace, { key: 'legacy-always-on', initial: { id: 'fictional-id', intake, plan: null, revision: 0, stage: 'received', payment: 'pending', checkins: [], events: [] }, data: { templates: [], integrations: { ai: false } } })));
+      assert.equal(calls, 1); assert.match(document.querySelector('.nw-assistant-panel').textContent, /NVIDIA respondeu/);
+      assert.equal(button('Montar semana com IA').disabled, false);
+    });
     await t.test('measurements survive opening the intake and returning; leaving prompts before losing them', async () => {
       const intake = { name: 'Pessoa de demonstração', age: 34, weight: 70, height: 165, sex: 'female', activity: 1.2, conditions: [], allergies: [], excludedFoodIds: [], symptoms: [], diet: 'omnivore', aiConsent: false };
       let editing; let leaves = 0;

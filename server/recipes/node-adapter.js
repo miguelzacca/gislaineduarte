@@ -18,6 +18,8 @@ import { handleAdminRecipesRequest } from '../../api/admin/recipes.js';
 import { handleServiceOffersRequest } from '../../api/service-offers.js';
 import { handleAdminServiceOffersRequest } from '../../api/admin/service-offers.js';
 import { handleNutritionRequest } from '../../api/nutrition/index.js';
+import { handleNutritionAssistantRequest } from '../../api/nutrition/assistant.js';
+import { handleAdminNutritionAssistantRequest } from '../../api/admin/nutrition-assistant.js';
 import { handleAdminNutritionRequest } from '../../api/admin/nutrition.js';
 import { handleNutritionReturnRequest } from '../../api/nutrition/return.js';
 import { nutritionIntakeBodyLimit } from '../nutrition/service.js';
@@ -28,6 +30,8 @@ const routes = {
   '/api/admin/service-offers': { method: ['GET', 'PATCH'], handle: handleAdminServiceOffersRequest },
   '/api/admin/recipes': { method: ['GET', 'POST', 'PATCH'], handle: handleAdminRecipesRequest },
   '/api/nutrition': { method: ['GET', 'POST'], handle: handleNutritionRequest },
+  '/api/nutrition/assistant': { method: 'POST', handle: handleNutritionAssistantRequest },
+  '/api/admin/nutrition-assistant': { method: 'POST', handle: handleAdminNutritionAssistantRequest },
   '/api/nutrition/return': { method: 'GET', handle: handleNutritionReturnRequest },
   '/api/admin/nutrition': { method: ['GET', 'POST', 'PATCH'], handle: handleAdminNutritionRequest },
   '/api/recipes/checkout': { method: 'POST', handle: handleCheckoutRequest },
@@ -79,7 +83,7 @@ export async function handleProductApiRequest(request, response, { env } = {}) {
   let body;
   if (!['GET', 'HEAD'].includes(request.method)) {
     const isIntake = pathname === '/api/nutrition' && url.searchParams.get('action') === 'intake';
-    const bodyLimit = isIntake ? nutritionIntakeBodyLimit : pathname === '/api/admin/nutrition' ? 180_000 : pathname === '/api/nutrition' ? 32_000 : pathname === '/api/admin/recipes' ? 50_000 : pathname === '/api/admin/service-offers' ? 24_576 : 16_384;
+    const bodyLimit = isIntake ? nutritionIntakeBodyLimit : ['/api/nutrition/assistant', '/api/admin/nutrition-assistant'].includes(pathname) ? 80_000 : pathname === '/api/admin/nutrition' ? 180_000 : pathname === '/api/nutrition' ? 32_000 : pathname === '/api/admin/recipes' ? 50_000 : pathname === '/api/admin/service-offers' ? 24_576 : 16_384;
     const chunks = [];
     let size = 0;
     for await (const chunk of request) {

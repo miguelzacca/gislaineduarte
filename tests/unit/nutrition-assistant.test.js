@@ -81,5 +81,6 @@ test('provider overload uses one free fallback, reserving both calls; 429 has no
   let calls = 0; let blocked;
   await assert.rejects(analyzeWithNim(person, { env, beforeRequest: () => { calls++; }, onRateLimited: seconds => { blocked = seconds; }, fetcher: async () => new Response('Limited', { status: 429, headers: { 'Retry-After': '17' } }) }), error => error.status === 429 && error.retryAfter === 17);
   assert.equal(calls, 1); assert.equal(blocked, 17);
-  await assert.rejects(analyzeWithNim({ ...person, aiConsent: false }, { env, fetcher: async () => { throw new Error('Must not call'); } }), /não autorizou/);
+  const alwaysOn = await analyzeWithNim({ ...person, aiConsent: false }, { env: { ...env, NVIDIA_NIM_MODEL: 'ignored-feature-override' }, fetcher: async () => response(analysisReply()) });
+  assert.equal(alwaysOn.model, defaultNimModel);
 });

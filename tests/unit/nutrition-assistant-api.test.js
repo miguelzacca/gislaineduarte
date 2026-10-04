@@ -8,7 +8,7 @@ import { getNutritionStore, seal, unseal } from '../../server/nutrition/store.js
 import { defaultNimModel, fallbackNimModel } from '../../server/nutrition/ai.js';
 import { generatePlan, validatePlan } from '../../src/lib/nutrition.js';
 
-test('assistant API: reviewable drafts, consent, provider fallback and shared 40/min quota in an isolated database', async t => {
+test('assistant API: reviewable drafts, always-on AI, provider fallback and shared 40/min quota in an isolated database', async t => {
   const pg = await PGlite.create();
   const store = { query: (...args) => pg.query(...args), connect: async () => ({ query: (...args) => pg.query(...args), release() {} }) };
   const env = { NUTRITION_DATA_KEY: randomBytes(32).toString('base64'), RECIPES_ADMIN_USERNAME: 'test-only', RECIPES_ADMIN_PASSWORD: 'test-only-password', RECIPES_ADMIN_SESSION_SECRET: randomBytes(40).toString('hex'), NVIDIA_NIM_API_KEY: 'test-only-key', NODE_ENV: 'test' };
@@ -46,10 +46,10 @@ test('assistant API: reviewable drafts, consent, provider fallback and shared 40
       const stored = unseal((await store.query('SELECT plan_encrypted FROM nutrition_requests WHERE id=$1', [id])).rows[0].plan_encrypted, env);
       assert.deepEqual(stored, current);
     });
-    await t.test('missing consent, approval, bad goal and invalid draft make no provider calls', async () => {
+    await t.test('legacy AI switch is ignored; approval, bad goal and invalid draft still block changes', async () => {
       const forbidden = await seed({ consent: false }); const approved = await seed({ plan: generatePlan(intake), stage: 'approved' }); const id = await seed();
       const fetcher = async () => { throw new Error('Provider must not be called'); };
-      assert.equal((await request('ai-draft', { id: forbidden, revision: 0, templateId: 'muscle-pratica' }, fetcher)).status, 403);
+      assert.equal((await request('ai-draft', { id: forbidden, revision: 0, templateId: 'muscle-pratica' })).status, 200);
       assert.equal((await request('ai-draft', { id: approved, revision: 0, templateId: 'muscle-pratica' }, fetcher)).status, 409);
       assert.equal((await request('analyze', { id, revision: 0, goal: 'invented' }, fetcher)).status, 400);
       assert.equal((await request('ai-draft', { id, revision: 0, templateId: 'muscle-pratica', plan: {} }, fetcher)).status, 422);
@@ -82,10 +82,10 @@ test('assistant API: reviewable drafts, consent, provider fallback and shared 40
       assert.equal((await request('analyze', { id, revision: 0 }, fetcher)).status, 429); assert.equal(calls, 1);
       assert.equal((await store.query('SELECT revision FROM nutrition_requests WHERE id=$1', [id])).rows[0].revision, 0);
     });
-    await t.test('revoking consent during generation discards the response', async () => {
+    await t.test('changing intake during generation discards the stale response', async () => {
       await resetQuota(); const id = await seed();
       const result = await request('ai-draft', { id, revision: 0, templateId: 'muscle-pratica' }, async (url, init) => {
-        await store.query('UPDATE nutrition_requests SET intake_encrypted=$1 WHERE id=$2', [seal({ ...intake, aiConsent: false }, env), id]);
+        await store.query('UPDATE nutrition_requests SET intake_encrypted=$1 WHERE id=$2', [seal({ ...intake, goal: 'weight-management' }, env), id]);
         return defaultReply(url, init);
       });
       assert.equal(result.status, 409);

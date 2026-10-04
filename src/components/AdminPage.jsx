@@ -1,3 +1,4 @@
+import { useNutritionAssistantPage } from './NutritionCopilot.jsx';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { AdminRecipes } from './AdminRecipes.jsx';
 import { ServiceOffersEditor } from './ServiceOffers.jsx';
@@ -90,6 +91,7 @@ export function AdminPage() {
   const commerceBusy = Object.values(commerceEditing).some(value => value.busy);
   const canLeave = () => !(editing.busy || commerceBusy) && (!(editing.dirty || commerceDirty) || window.confirm('Há alterações que ainda não foram salvas. Deseja sair sem salvar?'));
   const [state, setState] = useState('loading');
+  useNutritionAssistantPage({ scope: 'professional', view: 'panel', label: 'Painel de gestão', visible: state === 'ready' }, {}, 2);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState({ paid: 0, pending: 0, grossCents: 0 });

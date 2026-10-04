@@ -26,7 +26,7 @@ test('nutrition: adult calculations use units and reject invalid/missing input',
   assert.equal(calculateAnthropometry({ ...intake, activity: 5 }), null);
   assert.equal(calculateAnthropometry({ ...intake, sex: 'unspecified' }).resting, null);
 });
-test('nutrition: intake requires consent and valid structured health input, with optional AI consent', () => {
+test('nutrition: intake requires consent and valid structured health input, with always-on professional AI', () => {
   assert.deepEqual(intakeErrors(intake), {});
   assert.deepEqual(intakeErrors({ ...intake, aiConsent: false }), {});
   assert.ok(intakeErrors({ ...intake, consent: false }).consent);
@@ -163,7 +163,7 @@ test('nutrition: health data encrypted with authenticated encryption, wrong key/
   assert.throws(() => unseal(a, { NUTRITION_DATA_KEY: randomBytes(32).toString('base64') }));
   const fields = a.split('.'); fields[2] = randomBytes(16).toString('base64url'); assert.throws(() => unseal(fields.join('.'), env));
 });
-test('nutrition: NIM minimizes patient data, honors consent and rejects unsafe/invalid responses', async () => {
+test('nutrition: NIM minimizes patient data, ignores the retired AI switch and rejects unsafe/invalid responses', async () => {
   const person = { ...intake, medications: 'private medicine', routine: 'private routine' }; const plan = generatePlan(person);
   const env = { NVIDIA_NIM_API_KEY: 'test-only-key' }; let sent;
   const fetcher = async (_url, init) => { sent = JSON.parse(init.body); return Response.json({ choices: [{ message: { content: JSON.stringify({ swaps: [{ day: 0, meal: 0, item: 2, foodId: 'apple' }] }) } }] }); };
@@ -173,7 +173,7 @@ test('nutrition: NIM minimizes patient data, honors consent and rejects unsafe/i
   assert.ok(Math.abs(dayTotals(candidate.days[0]).kcal - dayTotals(plan.days[0]).kcal) < 2);
   for (const sensitive of [person.name, person.email, person.phone, person.medications, person.routine]) assert.ok(!JSON.stringify(sent).includes(sensitive));
   assert.equal(sent.chat_template_kwargs.enable_thinking, false);
-  await assert.rejects(suggestWithNim({ ...person, aiConsent: false }, plan, { env, fetcher }), /não autorizou/);
+  assert.deepEqual(validatePlan(await suggestWithNim({ ...person, aiConsent: false }, plan, { env, fetcher }), person), []);
   await assert.rejects(suggestWithNim(person, plan, { env, fetcher: async () => new Response('limited', { status: 429 }) }), /limite/i);
   for (const foodId of ['hallucinated-food', 'chicken', 'papaya', 'avocado']) {
     await assert.rejects(suggestWithNim(person, plan, { env, fetcher: async () => Response.json({ choices: [{ message: { content: JSON.stringify({ swaps: [{ day: 0, meal: 0, item: 2, foodId }] }) } }] }) }), /descartada/);

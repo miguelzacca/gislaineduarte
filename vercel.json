@@ -9,6 +9,8 @@
     { "source": "/7-receitas-para-ajudar-voce-a-desinflamar", "destination": "/livro-de-receitas", "permanent": true }
   ],
   "functions": {
+    "api/nutrition/assistant.js": { "maxDuration": 60 },
+    "api/admin/nutrition-assistant.js": { "maxDuration": 60 },
     "api/nutrition/return.js": { "maxDuration": 30 },
     "api/nutrition/index.js": {
       "includeFiles": "{public/fonts,public/images/foods,public/images/teas,public/images/recipes-real,public/images/plates,server/nutrition/fonts}/**",

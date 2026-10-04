@@ -9,10 +9,16 @@ import { IntroOverlay } from './components/IntroOverlay.jsx';
 import { RecipeExperiencePage, RecipeProductLandingPage } from './components/RecipesProduct.jsx';
 import { AdminPage } from './components/AdminPage.jsx';
 import { NutritionLandingPage, NutritionStatusPage } from './components/NutritionPublic.jsx';
+import { NutritionCopilotProvider } from './components/NutritionCopilot.jsx';
 
 const pages = { home: HomePage, about: AboutPage, services: ServicesPage, service: ServicePage, contact: ContactPage, privacy: PrivacyPage, admin: AdminPage, 'nutrition-landing': NutritionLandingPage, 'nutrition-status': NutritionStatusPage, 'recipe-product': RecipeProductLandingPage, 'recipe-experience': RecipeExperiencePage, 'not-found': NotFoundPage };
 
 export default function App({ path }) {
+  const route = resolveRoute(path);
+  return <NutritionCopilotProvider initialPage={{ scope: route.page === 'admin' ? 'professional' : 'intake', view: route.page, label: route.page === 'nutrition-landing' ? 'Plano alimentar e anamnese' : route.page === 'nutrition-status' ? 'Acompanhamento do plano' : 'Site da Gi', visible: route.page !== 'admin' }}><AppContent path={path} /></NutritionCopilotProvider>;
+}
+
+function AppContent({ path }) {
   const route = resolveRoute(path);
   const Page = pages[route.page];
   useEffect(() => {

@@ -63,7 +63,9 @@ export function BristolScale({ value = null, onChange, disabled = false, error }
 }
 
 export function draftSafeIntake(intake) {
-  return { ...intake, photos: [], photosConsent: false, consent: false, aiConsent: false };
+  const safe = { ...intake, photos: [], photosConsent: false, consent: false };
+  delete safe.aiConsent;
+  return safe;
 }
 
 export async function prepareIntakePhoto(file) {

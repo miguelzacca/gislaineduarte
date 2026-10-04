@@ -60,7 +60,7 @@ test('intake UI keeps critical information visible and optional health choices a
       const intake = { name: 'Pessoa', consent: true, aiConsent: true, photosConsent: true, photos: [{ name: 'refeicao.jpg', type: 'image/jpeg', dataUrl: 'data:image/jpeg;base64,/9j/', purpose: 'food-context' }] };
       const saved = draftSafeIntake(intake);
       assert.deepEqual(saved.photos, []);
-      assert.equal(saved.photosConsent, false); assert.equal(saved.consent, false); assert.equal(saved.aiConsent, false);
+      assert.equal(saved.photosConsent, false); assert.equal(saved.consent, false); assert.equal('aiConsent' in saved, false);
       assert.equal(intake.photos.length, 1);
       const $ = render(IntakePhotos, { intake, onChange() {}, errors: { photosConsent: 'Confirme o uso destas fotos.' } });
       assert.equal($('input[type=checkbox]').length, 1);
