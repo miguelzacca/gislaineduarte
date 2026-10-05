@@ -34,6 +34,9 @@
 .product-hero-recipes[data-scene-ready] .product-scene-canvas { opacity: 1; }
 .product-hero-recipes[data-scene-ready] .product-card-stack { opacity: 0; }
 .product-hero-art__caption { position: absolute; z-index: 5; right: 3%; bottom: 3%; padding: 12px 18px; background: var(--forest); color: var(--ivory); font-size: 8px; letter-spacing: .16em; text-transform: uppercase; }
+.product-hero-art--book { aspect-ratio: .9 / 1; }
+.product-hero-art--book .product-hero-art__portrait { inset: 0 5% 0 0; }
+.product-hero-art--book .product-hero-recipes { width: 30%; right: -4%; bottom: 5%; }
 
 .product-access-message { display: flex; align-items: center; gap: 18px; margin-top: 24px; padding: 18px 22px; border: 1px solid var(--gold); background: #fff8e7; color: var(--forest); }
 .product-access-message .brand-mark { width: 28px; height: 42px; }

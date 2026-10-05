@@ -1,22 +1,46 @@
-.service-offers{background:var(--cream,#f5f3eb)}
+.service-offers{background:var(--paper)}
+.service-offers__heading{display:grid;grid-template-columns:1.2fr .8fr;align-items:end;gap:clamp(30px,7vw,100px)}
+.service-offers__heading .eyebrow{margin-bottom:20px}
+.service-offers__heading h2{font-size:clamp(3rem,4.8vw,5.5rem);line-height:1}
+.service-offers__heading h2 em,.service-offers__standalone h3 em{color:var(--gold-ink)}
+.service-offers__heading>p{max-width:480px;color:var(--leaf);font-size:14px;line-height:1.85}
+.service-offers__period{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-top:45px;padding-block:22px;border-top:1px solid var(--color-line);border-bottom:1px solid var(--color-line)}
+.service-offers__period>p{font-size:12px;color:var(--leaf)}
+.service-offers__period>div{display:flex;flex-wrap:wrap;gap:8px}
+.service-offers__period button{min-height:44px;padding:10px 22px;border:1px solid var(--color-line);border-radius:0;background:transparent;color:var(--forest);font:inherit;font-size:12px;cursor:pointer}
+.service-offers__period button[aria-pressed=true]{background:var(--forest);border-color:var(--forest);color:var(--ivory)}
+.service-offers__period button:focus-visible{outline:2px solid var(--gold-ink);outline-offset:3px}
 .service-offers>.shell>p:not(.eyebrow){max-width:670px;color:var(--leaf);line-height:1.8}
 .service-offers__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:38px}
-.service-offers__card{display:flex;flex-direction:column;padding:32px;border:1px solid #d4b77a;border-radius:18px;background:#fffef8}
-.service-offers__card h3{font-size:34px;line-height:1.12;margin:18px 0}
-.service-offers__card>p{line-height:1.8;color:var(--leaf);font-size:14px}
+.service-offers__card{display:flex;flex-direction:column;min-width:0;padding:clamp(24px,2.7vw,40px);border:1px solid var(--color-line);background:var(--white)}
+.service-offers__icon{width:48px;height:48px;margin-bottom:20px;color:var(--gold-ink)}
+.service-offers__icon svg{width:100%;height:100%}
+.service-offers__card h3{font-size:clamp(2.3rem,3.2vw,3.4rem);line-height:1.12;margin:0 0 20px}
+.service-offers__option{display:flex;flex-direction:column;flex:1}
+.service-offers__option+.service-offers__option{border-top:1px solid var(--color-line);margin-top:28px;padding-top:28px}
+.service-offers__option>p{line-height:1.8;color:var(--leaf);font-size:14px}
+.service-offers__option h4{font:500 24px/1.2 var(--serif);margin-block:14px}
 .service-offers__badge{align-self:flex-start;background:var(--forest);color:var(--ivory);border-radius:20px;font-size:11px;padding:7px 12px}
 .service-offers__price{margin:20px 0 12px}
 .service-offers__price del{display:block;color:var(--leaf);font-size:15px;margin-bottom:7px}
 .service-offers__price strong{font-family:var(--serif);font-size:43px;font-weight:500;white-space:nowrap}
-.service-offers__price span{font-size:13px;margin-left:6px}
+.service-offers__price span{display:block;font-size:12px;color:var(--leaf);margin-top:4px}
+.service-offers__option .service-offers__quote{font:500 28px/1.3 var(--serif);color:var(--forest);margin:24px 0 12px}
 .service-offers__card small{font-size:12px;color:var(--leaf)}
 .service-offers__card .service-offers__conditions{font-size:12px;margin:20px 0 24px}
 .service-offers__card .button{margin-top:auto;justify-content:space-between;font-size:12px;padding-inline:20px}
+.service-offers__status{font-size:12px;color:var(--leaf);margin-top:20px}
+.service-offers__standalone{display:flex;justify-content:space-between;align-items:center;gap:30px;padding-top:38px;margin-top:38px;border-top:1px solid var(--color-line)}
+.service-offers__standalone .eyebrow{margin-bottom:14px}
+.service-offers__standalone h3{font-size:clamp(2rem,3.2vw,3.3rem)}
+.service-offers__standalone p:not(.eyebrow){max-width:650px;font-size:13px;color:var(--leaf);line-height:1.8;margin-top:16px}
+.service-offers__standalone .text-link{flex-shrink:0}
 .service-offers-editor{margin-top:28px}
 .service-offers-editor__fields{border:0;padding:0;margin:20px 0 0;min-width:0}
 .service-offers-editor__item{padding:24px;background:#f9faf6;border:1px solid #d9dfd1;border-radius:12px;margin:20px 0}
 .service-offers-editor__item>.nw-button{margin-top:14px}
 .service-offers-editor__actions{display:flex;flex-wrap:wrap;gap:12px}
+.service-offers-editor__summary{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
 .ni-tea-note{color:var(--leaf);font-size:13px;line-height:1.8}
-@media(max-width:1050px){.service-offers__grid{grid-template-columns:1fr}.service-offers__card{max-width:680px;width:100%;margin:auto}.service-offers__price strong{font-size:46px}}
+@media(max-width:1050px){.service-offers__heading{grid-template-columns:1fr}.service-offers__heading>p{max-width:670px}.service-offers__grid{grid-template-columns:1fr}.service-offers__card{max-width:680px;width:100%;margin:auto}.service-offers__price strong{font-size:46px}.service-offers__standalone{align-items:flex-start;flex-direction:column}}
 @media(max-width:600px){.service-offers__card{padding:25px}.service-offers-editor__item{padding:18px}}

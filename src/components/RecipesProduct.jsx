@@ -12,7 +12,12 @@ const initialProduct = () => selectedProductId() === 'receitas-glp1' ? glpRecipe
 const apiPath = path => selectedProductId() === 'receitas-glp1' ? path + '?product=receitas-glp1' : path;
 const productPath = (path, name, value) => path + (path.includes('?') ? '&' : '?') + name + '=' + encodeURIComponent(value);
 const STORAGE_PREFIX = 'gislaine:receitas:v2';
-const cookingPortrait = { src: '/images/gislaine-duarte-960.webp', width: 960, height: 1280, alt: 'Retrato de Gislaine Duarte.' };
+const cookingPortrait = {
+  src: '/images/recipes/gislaine-livro-receitas-960.webp', width: 960, height: 1152,
+  srcSet: [360, 540, 720, 960].map(width => `/images/recipes/gislaine-livro-receitas-${width}.webp ${width}w`).join(', '),
+  avifSrcSet: [360, 540, 720, 960].map(width => `/images/recipes/gislaine-livro-receitas-${width}.avif ${width}w`).join(', '),
+  alt: 'Gislaine Duarte de avental verde, segurando seu livro de receitas com as duas mãos.',
+};
 
 function ProductPhoto({ image, className = '', eager = false, sizes = '(min-width: 900px) 50vw, 100vw' }) {
   return (
@@ -218,9 +223,9 @@ export function RecipeProductLandingPage({ product: routeProduct } = {}) {
             <p className="product-hero__trust"><span>{product.recipes.length} receitas{product.recipeCounts?.variations ? ', incluindo variações' : ''}</span><span>3 formatos</span><span>acesso organizado</span></p>
             {product.recipeCounts?.variations ? <p className="product-hero__count-detail">{product.recipeCounts.preparations} preparações + {product.recipeCounts.variations} {product.recipeCounts.variations === 1 ? 'variação com ficha própria' : 'variações com fichas próprias'}.</p> : null}
           </div>
-          {product.guideOutline ? <div className="glp-product-hero-art"><div className="glp-book-cover"><span>Gislaine Duarte · Nutrição & cuidado</span><strong>À mesa<br />com GLP-1</strong><p>Comer, beber e cuidar da rotina durante o tratamento.</p><ProductPhoto image={product.hero.image} eager sizes="(min-width: 900px) 420px, 80vw" /><small>{product.recipes.length} receitas · guia prático · {product.edition}</small></div></div> : <div className="product-hero-art">
+          {product.guideOutline ? <div className="glp-product-hero-art"><div className="glp-book-cover"><span>Gislaine Duarte · Nutrição & cuidado</span><strong>À mesa<br />com GLP-1</strong><p>Comer, beber e cuidar da rotina durante o tratamento.</p><ProductPhoto image={product.hero.image} eager sizes="(min-width: 900px) 420px, 80vw" /><small>{product.recipes.length} receitas · guia prático · {product.edition}</small></div></div> : <div className="product-hero-art product-hero-art--book">
             <div className="product-hero-art__halo" aria-hidden="true" />
-            <ProductPhoto image={cookingPortrait} className="product-hero-art__portrait" eager sizes="(min-width: 1645px) 560px, (min-width: 768px) 34vw, (min-width: 625px) 420px, 67vw" />
+            <ProductPhoto image={cookingPortrait} className="product-hero-art__portrait" eager sizes="(min-width: 1645px) 610px, (min-width: 768px) 40vw, 85vw" />
             <RecipeCardsScene product={product} fallbackImage={product.hero.image} />
             <span className="product-hero-art__caption">{product.recipes.length} receitas · uma jornada prática</span>
           </div>}

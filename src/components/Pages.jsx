@@ -234,7 +234,7 @@ export function ServicesPage() {
       <section className="shell page-hero">
         <p className="eyebrow eyebrow--gold">Atendimentos com a Nutri Gi</p>
         <h1>Um cuidado que faz sentido<br />para <em>o seu momento.</em></h1>
-        <p className="page-hero__intro">Você pode começar com uma consulta individual ou conhecer os ciclos de acompanhamento. São formas de atendimento para compreender melhor sua alimentação e construir mudanças com orientação profissional.</p>
+        <p className="page-hero__intro">Atendimento presencial e online, com ciência, escuta e cuidado para entender você por inteiro. Conheça os planos individual, casal e família, com acompanhamento personalizado de 3 ou 6 meses.</p>
       </section>
       <section className="shell" style={{ paddingBottom: 'var(--section-space)' }}>
         <ServiceCards headingTag="h2" />
